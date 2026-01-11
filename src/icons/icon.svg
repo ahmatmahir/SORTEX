@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e1b4b"/>
+      <stop offset="50%" style="stop-color:#3b0764"/>
+      <stop offset="100%" style="stop-color:#0f172a"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="512" height="512" rx="100" fill="url(#bg)"/>
+
+  <!-- Left arrow (purple) -->
+  <g filter="url(#glow)">
+    <polygon points="80,256 160,180 160,220 200,220 200,292 160,292 160,332"
+             fill="none" stroke="#a855f7" stroke-width="12" stroke-linejoin="round"/>
+  </g>
+
+  <!-- Right arrow (blue) -->
+  <g filter="url(#glow)">
+    <polygon points="432,256 352,180 352,220 312,220 312,292 352,292 352,332"
+             fill="none" stroke="#3b82f6" stroke-width="12" stroke-linejoin="round"/>
+  </g>
+
+  <!-- Center symbol (circle) -->
+  <g filter="url(#glow)">
+    <circle cx="256" cy="256" r="50" fill="none" stroke="#c4b5fd" stroke-width="10"/>
+  </g>
+
+  <!-- Decorative symbols -->
+  <g filter="url(#glow)" opacity="0.6">
+    <!-- Small triangle top -->
+    <polygon points="256,100 280,140 232,140"
+             fill="none" stroke="#f472b6" stroke-width="6" stroke-linejoin="round"/>
+    <!-- Small square bottom -->
+    <rect x="231" y="372" width="50" height="50"
+          fill="none" stroke="#22d3ee" stroke-width="6"/>
+  </g>
+</svg>

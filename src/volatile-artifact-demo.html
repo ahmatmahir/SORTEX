@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Volatile Artifact - Destruction Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(180deg, #0a0a12 0%, #1a1a2e 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: #fffef0;
+            overflow: hidden;
+        }
+
+        /* Level indicator */
+        .level-display {
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: rgba(255, 254, 240, 0.5);
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+        }
+
+        .level-number {
+            font-size: 1.4rem;
+            color: #4ECDC4;
+            font-weight: bold;
+        }
+
+        /* Containment Box */
+        .containment-box {
+            width: 300px;
+            height: 100px;
+            margin-top: 30px;
+            background: linear-gradient(180deg, #1a1a2e 0%, #0f0f1a 100%);
+            border: 2px solid #2C3E50;
+            border-radius: 8px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow:
+                inset 0 0 30px rgba(78, 205, 196, 0.05),
+                0 4px 20px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        /* Corner accents */
+        .containment-box::before,
+        .containment-box::after {
+            content: '';
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border: 2px solid #3D566E;
+        }
+        .containment-box::before {
+            top: 4px;
+            left: 4px;
+            border-right: none;
+            border-bottom: none;
+        }
+        .containment-box::after {
+            top: 4px;
+            right: 4px;
+            border-left: none;
+            border-bottom: none;
+        }
+
+        /* Warning lights */
+        .warning-lights {
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+        }
+
+        .warning-light {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #2C3E50;
+            transition: all 0.3s ease;
+        }
+
+        /* Volatility states for container */
+        .containment-box.warming {
+            border-color: #3D566E;
+            box-shadow:
+                inset 0 0 30px rgba(78, 205, 196, 0.1),
+                0 0 15px rgba(78, 205, 196, 0.2);
+        }
+
+        .containment-box.unstable {
+            border-color: #F4D03F;
+            animation: containerShake 0.1s infinite;
+            box-shadow:
+                inset 0 0 30px rgba(244, 208, 63, 0.15),
+                0 0 20px rgba(244, 208, 63, 0.3);
+        }
+
+        .containment-box.critical {
+            border-color: #E74C3C;
+            animation: containerShake 0.05s infinite;
+            box-shadow:
+                inset 0 0 40px rgba(231, 76, 60, 0.2),
+                0 0 30px rgba(231, 76, 60, 0.5);
+        }
+
+        @keyframes containerShake {
+            0%, 100% { transform: translate(0, 0); }
+            25% { transform: translate(1px, -1px); }
+            50% { transform: translate(-1px, 1px); }
+            75% { transform: translate(1px, 1px); }
+        }
+
+        /* Artifact */
+        .artifact {
+            position: relative;
+            width: 60px;
+            height: 60px;
+        }
+
+        /* Core crystal */
+        .artifact-core {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 30px;
+            height: 30px;
+            background: radial-gradient(circle, #4ECDC4 0%, #2C8C85 70%, #1a5c57 100%);
+            clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
+            animation: corePulse var(--pulse-speed, 2s) ease-in-out infinite;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(78, 205, 196, 0.5);
+        }
+
+        @keyframes corePulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); filter: brightness(1); }
+            50% { transform: translate(-50%, -50%) scale(1.08); filter: brightness(1.3); }
+        }
+
+        /* Orbiting shards */
+        .shard {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 8px;
+            height: 12px;
+            background: linear-gradient(135deg, #5D6D7E 0%, #2C3E50 100%);
+            clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+            transform-origin: center;
+            animation: shardOrbit var(--orbit-speed, 8s) linear infinite;
+        }
+
+        .shard:nth-child(2) { animation-delay: -2s; }
+        .shard:nth-child(3) { animation-delay: -4s; }
+        .shard:nth-child(4) { animation-delay: -6s; }
+        .shard:nth-child(5) { animation-delay: -1s; --orbit-radius: 28px; }
+        .shard:nth-child(6) { animation-delay: -3s; --orbit-radius: 28px; }
+        .shard:nth-child(7) { animation-delay: -5s; --orbit-radius: 28px; }
+        .shard:nth-child(8) { animation-delay: -7s; --orbit-radius: 28px; }
+
+        @keyframes shardOrbit {
+            0% { transform: rotate(0deg) translateX(var(--orbit-radius, 22px)) rotate(0deg); }
+            100% { transform: rotate(360deg) translateX(var(--orbit-radius, 22px)) rotate(-360deg); }
+        }
+
+        /* Energy threads */
+        .thread {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 40px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(78, 205, 196, 0.3), transparent);
+            transform-origin: left center;
+            opacity: 0.4;
+        }
+
+        .thread:nth-child(9) { transform: rotate(0deg); }
+        .thread:nth-child(10) { transform: rotate(45deg); }
+        .thread:nth-child(11) { transform: rotate(90deg); }
+        .thread:nth-child(12) { transform: rotate(135deg); }
+        .thread:nth-child(13) { transform: rotate(180deg); }
+        .thread:nth-child(14) { transform: rotate(225deg); }
+        .thread:nth-child(15) { transform: rotate(270deg); }
+        .thread:nth-child(16) { transform: rotate(315deg); }
+
+        /* Cracks overlay */
+        .cracks {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .crack-line {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 4px rgba(255, 255, 255, 0.5);
+        }
+
+        .crack-line:nth-child(1) {
+            width: 2px;
+            height: 20px;
+            top: 10px;
+            left: 19px;
+            transform: rotate(15deg);
+        }
+
+        .crack-line:nth-child(2) {
+            width: 15px;
+            height: 1px;
+            top: 20px;
+            left: 12px;
+            transform: rotate(-10deg);
+        }
+
+        .crack-line:nth-child(3) {
+            width: 1px;
+            height: 12px;
+            top: 18px;
+            left: 25px;
+            transform: rotate(-20deg);
+        }
+
+        /* Volatility states for artifact */
+        .artifact.warming .artifact-core {
+            --pulse-speed: 1.2s;
+            background: radial-gradient(circle, #7DCEA0 0%, #4ECDC4 70%, #2C8C85 100%);
+            box-shadow: 0 0 25px rgba(125, 206, 160, 0.6);
+        }
+
+        .artifact.warming .thread {
+            opacity: 0.6;
+            background: linear-gradient(90deg, transparent, rgba(125, 206, 160, 0.5), transparent);
+        }
+
+        .artifact.unstable .artifact-core {
+            --pulse-speed: 0.6s;
+            background: radial-gradient(circle, #F4D03F 0%, #E67E22 70%, #D35400 100%);
+            box-shadow: 0 0 35px rgba(244, 208, 63, 0.7);
+        }
+
+        .artifact.unstable .shard {
+            animation-duration: 4s;
+            background: linear-gradient(135deg, #F4D03F 0%, #E67E22 100%);
+        }
+
+        .artifact.unstable .thread {
+            opacity: 0.8;
+            background: linear-gradient(90deg, transparent, rgba(244, 208, 63, 0.7), transparent);
+            animation: threadSpark 0.5s ease-in-out infinite;
+        }
+
+        .artifact.unstable .cracks {
+            opacity: 0.5;
+        }
+
+        @keyframes threadSpark {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        .artifact.critical .artifact-core {
+            --pulse-speed: 0.3s;
+            background: radial-gradient(circle, #FFFFFF 0%, #E74C3C 50%, #C0392B 100%);
+            box-shadow: 0 0 50px rgba(231, 76, 60, 0.9);
+            animation: corePulse 0.3s ease-in-out infinite, coreShake 0.05s infinite;
+        }
+
+        .artifact.critical .shard {
+            animation-duration: 2s;
+            background: linear-gradient(135deg, #E74C3C 0%, #C0392B 100%);
+            box-shadow: 0 0 8px rgba(231, 76, 60, 0.8);
+        }
+
+        .artifact.critical .thread {
+            opacity: 1;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.9), transparent);
+            animation: threadSpark 0.2s ease-in-out infinite;
+        }
+
+        .artifact.critical .cracks {
+            opacity: 1;
+        }
+
+        @keyframes coreShake {
+            0%, 100% { transform: translate(-50%, -50%) translate(0, 0); }
+            25% { transform: translate(-50%, -50%) translate(2px, -1px); }
+            50% { transform: translate(-50%, -50%) translate(-1px, 2px); }
+            75% { transform: translate(-50%, -50%) translate(1px, 1px); }
+        }
+
+        /* Destruction animation */
+        .artifact.imploding .artifact-core {
+            animation: implode 150ms ease-in forwards;
+        }
+
+        .artifact.imploding .shard {
+            animation: shardImplode 150ms ease-in forwards;
+        }
+
+        @keyframes implode {
+            0% { transform: translate(-50%, -50%) scale(1); }
+            100% { transform: translate(-50%, -50%) scale(0.3); filter: brightness(3); }
+        }
+
+        @keyframes shardImplode {
+            0% { opacity: 1; }
+            100% { transform: rotate(var(--angle, 0deg)) translateX(5px); opacity: 0.5; }
+        }
+
+        .artifact.exploding .artifact-core {
+            animation: explode 350ms ease-out forwards;
+        }
+
+        @keyframes explode {
+            0% { transform: translate(-50%, -50%) scale(0.3); filter: brightness(3); }
+            30% { transform: translate(-50%, -50%) scale(1.5); filter: brightness(4); }
+            100% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+        }
+
+        /* Explosion ring */
+        .explosion-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            animation: ringExpand 400ms ease-out forwards;
+            pointer-events: none;
+        }
+
+        @keyframes ringExpand {
+            0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(8); opacity: 0; }
+        }
+
+        /* Debris particles */
+        .debris {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: #E74C3C;
+            clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+            pointer-events: none;
+            animation: debrisFly 500ms ease-out forwards;
+        }
+
+        @keyframes debrisFly {
+            0% {
+                transform: translate(0, 0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--dx), var(--dy)) rotate(var(--rot));
+                opacity: 0;
+            }
+        }
+
+        /* Screen flash */
+        .screen-flash {
+            position: fixed;
+            inset: 0;
+            background: white;
+            opacity: 0;
+            pointer-events: none;
+            animation: screenFlash 300ms ease-out forwards;
+        }
+
+        @keyframes screenFlash {
+            0% { opacity: 0.8; }
+            100% { opacity: 0; }
+        }
+
+        /* Screen shake */
+        .screen-shake {
+            animation: screenShake 300ms ease-out;
+        }
+
+        @keyframes screenShake {
+            0%, 100% { transform: translate(0, 0); }
+            10% { transform: translate(-8px, 4px); }
+            20% { transform: translate(6px, -6px); }
+            30% { transform: translate(-4px, 8px); }
+            40% { transform: translate(8px, -2px); }
+            50% { transform: translate(-6px, 6px); }
+            60% { transform: translate(4px, -8px); }
+            70% { transform: translate(-8px, 4px); }
+            80% { transform: translate(6px, 6px); }
+            90% { transform: translate(-4px, -4px); }
+        }
+
+        /* Vignette overlay */
+        .vignette {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background: radial-gradient(circle at center, transparent 40%, rgba(0, 0, 0, var(--vignette-opacity, 0)) 100%);
+            transition: all 0.5s ease;
+        }
+
+        /* Controls */
+        .controls {
+            margin-top: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .status {
+            font-size: 1rem;
+            color: rgba(255, 254, 240, 0.7);
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            min-height: 28px;
+        }
+
+        .status.critical {
+            color: #E74C3C;
+            animation: statusPulse 0.3s ease-in-out infinite;
+        }
+
+        @keyframes statusPulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 12px 28px;
+            background: linear-gradient(180deg, #2d1f3d 0%, #1a1625 100%);
+            border: 1px solid rgba(78, 205, 196, 0.4);
+            color: rgba(255, 254, 240, 0.8);
+            font-size: 0.85rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            background: linear-gradient(180deg, #3d2f4d 0%, #2a2035 100%);
+            border-color: rgba(78, 205, 196, 0.7);
+            box-shadow: 0 0 15px rgba(78, 205, 196, 0.3);
+        }
+
+        .btn.primary {
+            background: linear-gradient(180deg, #4ECDC4 0%, #2C8C85 100%);
+            border-color: #4ECDC4;
+            color: #0a0a12;
+            font-weight: 600;
+        }
+
+        .btn.primary:hover {
+            box-shadow: 0 0 20px rgba(78, 205, 196, 0.5);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Progress hint (vague) */
+        .progress-hint {
+            font-size: 0.75rem;
+            color: rgba(255, 254, 240, 0.3);
+            margin-top: 10px;
+        }
+
+        /* Instructions */
+        .instructions {
+            position: fixed;
+            bottom: 30px;
+            font-size: 0.8rem;
+            color: rgba(255, 254, 240, 0.4);
+            text-align: center;
+        }
+
+        /* Artifact spawn animation */
+        .artifact.spawning {
+            animation: artifactSpawn 500ms ease-out forwards;
+        }
+
+        @keyframes artifactSpawn {
+            0% { transform: scale(0) rotate(-180deg); opacity: 0; }
+            60% { transform: scale(1.2) rotate(10deg); opacity: 1; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+
+        /* Container slam down */
+        .containment-box.slamming {
+            animation: containerSlam 400ms ease-out forwards;
+        }
+
+        @keyframes containerSlam {
+            0% { transform: translateY(-100px); opacity: 0; }
+            60% { transform: translateY(10px); }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Hidden slots indicator (mystery) */
+        .mystery-indicator {
+            display: flex;
+            gap: 4px;
+            margin-top: 8px;
+        }
+
+        .mystery-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #2C3E50;
+            transition: all 0.3s ease;
+        }
+
+        .mystery-dot.hint {
+            background: rgba(78, 205, 196, 0.3);
+        }
+
+        .mystery-dot.danger {
+            background: rgba(231, 76, 60, 0.5);
+            animation: dotPulse 0.5s ease-in-out infinite;
+        }
+
+        @keyframes dotPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* Level complete message */
+        .level-complete {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2rem;
+            font-weight: bold;
+            color: #4ECDC4;
+            text-shadow: 0 0 30px rgba(78, 205, 196, 0.8);
+            opacity: 0;
+            pointer-events: none;
+            animation: levelComplete 800ms ease-out forwards;
+        }
+
+        @keyframes levelComplete {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            30% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+            70% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="vignette" id="vignette"></div>
+
+    <div class="level-display">
+        Level <span class="level-number" id="levelNum">1</span>
+    </div>
+
+    <div class="containment-box" id="container">
+        <div class="warning-lights">
+            <div class="warning-light" id="light1"></div>
+            <div class="warning-light" id="light2"></div>
+            <div class="warning-light" id="light3"></div>
+        </div>
+
+        <div class="artifact" id="artifact">
+            <div class="artifact-core"></div>
+            <div class="shard"></div>
+            <div class="shard"></div>
+            <div class="shard"></div>
+            <div class="shard"></div>
+            <div class="thread"></div>
+            <div class="thread"></div>
+            <div class="thread"></div>
+            <div class="thread"></div>
+            <div class="thread"></div>
+            <div class="thread"></div>
+            <div class="thread"></div>
+            <div class="thread"></div>
+            <div class="cracks">
+                <div class="crack-line"></div>
+                <div class="crack-line"></div>
+                <div class="crack-line"></div>
+            </div>
+        </div>
+
+        <div class="mystery-indicator" id="mysteryDots"></div>
+    </div>
+
+    <div class="controls">
+        <div class="status" id="status">Stable</div>
+        <div class="btn-row">
+            <button class="btn primary" id="swipeBtn">Swipe (Add Energy)</button>
+            <button class="btn" id="resetBtn">Reset</button>
+        </div>
+        <div class="progress-hint" id="progressHint">Artifact stability: ???</div>
+    </div>
+
+    <div class="instructions">
+        Each swipe pumps volatile energy into the artifact<br>
+        Push it past the breaking point to destroy it
+    </div>
+
+    <script>
+        const container = document.getElementById('container');
+        const artifact = document.getElementById('artifact');
+        const status = document.getElementById('status');
+        const swipeBtn = document.getElementById('swipeBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const progressHint = document.getElementById('progressHint');
+        const vignette = document.getElementById('vignette');
+        const levelNum = document.getElementById('levelNum');
+        const mysteryDots = document.getElementById('mysteryDots');
+        const lights = [
+            document.getElementById('light1'),
+            document.getElementById('light2'),
+            document.getElementById('light3')
+        ];
+
+        let level = 1;
+        let volatility = 0;
+        let threshold = 0;
+        let inputLocked = false;
+
+        // Calculate threshold based on level (hidden from player)
+        function calculateThreshold() {
+            const base = level * 3;
+            const random = Math.floor(Math.random() * 8) + 5; // 5-12 random addition
+            return base + random;
+        }
+
+        // Initialize level
+        function initLevel() {
+            threshold = calculateThreshold();
+            volatility = 0;
+            inputLocked = false;
+
+            // Reset classes
+            container.classList.remove('warming', 'unstable', 'critical', 'slamming');
+            artifact.classList.remove('warming', 'unstable', 'critical', 'imploding', 'exploding', 'spawning');
+
+            // Spawn animation
+            container.classList.add('slamming');
+            setTimeout(() => {
+                artifact.classList.add('spawning');
+            }, 200);
+
+            updateUI();
+            updateMysteryDots();
+
+            // Update artifact complexity based on level
+            updateArtifactComplexity();
+        }
+
+        // Add shards based on level
+        function updateArtifactComplexity() {
+            const shardCount = Math.min(4 + Math.floor(level / 3), 12);
+            const existingShards = artifact.querySelectorAll('.shard');
+
+            // For demo, we'll just adjust animation speed to suggest complexity
+            const orbitSpeed = Math.max(8 - level * 0.5, 3);
+            artifact.style.setProperty('--orbit-speed', orbitSpeed + 's');
+        }
+
+        // Mystery dots (vague progress indicator)
+        function updateMysteryDots() {
+            mysteryDots.innerHTML = '';
+            const dotCount = 8;
+            for (let i = 0; i < dotCount; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'mystery-dot';
+                mysteryDots.appendChild(dot);
+            }
+        }
+
+        // Update mystery dots based on volatility (vague hints)
+        function updateMysteryDotsState() {
+            const dots = mysteryDots.querySelectorAll('.mystery-dot');
+            const pct = volatility / threshold;
+
+            dots.forEach((dot, i) => {
+                dot.classList.remove('hint', 'danger');
+
+                if (pct > 0.75) {
+                    // Critical - show danger on most dots
+                    if (i < dots.length * pct) {
+                        dot.classList.add('danger');
+                    }
+                } else if (pct > 0.25) {
+                    // Some hint
+                    if (i < dots.length * pct * 0.7) { // Intentionally inaccurate
+                        dot.classList.add('hint');
+                    }
+                }
+            });
+        }
+
+        // Update UI based on volatility
+        function updateUI() {
+            const pct = volatility / threshold;
+
+            // Remove all state classes
+            container.classList.remove('warming', 'unstable', 'critical');
+            artifact.classList.remove('warming', 'unstable', 'critical');
+            status.classList.remove('critical');
+
+            // Determine state
+            let state, vignetteOpacity;
+
+            if (pct < 0.25) {
+                state = 'stable';
+                vignetteOpacity = 0;
+                lights.forEach(l => l.style.background = '#2C3E50');
+            } else if (pct < 0.5) {
+                state = 'warming';
+                vignetteOpacity = 0.05;
+                container.classList.add('warming');
+                artifact.classList.add('warming');
+                lights[0].style.background = '#F4D03F';
+            } else if (pct < 0.75) {
+                state = 'unstable';
+                vignetteOpacity = 0.15;
+                container.classList.add('unstable');
+                artifact.classList.add('unstable');
+                lights[0].style.background = '#E67E22';
+                lights[1].style.background = '#E67E22';
+            } else {
+                state = 'critical';
+                vignetteOpacity = 0.25;
+                container.classList.add('critical');
+                artifact.classList.add('critical');
+                status.classList.add('critical');
+                lights.forEach(l => l.style.background = '#E74C3C');
+            }
+
+            // Status text
+            const statusTexts = {
+                stable: 'Stable',
+                warming: 'Energy Rising',
+                unstable: 'UNSTABLE',
+                critical: 'CRITICAL MASS'
+            };
+            status.textContent = statusTexts[state];
+
+            // Vignette
+            vignette.style.setProperty('--vignette-opacity', vignetteOpacity);
+
+            // Progress hint (vague)
+            const hints = [
+                'Artifact stability: Normal',
+                'Artifact stability: Fluctuating',
+                'Artifact stability: Compromised',
+                'Artifact stability: FAILING'
+            ];
+            const hintIndex = Math.min(Math.floor(pct * 4), 3);
+            progressHint.textContent = hints[hintIndex];
+
+            updateMysteryDotsState();
+        }
+
+        // Add energy (swipe)
+        function addEnergy() {
+            if (inputLocked) return;
+
+            volatility++;
+            updateUI();
+
+            // Check for destruction
+            if (volatility >= threshold) {
+                triggerDestruction();
+            }
+        }
+
+        // Destruction sequence
+        function triggerDestruction() {
+            inputLocked = true;
+            swipeBtn.disabled = true;
+            status.textContent = 'MELTDOWN';
+
+            // Phase 1: Implosion (150ms)
+            artifact.classList.add('imploding');
+
+            setTimeout(() => {
+                // Phase 2: Hold (100ms) - brief pause
+                artifact.classList.remove('imploding');
+
+                setTimeout(() => {
+                    // Phase 3: Explosion (350ms)
+                    artifact.classList.add('exploding');
+                    createExplosionEffects();
+
+                    // Screen effects
+                    const flash = document.createElement('div');
+                    flash.className = 'screen-flash';
+                    document.body.appendChild(flash);
+                    setTimeout(() => flash.remove(), 300);
+
+                    document.body.classList.add('screen-shake');
+                    setTimeout(() => document.body.classList.remove('screen-shake'), 300);
+
+                    // Level complete message
+                    const msg = document.createElement('div');
+                    msg.className = 'level-complete';
+                    msg.textContent = `LEVEL ${level} DESTROYED`;
+                    document.body.appendChild(msg);
+                    setTimeout(() => msg.remove(), 800);
+
+                    // Next level after effects settle
+                    setTimeout(() => {
+                        level++;
+                        levelNum.textContent = level;
+                        initLevel();
+                        swipeBtn.disabled = false;
+                    }, 1000);
+                }, 100);
+            }, 150);
+        }
+
+        // Create explosion visual effects
+        function createExplosionEffects() {
+            const rect = artifact.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+            // Explosion ring
+            const ring = document.createElement('div');
+            ring.className = 'explosion-ring';
+            ring.style.left = (rect.width / 2) + 'px';
+            ring.style.top = (rect.height / 2) + 'px';
+            artifact.appendChild(ring);
+            setTimeout(() => ring.remove(), 400);
+
+            // Debris particles
+            const debrisCount = 15 + level * 3;
+            const colors = ['#E74C3C', '#F4D03F', '#FFFFFF', '#4ECDC4'];
+
+            for (let i = 0; i < debrisCount; i++) {
+                const debris = document.createElement('div');
+                debris.className = 'debris';
+
+                const angle = (Math.random() * 360) * (Math.PI / 180);
+                const distance = 80 + Math.random() * 80;
+                const dx = Math.cos(angle) * distance;
+                const dy = Math.sin(angle) * distance;
+                const rot = Math.random() * 720 - 360;
+
+                debris.style.left = (rect.width / 2) + 'px';
+                debris.style.top = (rect.height / 2) + 'px';
+                debris.style.setProperty('--dx', dx + 'px');
+                debris.style.setProperty('--dy', dy + 'px');
+                debris.style.setProperty('--rot', rot + 'deg');
+                debris.style.background = colors[Math.floor(Math.random() * colors.length)];
+                debris.style.width = (4 + Math.random() * 6) + 'px';
+                debris.style.height = (4 + Math.random() * 6) + 'px';
+
+                artifact.appendChild(debris);
+                setTimeout(() => debris.remove(), 500);
+            }
+        }
+
+        // Reset
+        function reset() {
+            level = 1;
+            levelNum.textContent = level;
+            initLevel();
+            swipeBtn.disabled = false;
+        }
+
+        // Event listeners
+        swipeBtn.addEventListener('click', addEnergy);
+        resetBtn.addEventListener('click', reset);
+
+        // Keyboard support
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && !inputLocked) {
+                e.preventDefault();
+                addEnergy();
+            }
+        });
+
+        // Initialize
+        initLevel();
+    </script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+{
+  "name": "sortex",
+  "version": "1.0.0",
+  "description": "A fast-paced, single-thumb mobile reflex game where players sort falling symbols into left/right portals while ignoring distractors.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "npx playwright test",
+    "test:mobile": "npx playwright test --project='iPhone 12' --project='Pixel 5'",
+    "test:desktop": "npx playwright test --project=chromium --project=webkit",
+    "serve": "npx serve src -p 3003 -s"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@playwright/test": "^1.57.0"
+  }
+}

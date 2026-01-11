@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artifact Reactor Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(180deg, #0a0a12 0%, #1a1625 50%, #0d0d18 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            color: #fffef0;
+            overflow: hidden;
+        }
+
+        /* Header stats */
+        .header {
+            width: 100%;
+            max-width: 400px;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: rgba(255, 254, 240, 0.7);
+        }
+
+        .combo-display {
+            font-size: 1.1rem;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+
+        .combo-display.high {
+            color: #ffd700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        .combo-display.max {
+            color: #ff6b6b;
+            text-shadow: 0 0 15px rgba(255, 107, 107, 0.7);
+            animation: comboPulse 0.3s ease-in-out infinite;
+        }
+
+        @keyframes comboPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* Artifact Container */
+        .artifact-container {
+            width: 100%;
+            max-width: 360px;
+            padding: 0 20px;
+            margin-top: 10px;
+        }
+
+        /* The Artifact Strip */
+        .artifact {
+            width: 100%;
+            height: 50px;
+            background: linear-gradient(180deg, #1a1625 0%, #2d1f3d 50%, #1a1625 100%);
+            border: 2px solid #3d2f4d;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+            box-shadow:
+                inset 0 0 20px rgba(78, 205, 196, 0.1),
+                0 4px 15px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        /* Artifact inner glow based on state */
+        .artifact::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at center,
+                rgba(78, 205, 196, var(--glow-intensity, 0)) 0%,
+                transparent 70%);
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        /* Particle container inside artifact */
+        .particles-container {
+            position: absolute;
+            inset: 4px;
+            overflow: hidden;
+        }
+
+        /* Individual particle/symbol inside artifact */
+        .inner-particle {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+            opacity: 0.8;
+            transition: all 0.1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+        }
+
+        .inner-particle.circle { background: #4ECDC4; border-radius: 50%; }
+        .inner-particle.square { background: #ffd700; }
+        .inner-particle.triangle {
+            background: transparent;
+            width: 0; height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-bottom: 12px solid #ff6b6b;
+        }
+        .inner-particle.diamond {
+            background: #a855f7;
+            transform: rotate(45deg);
+            width: 10px;
+            height: 10px;
+        }
+        .inner-particle.star {
+            background: #ff9500;
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+            width: 14px;
+            height: 14px;
+        }
+
+        /* Energy arcs inside artifact */
+        .energy-arc {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #4ECDC4, transparent);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Lightning bolts */
+        .lightning {
+            position: absolute;
+            width: 3px;
+            background: linear-gradient(180deg, #ffffff, #4ECDC4, transparent);
+            opacity: 0;
+            pointer-events: none;
+            filter: blur(1px);
+        }
+
+        /* Artifact states */
+        .artifact.stirring {
+            --glow-intensity: 0.1;
+        }
+
+        .artifact.building {
+            --glow-intensity: 0.2;
+            border-color: #4d3f5d;
+        }
+
+        .artifact.surging {
+            --glow-intensity: 0.35;
+            border-color: #ffd700;
+            box-shadow:
+                inset 0 0 25px rgba(255, 215, 0, 0.2),
+                0 0 20px rgba(255, 215, 0, 0.3);
+        }
+
+        .artifact.crescendo {
+            --glow-intensity: 0.5;
+            border-color: #ff6b6b;
+            animation: artifactVibrate 0.05s infinite;
+            box-shadow:
+                inset 0 0 30px rgba(255, 107, 107, 0.3),
+                0 0 30px rgba(255, 107, 107, 0.5);
+        }
+
+        .artifact.maximum {
+            --glow-intensity: 0.7;
+            border-color: #ffffff;
+            animation: artifactShake 0.03s infinite;
+            box-shadow:
+                inset 0 0 40px rgba(255, 255, 255, 0.4),
+                0 0 40px rgba(255, 255, 255, 0.6);
+        }
+
+        @keyframes artifactVibrate {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(1px); }
+        }
+
+        @keyframes artifactShake {
+            0%, 100% { transform: translate(0, 0); }
+            25% { transform: translate(2px, -1px); }
+            50% { transform: translate(-1px, 2px); }
+            75% { transform: translate(1px, 1px); }
+        }
+
+        /* Deflated state (after miss) */
+        .artifact.deflated {
+            --glow-intensity: 0.02;
+            border-color: #2d2d3d;
+            filter: saturate(0.5) brightness(0.8);
+            transform: scaleY(0.95);
+        }
+
+        /* Falling symbol */
+        .falling-symbol {
+            position: absolute;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            border-radius: 8px;
+            background: rgba(30, 20, 40, 0.9);
+            border: 2px solid;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            animation: symbolFall 2s linear forwards;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .falling-symbol.positive {
+            border-color: #ff6b6b;
+            color: #ff6b6b;
+            box-shadow: 0 0 15px rgba(255, 107, 107, 0.4);
+        }
+
+        .falling-symbol.negative {
+            border-color: #4ECDC4;
+            color: #4ECDC4;
+            box-shadow: 0 0 15px rgba(78, 205, 196, 0.4);
+        }
+
+        .falling-symbol.neutral {
+            border-color: #666;
+            color: #888;
+            opacity: 0.6;
+        }
+
+        @keyframes symbolFall {
+            0% { top: 70px; opacity: 1; }
+            100% { top: 450px; opacity: 1; }
+        }
+
+        /* Play area */
+        .play-area {
+            width: 100%;
+            max-width: 400px;
+            height: 400px;
+            position: relative;
+            margin-top: 10px;
+        }
+
+        /* Swipe zones */
+        .swipe-zone {
+            position: absolute;
+            bottom: 0;
+            width: 50%;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            color: rgba(255, 254, 240, 0.2);
+            border-top: 1px dashed rgba(255, 254, 240, 0.1);
+        }
+
+        .swipe-zone.left {
+            left: 0;
+            border-right: 1px dashed rgba(255, 254, 240, 0.1);
+        }
+
+        .swipe-zone.right {
+            right: 0;
+        }
+
+        /* Controls */
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 14px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .btn.correct {
+            background: linear-gradient(180deg, #4ECDC4 0%, #2a9d8f 100%);
+            color: #0a0a12;
+        }
+
+        .btn.correct:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(78, 205, 196, 0.4);
+        }
+
+        .btn.miss {
+            background: linear-gradient(180deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+        }
+
+        .btn.miss:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(231, 76, 60, 0.4);
+        }
+
+        .btn.reset {
+            background: linear-gradient(180deg, #3d2f4d 0%, #2d1f3d 100%);
+            color: rgba(255, 254, 240, 0.8);
+            border: 1px solid #4d3f5d;
+        }
+
+        /* State indicator */
+        .state-indicator {
+            font-size: 0.85rem;
+            color: rgba(255, 254, 240, 0.6);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+        }
+
+        /* Crescendo progress */
+        .crescendo-bar {
+            width: 100%;
+            max-width: 320px;
+            height: 6px;
+            background: #1a1625;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .crescendo-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4ECDC4, #ffd700, #ff6b6b);
+            border-radius: 3px;
+            transition: width 0.2s ease;
+        }
+
+        .crescendo-label {
+            font-size: 0.7rem;
+            color: rgba(255, 254, 240, 0.4);
+            margin-top: 4px;
+        }
+
+        /* Unlock animation overlay */
+        .unlock-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0);
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .unlock-overlay.active {
+            animation: unlockSequence 2s ease-out forwards;
+        }
+
+        @keyframes unlockSequence {
+            0% { background: rgba(0, 0, 0, 0); }
+            15% { background: rgba(0, 0, 0, 0.5); }
+            30% { background: rgba(255, 255, 255, 0.3); }
+            50% { background: rgba(255, 255, 255, 0.8); }
+            70% { background: rgba(255, 255, 255, 0.3); }
+            100% { background: rgba(0, 0, 0, 0); }
+        }
+
+        .unlock-text {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.8);
+            opacity: 0;
+            transform: scale(0.5);
+        }
+
+        .unlock-overlay.active .unlock-text {
+            animation: unlockTextPop 2s ease-out forwards;
+        }
+
+        @keyframes unlockTextPop {
+            0% { opacity: 0; transform: scale(0.5); }
+            30% { opacity: 1; transform: scale(1.2); }
+            50% { opacity: 1; transform: scale(1); }
+            80% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(1.5); }
+        }
+
+        /* Spark particles */
+        .spark {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #ffd700;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: sparkFly 0.4s ease-out forwards;
+        }
+
+        @keyframes sparkFly {
+            0% { transform: translate(0, 0) scale(1); opacity: 1; }
+            100% { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; }
+        }
+
+        /* Level indicator */
+        .level-indicator {
+            font-size: 0.85rem;
+            color: rgba(255, 254, 240, 0.6);
+            font-weight: 600;
+        }
+
+        .particle-count {
+            font-size: 0.7rem;
+            color: rgba(255, 254, 240, 0.4);
+            margin-top: 6px;
+        }
+
+        /* Screen flash on max combo swipe */
+        .screen-flash {
+            position: fixed;
+            inset: 0;
+            background: white;
+            opacity: 0;
+            pointer-events: none;
+            animation: quickFlash 0.1s ease-out forwards;
+        }
+
+        @keyframes quickFlash {
+            0% { opacity: 0.15; }
+            100% { opacity: 0; }
+        }
+
+        /* Mini-shake for 50% threshold celebration */
+        @keyframes miniShake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-3px); }
+            40% { transform: translateX(3px); }
+            60% { transform: translateX(-2px); }
+            80% { transform: translateX(2px); }
+        }
+
+        /* Milestone pulse for combo display */
+        @keyframes milestonePulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+
+        /* Instructions */
+        .instructions {
+            position: fixed;
+            bottom: 20px;
+            font-size: 0.75rem;
+            color: rgba(255, 254, 240, 0.3);
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <span class="level-indicator">ARTIFACT 1 / CHAPTER 1</span>
+        </div>
+        <div>
+            <span>COMBO: </span>
+            <span class="combo-display" id="comboDisplay">0</span>
+        </div>
+    </div>
+
+    <div class="artifact-container">
+        <div class="artifact" id="artifact">
+            <div class="particles-container" id="particlesContainer">
+                <!-- Inner particles will be generated here -->
+            </div>
+        </div>
+        <div class="particle-count" id="particleCount">10 particles</div>
+    </div>
+
+    <div class="crescendo-bar">
+        <div class="crescendo-fill" id="crescendoFill" style="width: 0%"></div>
+    </div>
+    <div class="crescendo-label">CRESCENDO: <span id="crescendoLabel">0 / 50</span></div>
+
+    <div class="play-area" id="playArea">
+        <div class="swipe-zone left">← LEFT (BLUE)</div>
+        <div class="swipe-zone right">RIGHT (RED) →</div>
+    </div>
+
+    <div class="controls">
+        <div class="state-indicator" id="stateIndicator">DORMANT</div>
+        <div class="btn-row">
+            <button class="btn correct" id="correctBtn">✓ Correct Swipe</button>
+            <button class="btn miss" id="missBtn">✗ Miss</button>
+        </div>
+        <button class="btn reset" id="resetBtn">Reset</button>
+    </div>
+
+    <div class="unlock-overlay" id="unlockOverlay">
+        <div class="unlock-text" id="unlockText">ARTIFACT UNLOCKED!</div>
+    </div>
+
+    <div class="instructions">
+        SPACE = correct swipe | X = miss | Micro-rewards every 5 combos<br>
+        Lower thresholds (25→100) | Near misses forgiven | 10x particle scaling
+    </div>
+
+    <script>
+        const artifact = document.getElementById('artifact');
+        const particlesContainer = document.getElementById('particlesContainer');
+        const comboDisplay = document.getElementById('comboDisplay');
+        const stateIndicator = document.getElementById('stateIndicator');
+        const crescendoFill = document.getElementById('crescendoFill');
+        const crescendoLabel = document.getElementById('crescendoLabel');
+        const correctBtn = document.getElementById('correctBtn');
+        const missBtn = document.getElementById('missBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const unlockOverlay = document.getElementById('unlockOverlay');
+        const unlockText = document.getElementById('unlockText');
+        const playArea = document.getElementById('playArea');
+        const particleCountDisplay = document.getElementById('particleCount');
+
+        let combo = 0;
+        let maxCombo = 0;
+        let crescendoTarget = 25; // Start at 25 (easy first artifact!)
+        let artifactLevel = 1;
+        let chapterLevel = 1;
+        let particles = [];
+        let arcs = [];
+        let isUnlocking = false;
+
+        // EXPONENTIAL particle scaling (8→80) for dramatic visual difference
+        // Artifact 1: 8, Artifact 5: 22, Artifact 10: 80 (10x scaling!)
+        const PARTICLE_COUNTS = [8, 10, 13, 17, 22, 28, 36, 47, 61, 80];
+
+        function getParticleCount() {
+            const artifactInChapter = ((artifactLevel - 1) % 10) + 1;
+            // Add chapter bonus: +2 particles per completed chapter
+            const chapterBonus = (chapterLevel - 1) * 2;
+            return PARTICLE_COUNTS[artifactInChapter - 1] + chapterBonus;
+        }
+
+        // LOWER thresholds with steeper curve: 25→100 (quick early wins, boss spike)
+        // Artifact 1: 25 (easy!), Artifact 5: 55, Artifact 10: 100 (boss challenge)
+        const COMBO_THRESHOLDS = [25, 35, 45, 50, 55, 65, 70, 80, 90, 100];
+
+        function getThreshold() {
+            const artifactInChapter = ((artifactLevel - 1) % 10) + 1;
+            return COMBO_THRESHOLDS[artifactInChapter - 1];
+        }
+
+        // Symbols per chapter (same symbols, just more particles)
+        const CHAPTER_SHAPES = [
+            ['circle', 'square', 'triangle'],           // Chapter 1: 3 shapes
+            ['circle', 'square', 'triangle', 'diamond'], // Chapter 2: 4 shapes
+            ['circle', 'square', 'triangle', 'diamond', 'star'], // Chapter 3+
+        ];
+
+        function getChapterShapes() {
+            const shapeSet = CHAPTER_SHAPES[Math.min(chapterLevel - 1, CHAPTER_SHAPES.length - 1)];
+            return shapeSet;
+        }
+
+        // Initialize particles inside artifact
+        function initParticles() {
+            particlesContainer.innerHTML = '';
+            particles = [];
+
+            const particleCount = getParticleCount();
+            const shapes = getChapterShapes();
+
+            // Update particle count display
+            particleCountDisplay.textContent = `${particleCount} particles`;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = `inner-particle ${shapes[Math.floor(Math.random() * shapes.length)]}`;
+
+                const x = Math.random() * (particlesContainer.offsetWidth - 12);
+                const y = Math.random() * (particlesContainer.offsetHeight - 12);
+
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+
+                particlesContainer.appendChild(particle);
+                particles.push({
+                    el: particle,
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 0.5,
+                    vy: (Math.random() - 0.5) * 0.5
+                });
+            }
+        }
+
+        // Update particle movement based on combo
+        function updateParticles() {
+            const containerWidth = particlesContainer.offsetWidth - 12;
+            const containerHeight = particlesContainer.offsetHeight - 12;
+
+            let speedMultiplier, jitter;
+
+            if (combo < 10) {
+                speedMultiplier = 0.3;
+                jitter = 0;
+            } else if (combo < 25) {
+                speedMultiplier = 0.8;
+                jitter = 0.5;
+            } else if (combo < 50) {
+                speedMultiplier = 1.5;
+                jitter = 1;
+            } else if (combo < 100) {
+                speedMultiplier = 3;
+                jitter = 2;
+            } else {
+                speedMultiplier = 5;
+                jitter = 4;
+            }
+
+            particles.forEach(p => {
+                // Add jitter
+                p.vx += (Math.random() - 0.5) * jitter * 0.1;
+                p.vy += (Math.random() - 0.5) * jitter * 0.1;
+
+                // Apply velocity
+                p.x += p.vx * speedMultiplier;
+                p.y += p.vy * speedMultiplier;
+
+                // Bounce off walls
+                if (p.x < 0 || p.x > containerWidth) {
+                    p.vx *= -1;
+                    p.x = Math.max(0, Math.min(containerWidth, p.x));
+                    if (combo >= 25) createSpark(p.x, p.y);
+                }
+                if (p.y < 0 || p.y > containerHeight) {
+                    p.vy *= -1;
+                    p.y = Math.max(0, Math.min(containerHeight, p.y));
+                    if (combo >= 25) createSpark(p.x, p.y);
+                }
+
+                // Damping
+                p.vx *= 0.99;
+                p.vy *= 0.99;
+
+                // Re-add some random velocity to keep things moving
+                if (Math.abs(p.vx) < 0.1) p.vx = (Math.random() - 0.5) * speedMultiplier;
+                if (Math.abs(p.vy) < 0.1) p.vy = (Math.random() - 0.5) * speedMultiplier;
+
+                p.el.style.left = p.x + 'px';
+                p.el.style.top = p.y + 'px';
+            });
+        }
+
+        // Create spark effect
+        function createSpark(x, y) {
+            if (combo < 25) return;
+
+            const spark = document.createElement('div');
+            spark.className = 'spark';
+            spark.style.left = x + 'px';
+            spark.style.top = y + 'px';
+            spark.style.setProperty('--dx', (Math.random() - 0.5) * 30 + 'px');
+            spark.style.setProperty('--dy', (Math.random() - 0.5) * 30 + 'px');
+
+            if (combo >= 50) {
+                spark.style.background = '#ff6b6b';
+                spark.style.width = '6px';
+                spark.style.height = '6px';
+            }
+            if (combo >= 100) {
+                spark.style.background = '#ffffff';
+                spark.style.boxShadow = '0 0 10px #ffffff';
+            }
+
+            particlesContainer.appendChild(spark);
+            setTimeout(() => spark.remove(), 400);
+        }
+
+        // Create energy arc
+        function createArc() {
+            if (combo < 25) return;
+
+            const arc = document.createElement('div');
+            arc.className = 'energy-arc';
+
+            const startX = Math.random() * particlesContainer.offsetWidth;
+            const startY = Math.random() * particlesContainer.offsetHeight;
+            const length = 30 + Math.random() * 50;
+            const angle = Math.random() * 360;
+
+            arc.style.left = startX + 'px';
+            arc.style.top = startY + 'px';
+            arc.style.width = length + 'px';
+            arc.style.transform = `rotate(${angle}deg)`;
+            arc.style.opacity = combo >= 100 ? '1' : (combo >= 50 ? '0.8' : '0.5');
+
+            if (combo >= 100) {
+                arc.style.height = '4px';
+                arc.style.background = 'linear-gradient(90deg, transparent, #ffffff, transparent)';
+                arc.style.filter = 'blur(1px)';
+            }
+
+            particlesContainer.appendChild(arc);
+
+            setTimeout(() => {
+                arc.style.transition = 'opacity 0.3s';
+                arc.style.opacity = '0';
+                setTimeout(() => arc.remove(), 300);
+            }, 100);
+        }
+
+        // Update artifact state
+        function updateArtifactState() {
+            artifact.classList.remove('stirring', 'building', 'surging', 'crescendo', 'maximum', 'deflated');
+            comboDisplay.classList.remove('high', 'max');
+
+            let state;
+            if (combo < 10) {
+                state = 'dormant';
+                if (combo > 0) artifact.classList.add('stirring');
+            } else if (combo < 25) {
+                state = 'stirring';
+                artifact.classList.add('building');
+            } else if (combo < 50) {
+                state = 'surging';
+                artifact.classList.add('surging');
+                comboDisplay.classList.add('high');
+            } else if (combo < 100) {
+                state = 'crescendo';
+                artifact.classList.add('crescendo');
+                comboDisplay.classList.add('high');
+            } else {
+                state = 'maximum';
+                artifact.classList.add('maximum');
+                comboDisplay.classList.add('max');
+            }
+
+            stateIndicator.textContent = state.toUpperCase();
+            comboDisplay.textContent = combo;
+
+            // Update crescendo bar
+            const progress = Math.min((combo / crescendoTarget) * 100, 100);
+            crescendoFill.style.width = progress + '%';
+            crescendoLabel.textContent = `${combo} / ${crescendoTarget}`;
+        }
+
+        // Spawn falling symbol
+        function spawnFallingSymbol() {
+            const types = ['positive', 'negative', 'neutral'];
+            const symbols = {
+                positive: ['◆', '▲', '★'],
+                negative: ['●', '■', '◇'],
+                neutral: ['○', '□', '△']
+            };
+
+            const type = types[Math.floor(Math.random() * (combo > 20 ? 3 : 2))];
+            const symbolSet = symbols[type];
+            const symbol = symbolSet[Math.floor(Math.random() * symbolSet.length)];
+
+            const el = document.createElement('div');
+            el.className = `falling-symbol ${type}`;
+            el.textContent = symbol;
+
+            // Random horizontal position
+            const offset = (Math.random() - 0.5) * 100;
+            el.style.left = `calc(50% + ${offset}px)`;
+
+            playArea.appendChild(el);
+
+            setTimeout(() => el.remove(), 2000);
+        }
+
+        // Correct swipe
+        function correctSwipe() {
+            if (isUnlocking) return;
+
+            combo++;
+            maxCombo = Math.max(maxCombo, combo);
+
+            updateArtifactState();
+            spawnFallingSymbol();
+
+            // MICRO-REWARDS every 5 combos - dopamine hits!
+            if (combo % 5 === 0 && combo > 0) {
+                triggerMicroReward(combo);
+            }
+
+            // 50% threshold mini-surge
+            if (combo === Math.floor(crescendoTarget / 2)) {
+                triggerMiniSurge();
+            }
+
+            // Screen flash on high combo
+            if (combo >= 100 && combo % 5 === 0) {
+                const flash = document.createElement('div');
+                flash.className = 'screen-flash';
+                document.body.appendChild(flash);
+                setTimeout(() => flash.remove(), 100);
+            }
+
+            // Check for unlock
+            if (combo >= crescendoTarget) {
+                triggerUnlock();
+            }
+        }
+
+        // MICRO-REWARD: Visual pulse + particle burst every 5 combos
+        function triggerMicroReward(comboCount) {
+            // Pulse the combo display
+            comboDisplay.style.transform = 'scale(1.4)';
+            comboDisplay.style.transition = 'transform 0.15s ease-out';
+            setTimeout(() => {
+                comboDisplay.style.transform = 'scale(1)';
+            }, 150);
+
+            // Create burst of sparks from artifact
+            const sparkCount = Math.min(Math.floor(comboCount / 10) + 2, 8);
+            for (let i = 0; i < sparkCount; i++) {
+                setTimeout(() => {
+                    const x = Math.random() * particlesContainer.offsetWidth;
+                    const y = Math.random() * particlesContainer.offsetHeight;
+                    createSpark(x, y);
+                }, i * 30);
+            }
+
+            // Color shift indicator - hue rotates with combo
+            const hueShift = (comboCount / crescendoTarget) * 30; // 0-30 degree shift
+            artifact.style.filter = `hue-rotate(${hueShift}deg)`;
+        }
+
+        // MINI-SURGE at 50% threshold - big visual moment
+        function triggerMiniSurge() {
+            // Brief screen shake
+            document.body.style.animation = 'none';
+            document.body.offsetHeight; // Trigger reflow
+            document.body.style.animation = 'miniShake 0.3s ease-out';
+
+            // Particle explosion
+            for (let i = 0; i < 12; i++) {
+                setTimeout(() => {
+                    const x = particlesContainer.offsetWidth / 2;
+                    const y = particlesContainer.offsetHeight / 2;
+                    const spark = document.createElement('div');
+                    spark.className = 'spark';
+                    spark.style.left = x + 'px';
+                    spark.style.top = y + 'px';
+                    spark.style.background = '#ffd700';
+                    spark.style.width = '8px';
+                    spark.style.height = '8px';
+                    const angle = (i / 12) * Math.PI * 2;
+                    spark.style.setProperty('--dx', Math.cos(angle) * 50 + 'px');
+                    spark.style.setProperty('--dy', Math.sin(angle) * 50 + 'px');
+                    particlesContainer.appendChild(spark);
+                    setTimeout(() => spark.remove(), 400);
+                }, i * 20);
+            }
+
+            // Flash "HALFWAY!" text briefly
+            stateIndicator.textContent = '★ HALFWAY! ★';
+            stateIndicator.style.color = '#ffd700';
+            setTimeout(() => {
+                updateArtifactState();
+                stateIndicator.style.color = '';
+            }, 800);
+        }
+
+        // Miss - GRADUATED penalty based on proximity to threshold
+        // Near misses are less punishing to reduce frustration
+        function miss() {
+            if (isUnlocking) return;
+
+            const progress = combo / crescendoTarget;
+            let newCombo;
+            let penaltyType;
+
+            // GRADUATED PENALTY based on how close to unlock:
+            // 90%+ of threshold: Drop only 3 combo (clutch save!)
+            // 80-89%: Drop only 5 combo
+            // 60-79%: Drop to previous milestone (half penalty)
+            // Below 60%: Drop full level
+
+            if (progress >= 0.9) {
+                // CLUTCH SAVE - so close! Only lose 3
+                newCombo = Math.max(0, combo - 3);
+                penaltyType = 'clutch';
+            } else if (progress >= 0.8) {
+                // NEAR MISS - lose 5
+                newCombo = Math.max(0, combo - 5);
+                penaltyType = 'near';
+            } else if (progress >= 0.6) {
+                // HALF PENALTY - drop to previous 10s milestone
+                newCombo = Math.floor(combo / 10) * 10 - 5;
+                newCombo = Math.max(0, newCombo);
+                penaltyType = 'half';
+            } else {
+                // FULL LEVEL DROP (original behavior but scaled to new thresholds)
+                if (combo >= 50) {
+                    newCombo = 30;
+                } else if (combo >= 25) {
+                    newCombo = 12;
+                } else if (combo >= 10) {
+                    newCombo = 5;
+                } else {
+                    newCombo = 0;
+                }
+                penaltyType = 'full';
+            }
+
+            const comboDrop = combo - newCombo;
+            combo = newCombo;
+
+            artifact.classList.add('deflated');
+            updateArtifactState();
+
+            // Visual feedback based on penalty severity
+            if (penaltyType === 'clutch') {
+                stateIndicator.textContent = `CLUTCH! -${comboDrop}`;
+                stateIndicator.style.color = '#4ECDC4';
+            } else if (penaltyType === 'near') {
+                stateIndicator.textContent = `CLOSE! -${comboDrop}`;
+                stateIndicator.style.color = '#ffd700';
+            }
+
+            setTimeout(() => {
+                artifact.classList.remove('deflated');
+                artifact.style.filter = '';
+                stateIndicator.style.color = '';
+                updateArtifactState();
+            }, 600);
+        }
+
+        // Trigger unlock
+        function triggerUnlock() {
+            isUnlocking = true;
+
+            const artifactInChapter = ((artifactLevel - 1) % 10) + 1;
+            const isBossArtifact = artifactInChapter === 10;
+            const particleCount = getParticleCount();
+
+            unlockText.textContent = isBossArtifact
+                ? `★ CHAPTER ${chapterLevel} COMPLETE! ★`
+                : `ARTIFACT ${artifactLevel} UNLOCKED!`;
+            unlockOverlay.classList.add('active');
+
+            // Artifact explosion effect - SCALED by particle count for bigger wow
+            const explosionScale = isBossArtifact ? 1.5 : (1 + particleCount / 100);
+            artifact.style.transition = 'all 0.3s ease';
+            artifact.style.transform = `scale(${explosionScale})`;
+            artifact.style.filter = isBossArtifact ? 'brightness(3) saturate(1.5)' : 'brightness(2)';
+
+            // Extra spark burst proportional to particles
+            for (let i = 0; i < particleCount; i++) {
+                setTimeout(() => {
+                    const x = Math.random() * particlesContainer.offsetWidth;
+                    const y = Math.random() * particlesContainer.offsetHeight;
+                    createSpark(x, y);
+                }, i * 15);
+            }
+
+            setTimeout(() => {
+                artifact.style.transform = 'scale(0.9)';
+
+                setTimeout(() => {
+                    // Advance to next artifact
+                    artifactLevel++;
+
+                    // Check if entering new chapter
+                    const newChapter = Math.ceil(artifactLevel / 10);
+                    if (newChapter > chapterLevel) {
+                        chapterLevel = newChapter;
+                    }
+
+                    combo = 0;
+                    // Use new threshold system
+                    crescendoTarget = getThreshold();
+
+                    artifact.style.transform = 'scale(1)';
+                    artifact.style.filter = '';
+
+                    document.querySelector('.level-indicator').textContent =
+                        `ARTIFACT ${artifactLevel} / CHAPTER ${chapterLevel}`;
+
+                    updateArtifactState();
+                    initParticles();
+
+                    unlockOverlay.classList.remove('active');
+                    isUnlocking = false;
+                }, 1500);
+            }, 500);
+        }
+
+        // Reset
+        function reset() {
+            combo = 0;
+            maxCombo = 0;
+            artifactLevel = 1;
+            chapterLevel = 1;
+            crescendoTarget = getThreshold(); // Use new threshold system (25 for artifact 1)
+            isUnlocking = false;
+
+            document.querySelector('.level-indicator').textContent = 'ARTIFACT 1 / CHAPTER 1';
+            artifact.style.filter = '';
+
+            updateArtifactState();
+            initParticles();
+            unlockOverlay.classList.remove('active');
+        }
+
+        // Animation loop
+        function animate() {
+            if (!isUnlocking) {
+                updateParticles();
+
+                // Create arcs based on combo
+                if (combo >= 25 && Math.random() < 0.1) createArc();
+                if (combo >= 50 && Math.random() < 0.2) createArc();
+                if (combo >= 100 && Math.random() < 0.4) createArc();
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        // Event listeners
+        correctBtn.addEventListener('click', correctSwipe);
+        missBtn.addEventListener('click', miss);
+        resetBtn.addEventListener('click', reset);
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' || e.code === 'ArrowRight' || e.code === 'ArrowLeft') {
+                e.preventDefault();
+                correctSwipe();
+            } else if (e.code === 'KeyX' || e.code === 'Escape') {
+                miss();
+            }
+        });
+
+        // Initialize
+        initParticles();
+        updateArtifactState();
+        animate();
+    </script>
+</body>
+</html>

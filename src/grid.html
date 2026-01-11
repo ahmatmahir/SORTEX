@@ -1,0 +1,3265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>SORTEX GRID - Experiment</title>
+
+  <!-- PWA Meta Tags -->
+  <meta name="description" content="A fast-paced symbol sorting reflex game. Swipe symbols left or right to match the rules!">
+  <meta name="theme-color" content="#a855f7">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="SORTEX">
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Favicon & Icons -->
+  <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* ==========================================
+       THEME SYSTEM - CSS Custom Properties
+       ========================================== */
+
+    /* Theme 1: Spell Caster (Default) - Purple, indigo, mystical blues */
+    :root, [data-theme="spell-caster"] {
+      --bg-gradient: linear-gradient(180deg, #1e1b4b 0%, #3b0764 50%, #0f172a 100%);
+      --text-primary: #e9d5ff;
+      --text-secondary: #c4b5fd;
+      --accent-primary: #a855f7;
+      --accent-secondary: #3b82f6;
+      --portal-left: #a855f7;
+      --portal-left-bg: rgba(168, 85, 247, 0.4);
+      --portal-right: #3b82f6;
+      --portal-right-bg: rgba(59, 130, 246, 0.4);
+      --danger-line: #ef4444;
+      --btn-gradient: linear-gradient(135deg, #a855f7, #3b82f6);
+      --btn-glow: rgba(168, 85, 247, 0.5);
+      --overlay-bg: rgba(15, 23, 42, 0.9);
+      --rules-bg: rgba(139, 92, 246, 0.15);
+      --rules-border: rgba(196, 181, 253, 0.2);
+      --heart-glow: #c4b5fd;
+      --correct-flash: rgba(34, 197, 94, 0.4);
+      --wrong-flash: rgba(239, 68, 68, 0.4);
+    }
+
+    /* Theme 2: Data Stream - Green, cyan, matrix-style */
+    [data-theme="data-stream"] {
+      --bg-gradient: linear-gradient(180deg, #021a0d 0%, #0a2818 50%, #010d05 100%);
+      --text-primary: #4ade80;
+      --text-secondary: #22d3ee;
+      --accent-primary: #22c55e;
+      --accent-secondary: #06b6d4;
+      --portal-left: #22c55e;
+      --portal-left-bg: rgba(34, 197, 94, 0.4);
+      --portal-right: #06b6d4;
+      --portal-right-bg: rgba(6, 182, 212, 0.4);
+      --danger-line: #f97316;
+      --btn-gradient: linear-gradient(135deg, #22c55e, #06b6d4);
+      --btn-glow: rgba(34, 197, 94, 0.5);
+      --overlay-bg: rgba(2, 26, 13, 0.95);
+      --rules-bg: rgba(34, 197, 94, 0.15);
+      --rules-border: rgba(74, 222, 128, 0.2);
+      --heart-glow: #4ade80;
+      --correct-flash: rgba(34, 197, 94, 0.5);
+      --wrong-flash: rgba(249, 115, 22, 0.4);
+    }
+
+    /* Theme 3: Cosmic Gatekeeper - Rose, deep red, cosmic purple */
+    [data-theme="cosmic-gatekeeper"] {
+      --bg-gradient: linear-gradient(180deg, #1a0a1e 0%, #3d0f24 50%, #0f0518 100%);
+      --text-primary: #fda4af;
+      --text-secondary: #f472b6;
+      --accent-primary: #e11d48;
+      --accent-secondary: #a855f7;
+      --portal-left: #e11d48;
+      --portal-left-bg: rgba(225, 29, 72, 0.4);
+      --portal-right: #a855f7;
+      --portal-right-bg: rgba(168, 85, 247, 0.4);
+      --danger-line: #fbbf24;
+      --btn-gradient: linear-gradient(135deg, #e11d48, #a855f7);
+      --btn-glow: rgba(225, 29, 72, 0.5);
+      --overlay-bg: rgba(26, 10, 30, 0.95);
+      --rules-bg: rgba(225, 29, 72, 0.15);
+      --rules-border: rgba(253, 164, 175, 0.2);
+      --heart-glow: #fda4af;
+      --correct-flash: rgba(74, 222, 128, 0.4);
+      --wrong-flash: rgba(251, 191, 36, 0.4);
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg-gradient);
+      min-height: 100vh;
+      overflow: hidden;
+      touch-action: none;
+      user-select: none;
+    }
+    
+    /* MENU SCREEN */
+    #menu-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      padding: 20px;
+    }
+    
+    #menu-screen h1 {
+      font-size: 3.5rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      text-shadow: 0 0 40px var(--text-secondary);
+      margin-bottom: 0.5rem;
+      letter-spacing: -2px;
+    }
+
+    #menu-screen .subtitle {
+      color: var(--text-secondary);
+      font-size: 1rem;
+      margin-bottom: 2rem;
+      opacity: 0.8;
+    }
+
+    #high-score-display {
+      color: var(--text-primary);
+      font-size: 1.1rem;
+      margin-bottom: 2rem;
+      opacity: 0.7;
+    }
+
+    .play-btn {
+      background: var(--btn-gradient);
+      border: none;
+      border-radius: 16px;
+      padding: 20px 60px;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 0 30px var(--btn-glow);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    
+    /* GAME SCREEN */
+    #game-screen {
+      display: none;
+      flex-direction: column;
+      height: 100vh;
+      height: 100dvh; /* Dynamic viewport height for mobile */
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    
+    #game-header {
+      padding: calc(12px + env(safe-area-inset-top, 0px)) 20px 12px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+    }
+
+    #score-section {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 2px;
+    }
+
+    #score-display {
+      color: var(--text-primary);
+      font-size: 1.5rem;
+      font-weight: 700;
+      min-width: 50px;
+    }
+
+    #next-unlock {
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      opacity: 0.7;
+      display: none; /* Hidden until first unlock */
+    }
+
+    #next-unlock.show {
+      display: block;
+    }
+
+    #combo-display {
+      display: none; /* Removed per UX feedback */
+    }
+
+    #lives-display {
+      display: flex;
+      gap: 6px;
+      font-size: 1.2rem;
+      /* Lives now sit at far right of header (pause moved to bottom) */
+    }
+
+    #lives-display .heart {
+      color: #ef4444;
+      filter: drop-shadow(0 0 6px #ef4444);
+    }
+
+    #lives-display .heart.lost {
+      color: #6b7280;
+      opacity: 0.3;
+      filter: none;
+    }
+
+    #play-area {
+      flex: 1;
+      position: relative;
+      margin: 0 10px;
+      padding-bottom: 50px; /* Buffer zone for symbol exit - reduced for more play area */
+      overflow: hidden; /* Clip symbols at padding edge */
+      box-sizing: border-box; /* Ensure padding is included in flex calculation */
+    }
+
+
+    @keyframes screenShake {
+      0%, 100% { transform: translateX(0); }
+      10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+      20%, 40%, 60%, 80% { transform: translateX(5px); }
+    }
+
+    .screen-shake {
+      animation: screenShake 0.3s ease-out;
+    }
+    
+
+    /* Combo milestone celebration */
+    #combo-milestone {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      font-size: 3rem;
+      font-weight: 800;
+      color: #fbbf24;
+      text-shadow: 0 0 30px #fbbf24, 0 0 60px #f59e0b;
+      pointer-events: none;
+      z-index: 500;
+      opacity: 0;
+    }
+
+    #combo-milestone.show {
+      animation: milestonePopup 0.8s ease-out forwards;
+    }
+
+    @keyframes milestonePopup {
+      0% {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 0;
+      }
+      30% {
+        transform: translate(-50%, -50%) scale(1.3);
+        opacity: 1;
+      }
+      70% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: translate(-50%, -50%) scale(0.8);
+        opacity: 0;
+      }
+    }
+    
+    .symbol {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      cursor: grab;
+      transition: opacity 0.2s, filter 0.2s;
+      filter: drop-shadow(0 0 8px currentColor);
+      touch-action: none;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    /* Generous touch zone - 30px invisible buffer around symbol (20% larger than original 25px) */
+    .symbol::before {
+      content: '';
+      position: absolute;
+      inset: -30px;
+      /* Debug: uncomment to see hit area */
+      /* background: rgba(255,0,0,0.2); */
+    }
+
+    /* Ensure touches hit the div, not the SVG child */
+    .symbol svg {
+      pointer-events: none;
+    }
+
+    .symbol.above-zone {
+      opacity: 0.6;
+      filter: drop-shadow(0 0 4px currentColor);
+    }
+
+    .symbol:not(.above-zone) {
+      filter: drop-shadow(0 0 12px currentColor) drop-shadow(0 0 20px currentColor);
+    }
+
+    .symbol.swiped-left {
+      animation: swipeLeft 0.4s ease-in forwards;
+    }
+
+    .symbol.swiped-right {
+      animation: swipeRight 0.4s ease-in forwards;
+    }
+
+    .symbol.swiped-wrong {
+      animation: swipeWrong 0.3s ease-out forwards;
+    }
+
+    @keyframes swipeLeft {
+      0% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+      }
+      50% {
+        transform: translate(-200%, -30%) scale(0.8);
+        opacity: 1;
+      }
+      100% {
+        transform: translate(-400%, 0%) scale(0.3);
+        opacity: 0;
+        filter: brightness(2) blur(2px);
+      }
+    }
+
+    @keyframes swipeRight {
+      0% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+      }
+      50% {
+        transform: translate(100%, -30%) scale(0.8);
+        opacity: 1;
+      }
+      100% {
+        transform: translate(300%, 0%) scale(0.3);
+        opacity: 0;
+        filter: brightness(2) blur(2px);
+      }
+    }
+
+    @keyframes swipeWrong {
+      0% { transform: translate(-50%, -50%) scale(1); }
+      20% { transform: translate(-40%, -50%) rotate(-5deg); }
+      40% { transform: translate(-60%, -50%) rotate(5deg); }
+      60% { transform: translate(-45%, -50%) rotate(-3deg); }
+      80% { transform: translate(-55%, -50%) rotate(2deg); }
+      100% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+    }
+
+    .screen-flash {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      pointer-events: none;
+      z-index: 1000;
+      animation: flash 0.2s ease-out;
+    }
+
+    .screen-flash.correct {
+      background: rgba(34, 197, 94, 0.3);
+    }
+
+    .screen-flash.wrong {
+      background: rgba(239, 68, 68, 0.4);
+    }
+
+    @keyframes flash {
+      0% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    /* Respect reduced motion preference */
+    @media (prefers-reduced-motion: reduce) {
+      .screen-shake,
+      .symbol.swiped-left,
+      .symbol.swiped-right {
+        animation-duration: 0.1s;
+      }
+    }
+
+    /* Particle effects */
+    .particle {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      pointer-events: none;
+      animation: particleBurst 0.5s ease-out forwards;
+      z-index: 100;
+    }
+
+    @keyframes particleBurst {
+      0% {
+        transform: translate(-50%, -50%) translate(0, 0) scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: translate(-50%, -50%) translate(var(--tx), var(--ty)) scale(0);
+        opacity: 0;
+      }
+    }
+
+    /* Portal glow intensifies with combo */
+    .portal-container {
+      transition: box-shadow 0.3s ease, filter 0.3s ease;
+    }
+
+    #pause-btn {
+      position: fixed;
+      bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--rules-border);
+      border-radius: 50%;
+      color: var(--text-secondary);
+      width: 44px;
+      height: 44px;
+      cursor: pointer;
+      z-index: 102; /* Must be above rules-bar (101) */
+      opacity: 0.6;
+      transition: opacity 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+
+    #pause-btn svg {
+      display: block;
+    }
+
+    #pause-btn:active {
+      opacity: 1;
+    }
+
+    #pause-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--overlay-bg);
+      z-index: 100;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #pause-overlay h2 {
+      color: var(--text-primary);
+      font-size: 2.5rem;
+      margin-bottom: 2rem;
+    }
+
+    #pause-overlay .resume-btn {
+      background: var(--btn-gradient);
+      border: none;
+      border-radius: 12px;
+      padding: 16px 48px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: white;
+      cursor: pointer;
+      margin-bottom: 1.5rem;
+    }
+
+    #pause-overlay .pause-options {
+      display: flex;
+      gap: 16px;
+    }
+
+    #pause-overlay .pause-option-btn {
+      background: transparent;
+      border: 1px solid var(--rules-border);
+      border-radius: 8px;
+      padding: 12px 24px;
+      font-size: 1rem;
+      color: var(--text-primary);
+      cursor: pointer;
+      opacity: 0.8;
+      transition: opacity 0.2s, border-color 0.2s;
+    }
+
+    #pause-overlay .pause-option-btn:hover {
+      opacity: 1;
+      border-color: var(--text-secondary);
+    }
+
+    #pause-overlay .pause-option-btn.exit-btn {
+      border-color: rgba(239, 68, 68, 0.5);
+      color: #fca5a5;
+    }
+
+    #pause-overlay .pause-option-btn.exit-btn:hover {
+      border-color: #ef4444;
+      background: rgba(239, 68, 68, 0.1);
+    }
+
+    #tutorial-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--overlay-bg);
+      z-index: 200;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      text-align: center;
+    }
+
+    #tutorial-overlay h2 {
+      color: var(--text-primary);
+      font-size: 2rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .tutorial-step {
+      color: var(--text-primary);
+      font-size: 1.2rem;
+      text-align: center;
+      line-height: 1.6;
+      margin-bottom: 1.5rem;
+    }
+
+    .tutorial-rules-example {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin: 1rem 0;
+    }
+
+    .tutorial-portal {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 10px;
+      border: 2px solid;
+      opacity: 0.9;
+    }
+
+    .tutorial-portal.left {
+      border-color: var(--portal-left);
+      background: var(--portal-left-bg);
+      color: var(--portal-left);
+    }
+
+    .tutorial-portal.right {
+      border-color: var(--portal-right);
+      background: var(--portal-right-bg);
+      color: var(--portal-right);
+    }
+
+    .tutorial-arrow {
+      font-size: 1.3rem;
+      font-weight: bold;
+    }
+
+    .tutorial-portal svg {
+      filter: drop-shadow(0 0 4px currentColor);
+    }
+
+    #tutorial-overlay .start-btn {
+      background: var(--btn-gradient);
+      border: none;
+      border-radius: 12px;
+      padding: 16px 48px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: white;
+      cursor: pointer;
+      margin-top: 2rem;
+    }
+
+    #rules-bar {
+      padding: 6px 12px;
+      padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px));
+      /* Transparent background - gradient shows through */
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end; /* Align portals to bottom as they grow upward */
+      gap: 16px;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 101; /* Show above pause overlay so rules visible when paused */
+    }
+
+    .portal-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 10px;
+      border-radius: 10px;
+      border: 2px solid;
+      min-width: 60px;
+      max-width: 90px; /* Limit width - expand vertically instead */
+      justify-content: center;
+      will-change: filter, box-shadow; /* Performance hint for animations */
+    }
+
+    .portal-container.left {
+      border-color: var(--portal-left);
+      box-shadow: 0 0 15px var(--portal-left), inset 0 0 20px var(--portal-left-bg);
+      background: var(--portal-left-bg);
+      animation: portalPulseLeft 2.5s ease-in-out infinite;
+    }
+
+    .portal-container.right {
+      border-color: var(--portal-right);
+      box-shadow: 0 0 15px var(--portal-right), inset 0 0 20px var(--portal-right-bg);
+      background: var(--portal-right-bg);
+      animation: portalPulseRight 2.5s ease-in-out infinite;
+    }
+
+    /* Portal pulse animations - draws attention to targets */
+    @keyframes portalPulseLeft {
+      0%, 100% {
+        filter: brightness(1);
+        box-shadow: 0 0 15px var(--portal-left), inset 0 0 20px var(--portal-left-bg);
+      }
+      50% {
+        filter: brightness(1.15);
+        box-shadow: 0 0 22px var(--portal-left), 0 0 30px var(--portal-left), inset 0 0 25px var(--portal-left-bg);
+      }
+    }
+
+    @keyframes portalPulseRight {
+      0%, 100% {
+        filter: brightness(1);
+        box-shadow: 0 0 15px var(--portal-right), inset 0 0 20px var(--portal-right-bg);
+      }
+      50% {
+        filter: brightness(1.15);
+        box-shadow: 0 0 22px var(--portal-right), 0 0 30px var(--portal-right), inset 0 0 25px var(--portal-right-bg);
+      }
+    }
+
+    /* Combo intensifies portal glow */
+    .portal-container.combo-active {
+      animation-duration: 1.5s;
+    }
+
+    .portal-container.combo-high {
+      animation-duration: 0.8s;
+      filter: brightness(1.2);
+    }
+
+    .portal-container .portal-arrow {
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+
+    .portal-container.left .portal-arrow {
+      color: var(--portal-left);
+      text-shadow: 0 0 10px var(--portal-left);
+    }
+
+    .portal-container.right .portal-arrow {
+      color: var(--portal-right);
+      text-shadow: 0 0 10px var(--portal-right);
+    }
+
+    .portal-container .symbols {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      justify-content: center;
+      max-width: 70px; /* Force vertical wrapping after ~2 symbols per row */
+    }
+
+    .portal-container .symbols svg {
+      width: 22px;
+      height: 22px;
+      filter: drop-shadow(0 0 4px currentColor);
+    }
+
+    .portal-container .symbols svg.new-symbol-highlight {
+      animation: newSymbolPulse 0.6s ease-in-out 5;
+      filter: drop-shadow(0 0 8px currentColor) drop-shadow(0 0 15px currentColor);
+    }
+
+    @keyframes newSymbolPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.3); }
+    }
+
+    /* Rules bar pulse animation on symbol unlock */
+    @keyframes rulesPulse {
+      0%, 100% {
+        transform: scale(1);
+        filter: brightness(1);
+      }
+      50% {
+        transform: scale(1.05);
+        filter: brightness(1.5);
+      }
+    }
+
+    #rules-bar.rules-pulse {
+      animation: rulesPulse 0.4s ease-out 2;
+      box-shadow: 0 0 20px var(--accent-primary), 0 0 40px var(--accent-secondary);
+    }
+
+    #rules-bar.rules-pulse .portal-container {
+      animation: rulesPulse 0.4s ease-out 2;
+    }
+
+    /* Enhanced 5-second celebration for new symbol unlock */
+    @keyframes celebrationPulse {
+      0%, 100% {
+        transform: scale(1);
+        filter: brightness(1);
+      }
+      25% {
+        transform: scale(1.08);
+        filter: brightness(1.4);
+      }
+      50% {
+        transform: scale(1.02);
+        filter: brightness(1.2);
+      }
+      75% {
+        transform: scale(1.06);
+        filter: brightness(1.3);
+      }
+    }
+
+    @keyframes celebrationGlow {
+      0%, 100% {
+        box-shadow: 0 0 20px var(--accent-primary), 0 0 40px var(--accent-secondary);
+      }
+      50% {
+        box-shadow: 0 0 40px var(--accent-primary), 0 0 80px var(--accent-secondary), 0 0 120px var(--accent-primary);
+      }
+    }
+
+    #rules-bar.celebrating {
+      animation: celebrationGlow 1s ease-in-out infinite;
+    }
+
+    #rules-bar.celebrating .portal-container {
+      animation: celebrationPulse 1.2s ease-in-out infinite;
+    }
+
+    /* Unlock celebration overlay styles */
+    #combo-milestone.unlock-celebration {
+      animation: unlockAppear 0.5s ease-out forwards;
+    }
+
+    @keyframes unlockAppear {
+      0% {
+        transform: translate(-50%, -50%) scale(0.5);
+        opacity: 0;
+      }
+      50% {
+        transform: translate(-50%, -50%) scale(1.1);
+      }
+      100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+      }
+    }
+
+    #combo-milestone .unlock-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      text-shadow: 0 0 20px var(--accent-primary);
+      margin-bottom: 0.5rem;
+    }
+
+    #combo-milestone .unlock-symbol-visual {
+      margin: 1rem 0;
+      animation: symbolPulse 1.5s ease-in-out infinite;
+    }
+
+    #combo-milestone .unlock-symbol-visual svg {
+      filter: drop-shadow(0 0 15px currentColor) drop-shadow(0 0 30px currentColor);
+    }
+
+    @keyframes symbolPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    #combo-milestone .unlock-direction {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-top: 0.5rem;
+      padding: 8px 20px;
+      border-radius: 8px;
+      border: 2px solid;
+    }
+
+    #combo-milestone .unlock-direction.left {
+      color: var(--portal-left);
+      border-color: var(--portal-left);
+      background: var(--portal-left-bg);
+    }
+
+    #combo-milestone .unlock-direction.right {
+      color: var(--portal-right);
+      border-color: var(--portal-right);
+      background: var(--portal-right-bg);
+    }
+
+    #combo-milestone .unlock-direction.ignore {
+      color: var(--text-secondary);
+      border-color: var(--text-secondary);
+      background: rgba(255,255,255,0.1);
+    }
+
+    #combo-milestone .unlock-skip {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-top: 1.5rem;
+      opacity: 0.6;
+      transition: opacity 0.5s ease;
+    }
+
+    /* Grace period indicator after unpause */
+    #grace-indicator {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      text-shadow: 0 0 20px var(--accent-primary), 0 0 40px var(--accent-secondary);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 100;
+      transition: opacity 0.3s ease;
+    }
+
+    #grace-indicator.show {
+      opacity: 1;
+      animation: graceFlash 0.5s ease-in-out infinite;
+    }
+
+    @keyframes graceFlash {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* GAME OVER SCREEN */
+    #gameover-screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      padding: 20px;
+    }
+
+    #gameover-screen h2 {
+      font-size: 2rem;
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+    }
+
+    #final-score {
+      font-size: 4rem;
+      font-weight: 800;
+      color: var(--text-secondary);
+      text-shadow: 0 0 30px var(--text-secondary);
+      margin-bottom: 2rem;
+    }
+
+    #stats-box {
+      background: var(--rules-bg);
+      border-radius: 16px;
+      padding: 20px 40px;
+      margin-bottom: 2rem;
+      color: var(--text-primary);
+    }
+
+    #stats-box div {
+      margin-bottom: 8px;
+      opacity: 0.7;
+    }
+
+    #stats-box span {
+      color: var(--text-secondary);
+      font-weight: 700;
+    }
+
+    .menu-btn {
+      background: transparent;
+      border: 1px solid var(--rules-border);
+      border-radius: 8px;
+      padding: 10px 24px;
+      color: var(--text-primary);
+      cursor: pointer;
+      opacity: 0.7;
+      margin-top: 1rem;
+    }
+
+    /* SETTINGS SCREEN */
+    #settings-screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      height: 100vh;
+      padding: 40px 20px;
+      overflow-y: auto;
+      padding-bottom: 100px;
+    }
+
+    #settings-screen h2 {
+      font-size: 2rem;
+      color: var(--text-primary);
+      margin-bottom: 2rem;
+    }
+
+    .settings-section {
+      width: 100%;
+      max-width: 320px;
+      margin-bottom: 2rem;
+    }
+
+    .settings-section h3 {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 1rem;
+      opacity: 0.8;
+    }
+
+    .theme-options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .theme-option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px;
+      background: var(--rules-bg);
+      border: 2px solid transparent;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .theme-option:hover {
+      border-color: var(--text-secondary);
+    }
+
+    .theme-option.active {
+      border-color: var(--accent-primary);
+      background: var(--rules-bg);
+    }
+
+    .theme-preview {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      flex-shrink: 0;
+    }
+
+    .theme-preview.spell-caster {
+      background: linear-gradient(135deg, #a855f7, #3b82f6);
+    }
+
+    .theme-preview.data-stream {
+      background: linear-gradient(135deg, #22c55e, #06b6d4);
+    }
+
+    .theme-preview.cosmic-gatekeeper {
+      background: linear-gradient(135deg, #e11d48, #a855f7);
+    }
+
+    .theme-info {
+      flex: 1;
+    }
+
+    .theme-name {
+      color: var(--text-primary);
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    .theme-desc {
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      opacity: 0.7;
+    }
+
+    /* Language options */
+    .language-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .language-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      background: var(--rules-bg);
+      border: 2px solid transparent;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .language-option:hover {
+      border-color: var(--text-secondary);
+    }
+
+    .language-option.active {
+      border-color: var(--accent-primary);
+      background: var(--rules-bg);
+    }
+
+    .language-flag {
+      font-size: 1.3rem;
+    }
+
+    .language-name {
+      color: var(--text-primary);
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+
+    .back-btn {
+      background: transparent;
+      border: 1px solid var(--rules-border);
+      border-radius: 8px;
+      padding: 12px 32px;
+      color: var(--text-primary);
+      cursor: pointer;
+      font-size: 1rem;
+      margin-top: auto;
+    }
+
+    /* Settings button on menu */
+    #settings-btn {
+      position: absolute;
+      top: calc(20px + env(safe-area-inset-top, 0px));
+      right: calc(20px + env(safe-area-inset-right, 0px));
+      background: transparent;
+      border: 1px solid var(--rules-border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 1.2rem;
+    }
+
+    /* Sound toggle in settings */
+    .sound-toggle-setting {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px;
+      background: var(--rules-bg);
+      border: 2px solid transparent;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-bottom: 12px;
+    }
+
+    .sound-toggle-setting:hover {
+      border-color: var(--text-secondary);
+    }
+
+    .sound-toggle-setting .sound-label {
+      color: var(--text-primary);
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    .sound-toggle-setting .sound-status {
+      color: var(--text-secondary);
+      font-size: 1.2rem;
+    }
+
+    .reset-progress-btn {
+      background: transparent;
+      border: 2px solid var(--danger-line);
+      color: var(--danger-line);
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+
+    .reset-progress-btn:hover {
+      opacity: 1;
+    }
+
+    .settings-links {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .settings-link {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.9rem;
+      opacity: 0.8;
+      transition: opacity 0.2s;
+    }
+
+    .settings-link:hover {
+      opacity: 1;
+      text-decoration: underline;
+    }
+
+    .link-divider {
+      color: var(--text-secondary);
+      opacity: 0.5;
+    }
+
+    /* Sound toggle in pause menu */
+    #pause-sound-toggle {
+      background: transparent;
+      border: 1px solid var(--rules-border);
+      border-radius: 8px;
+      color: var(--text-primary);
+      padding: 12px 32px;
+      cursor: pointer;
+      font-size: 1rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    #pause-sound-toggle:hover {
+      border-color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    #pause-sound-toggle .sound-icon {
+      font-size: 1.2rem;
+    }
+
+    /* Haptics toggle in pause menu */
+    #pause-haptics-toggle {
+      background: transparent;
+      border: 1px solid var(--rules-border);
+      border-radius: 8px;
+      color: var(--text-primary);
+      padding: 12px 32px;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 1.5rem;
+    }
+
+    #pause-haptics-toggle:hover {
+      border-color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    #pause-haptics-toggle .haptics-icon {
+      font-size: 1.2rem;
+    }
+  </style>
+</head>
+<body>
+  <!-- MENU SCREEN -->
+  <div id="menu-screen">
+    <button id="settings-btn" onclick="showSettings()">⚙</button>
+    <h1>SORTEX</h1>
+    <p class="subtitle" id="theme-subtitle">Channel the Runes</p>
+    <p id="high-score-display"></p>
+    <button class="play-btn" onclick="startGame()">TAP TO PLAY</button>
+  </div>
+
+  <!-- SETTINGS SCREEN -->
+  <div id="settings-screen">
+    <h2>Settings</h2>
+    <div class="settings-section">
+      <h3>Theme</h3>
+      <div class="theme-options">
+        <div class="theme-option active" data-theme="spell-caster" onclick="selectTheme('spell-caster')">
+          <div class="theme-preview spell-caster"></div>
+          <div class="theme-info">
+            <div class="theme-name">Spell Caster</div>
+            <div class="theme-desc">Channel chaotic magical runes</div>
+          </div>
+        </div>
+        <div class="theme-option" data-theme="data-stream" onclick="selectTheme('data-stream')">
+          <div class="theme-preview data-stream"></div>
+          <div class="theme-info">
+            <div class="theme-name">Data Stream</div>
+            <div class="theme-desc">Filter corrupted data signals</div>
+          </div>
+        </div>
+        <div class="theme-option" data-theme="cosmic-gatekeeper" onclick="selectTheme('cosmic-gatekeeper')">
+          <div class="theme-preview cosmic-gatekeeper"></div>
+          <div class="theme-info">
+            <div class="theme-name">Cosmic Gatekeeper</div>
+            <div class="theme-desc">Guard dimensional thresholds</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="settings-section">
+      <h3 data-i18n="language">Language</h3>
+      <div class="language-options" id="language-options">
+        <div class="language-option active" data-lang="en" onclick="setLanguage('en')">
+          <span class="language-flag">🇺🇸</span>
+          <span class="language-name">English</span>
+        </div>
+        <div class="language-option" data-lang="es" onclick="setLanguage('es')">
+          <span class="language-flag">🇪🇸</span>
+          <span class="language-name">Español</span>
+        </div>
+        <div class="language-option" data-lang="fr" onclick="setLanguage('fr')">
+          <span class="language-flag">🇫🇷</span>
+          <span class="language-name">Français</span>
+        </div>
+        <div class="language-option" data-lang="de" onclick="setLanguage('de')">
+          <span class="language-flag">🇩🇪</span>
+          <span class="language-name">Deutsch</span>
+        </div>
+        <div class="language-option" data-lang="ja" onclick="setLanguage('ja')">
+          <span class="language-flag">🇯🇵</span>
+          <span class="language-name">日本語</span>
+        </div>
+      </div>
+    </div>
+    <div class="settings-section">
+      <h3 data-i18n="audio">Audio</h3>
+      <div class="sound-toggle-setting" onclick="toggleSound()">
+        <span class="sound-label" data-i18n="soundEffects">Sound Effects</span>
+        <span class="sound-status" id="sound-toggle-menu">Sound: ON</span>
+      </div>
+    </div>
+    <div class="settings-section">
+      <h3>Reset</h3>
+      <button class="reset-progress-btn" onclick="resetProgress()">Reset Progress</button>
+    </div>
+    <div class="settings-section">
+      <h3 data-i18n="about">About</h3>
+      <div class="settings-links">
+        <a href="#" class="settings-link" id="privacy-link" onclick="alert(t('privacyText')); return false;" data-i18n="privacyPolicy">Privacy Policy</a>
+        <span class="link-divider">•</span>
+        <a href="#" class="settings-link" id="about-link" onclick="alert(t('aboutText')); return false;" data-i18n="about">About</a>
+      </div>
+    </div>
+    <button class="back-btn" id="settings-back-btn" onclick="hideSettings()" data-i18n="backToMenu">Back to Menu</button>
+  </div>
+  
+  <!-- GAME SCREEN -->
+  <div id="game-screen">
+    <div id="game-header">
+      <div id="score-section">
+        <div id="score-display">0</div>
+        <div id="next-unlock"></div>
+      </div>
+      <div id="combo-display"></div>
+      <div id="lives-display">
+        <span class="heart">♥</span>
+        <span class="heart">♥</span>
+        <span class="heart">♥</span>
+      </div>
+    </div>
+
+    <!-- Pause Button - Fixed at bottom center, away from status bar -->
+    <button id="pause-btn" onclick="togglePause()">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+        <rect x="6" y="4" width="4" height="16"/>
+        <rect x="14" y="4" width="4" height="16"/>
+      </svg>
+    </button>
+
+    <!-- Pause Overlay -->
+    <div id="pause-overlay">
+      <h2>PAUSED</h2>
+      <button class="resume-btn" onclick="togglePause()">RESUME</button>
+      <button id="pause-sound-toggle" onclick="toggleSound()">
+        <span class="sound-icon">🔊</span>
+        <span class="sound-text">Sound: ON</span>
+      </button>
+      <button id="pause-haptics-toggle" onclick="toggleHaptics()">
+        <span class="haptics-icon">📳</span>
+        <span class="haptics-text">Vibration ON</span>
+      </button>
+      <div class="pause-options">
+        <button class="pause-option-btn restart-btn" onclick="startGame()">Restart</button>
+        <button class="pause-option-btn exit-btn" onclick="pauseToMenu()">Exit Game</button>
+        <button class="pause-option-btn" onclick="pauseToTheme()">Theme</button>
+      </div>
+    </div>
+
+    <!-- Tutorial Overlay -->
+    <div id="tutorial-overlay">
+      <h2>HOW TO PLAY</h2>
+      <div class="tutorial-step">
+        Swipe symbols left or right<br>
+        to match the rules bar—let others fall
+      </div>
+      <div class="tutorial-rules-example">
+        <div class="tutorial-portal left">
+          <span class="tutorial-arrow">◀</span>
+          <svg width="28" height="28" viewBox="0 0 60 60"><circle cx="30" cy="30" r="22" fill="none" stroke="currentColor" stroke-width="4"/></svg>
+        </div>
+        <div class="tutorial-portal right">
+          <svg width="28" height="28" viewBox="0 0 60 60"><rect x="10" y="10" width="40" height="40" fill="none" stroke="currentColor" stroke-width="4"/></svg>
+          <span class="tutorial-arrow">▶</span>
+        </div>
+      </div>
+      <button class="start-btn" onclick="dismissTutorial()">GOT IT!</button>
+    </div>
+
+    <div id="play-area">
+      <div id="combo-milestone"></div>
+      <div id="grace-indicator">GET READY...</div>
+    </div>
+    
+    <div id="rules-bar">
+      <div class="portal-container left" id="left-portal-rules">
+        <span class="portal-arrow">◀</span>
+        <div class="symbols" id="left-symbols"></div>
+      </div>
+      <div class="portal-container right" id="right-portal-rules">
+        <span class="portal-arrow">▶</span>
+        <div class="symbols" id="right-symbols"></div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- GAME OVER SCREEN -->
+  <div id="gameover-screen">
+    <h2 id="gameover-title">Game Over</h2>
+    <div id="final-score">0</div>
+    <div id="stats-box">
+      <div>Best Combo: <span id="final-combo">0</span></div>
+      <div>Symbols Sorted: <span id="final-sorted">0</span></div>
+    </div>
+    <button class="play-btn" onclick="startGame()">PLAY AGAIN</button>
+    <button class="menu-btn" onclick="showMenu()">Menu</button>
+  </div>
+
+  <script>
+    // ==========================================
+    // GAME STATE
+    // ==========================================
+    let gameState = 'menu';
+    let score = 0;
+    let highScore = parseInt(localStorage.getItem('sortex_highscore') || '0');
+    let peakScore = 0; // Session-locked peak score for persistent unlocks
+    let lives = 3;
+    let combo = 0;
+    let bestCombo = 0;
+    let symbolsSorted = 0;
+    let lastUnlockedCount = 3;  // Track unlocked symbols for celebration
+
+    let activeSymbols = [];
+    let rules = { left: ['circle'], right: ['square'], ignore: ['triangle'] };
+    let nextSymbolId = 1;  // Integer IDs to avoid float precision issues
+
+    // FIXED RULES - Each symbol ALWAYS goes to the same category
+    // Like juggling: add more balls, don't change which hand catches which
+    // Reduced to 8 symbols (3-3-2): 3 LEFT, 3 RIGHT, 2 IGNORE
+    const FIXED_RULES = {
+      // LEFT (Purple Portal) - 3 symbols
+      circle: 'left',
+      droplet: 'left',
+      heart: 'left',
+      // RIGHT (Blue Portal) - 3 symbols
+      square: 'right',
+      crescent: 'right',
+      lightning: 'right',
+      // IGNORE (Let Fall) - 2 symbols
+      triangle: 'ignore',
+      star: 'ignore',
+    };
+    
+    let spawnInterval = null;
+    let gameLoopId = null;
+    let lastUpdate = 0;
+    let currentSpawnRate = 0;
+    let isPaused = false;
+    let isCelebrating = false; // Block pause during unlock celebration
+    let celebrationStartTime = 0; // When celebration started (for duration calc)
+    let pauseStartTime = 0;
+    let graceUntil = 0; // Grace period after unpause - symbols frozen until this time
+    let graceTimeoutId = null; // Track grace indicator timeout to prevent leaks
+    let tutorialShown = localStorage.getItem('sortex_tutorial') === 'done';
+    let tutorialActive = false;
+    let currentTheme = localStorage.getItem('sortex_theme') || 'spell-caster';
+
+    // Load peak score for persistent unlocks (called once at game load)
+    function loadPeakScore() {
+      try {
+        const stored = localStorage.getItem('sortex_peak');
+        if (stored === null) {
+          // Migration for existing players: use highScore as starting peak
+          peakScore = highScore;
+          if (highScore > 0) {
+            try { localStorage.setItem('sortex_peak', highScore.toString()); } catch(e) {}
+          }
+        } else {
+          const parsed = parseInt(stored, 10);
+          peakScore = Number.isNaN(parsed) ? 0 : parsed;
+        }
+      } catch (e) {
+        // localStorage disabled - fallback to highScore
+        peakScore = highScore;
+      }
+    }
+
+    // Theme definitions
+    const THEMES = {
+      'spell-caster': {
+        name: 'Spell Caster',
+        subtitle: 'Channel the Runes',
+        symbolColors: ['#a855f7', '#3b82f6', '#c4b5fd', '#f472b6', '#818cf8', '#22d3ee', '#f59e0b', '#34d399', '#f87171', '#a78bfa', '#e879f9', '#67e8f9']
+      },
+      'data-stream': {
+        name: 'Data Stream',
+        subtitle: 'Filter the Signal',
+        symbolColors: ['#22c55e', '#06b6d4', '#4ade80', '#2dd4bf', '#a3e635', '#84cc16', '#14b8a6', '#10b981', '#34d399', '#6ee7b7', '#a7f3d0', '#d9f99d']
+      },
+      'cosmic-gatekeeper': {
+        name: 'Cosmic Gatekeeper',
+        subtitle: 'Guard the Threshold',
+        symbolColors: ['#e11d48', '#a855f7', '#f472b6', '#ec4899', '#f43f5e', '#fb7185', '#c084fc', '#e879f9', '#f9a8d4', '#fda4af', '#f0abfc', '#d946ef']
+      }
+    };
+
+    // ==========================================
+    // LANGUAGE / LOCALIZATION
+    // ==========================================
+    const TRANSLATIONS = {
+      en: {
+        // Menu
+        tapToPlay: 'TAP TO PLAY',
+        best: 'Best',
+        // Settings
+        settings: 'Settings',
+        theme: 'Theme',
+        language: 'Language',
+        audio: 'Audio',
+        soundEffects: 'Sound Effects',
+        soundOn: 'Sound: ON',
+        soundOff: 'Sound: OFF',
+        about: 'About',
+        privacyPolicy: 'Privacy Policy',
+        backToMenu: 'Back to Menu',
+        backToGame: 'Back to Game',
+        // Theme names
+        spellCaster: 'Spell Caster',
+        spellCasterDesc: 'Channel chaotic magical runes',
+        dataStream: 'Data Stream',
+        dataStreamDesc: 'Filter corrupted data signals',
+        cosmicGatekeeper: 'Cosmic Gatekeeper',
+        cosmicGatekeeperDesc: 'Guard dimensional thresholds',
+        // Game
+        paused: 'PAUSED',
+        resume: 'RESUME',
+        exitGame: 'Exit Game',
+        // Tutorial
+        howToPlay: 'HOW TO PLAY',
+        tutorialText: 'Swipe symbols left or right\nto match the rules bar—let others fall',
+        gotIt: 'GOT IT!',
+        // Unlock celebration
+        newSymbol: '✨ NEW SYMBOL ✨',
+        swipeLeft: 'SWIPE LEFT',
+        swipeRight: 'SWIPE RIGHT',
+        letFall: 'LET FALL',
+        tapToContinue: 'Tap to continue',
+        // Game Over
+        gameOver: 'Game Over',
+        newHighScore: '🎉 NEW HIGH SCORE!',
+        bestCombo: 'Best Combo',
+        symbolsSorted: 'Symbols Sorted',
+        playAgain: 'PLAY AGAIN',
+        menu: 'Menu',
+        // Progress
+        next: 'Next',
+        at: 'at',
+        allUnlocked: '✓ All symbols unlocked!',
+        // Symbols (for unlock messages)
+        circle: 'Circle',
+        square: 'Square',
+        triangle: 'Triangle',
+        star: 'Star',
+        droplet: 'Droplet',
+        crescent: 'Crescent',
+        lightning: 'Lightning',
+        cross: 'Cross',
+        moon: 'Moon',
+        heart: 'Heart',
+        omega: 'Omega',
+        infinity: 'Infinity',
+        // Grace period
+        getReady: 'GET READY...',
+        // Privacy/About alerts
+        privacyText: 'Privacy Policy: SORTEX collects no personal data. High scores are stored locally on your device only.',
+        aboutText: 'SORTEX v1.2\n\nA fast-paced symbol sorting game.\n\nBuilt with vanilla JavaScript.'
+      },
+      es: {
+        tapToPlay: 'TOCA PARA JUGAR',
+        best: 'Mejor',
+        settings: 'Ajustes',
+        theme: 'Tema',
+        language: 'Idioma',
+        audio: 'Audio',
+        soundEffects: 'Efectos de Sonido',
+        soundOn: 'Sonido: ON',
+        soundOff: 'Sonido: OFF',
+        about: 'Acerca de',
+        privacyPolicy: 'Política de Privacidad',
+        backToMenu: 'Volver al Menú',
+        backToGame: 'Volver al Juego',
+        spellCaster: 'Hechicero',
+        spellCasterDesc: 'Canaliza runas mágicas caóticas',
+        dataStream: 'Flujo de Datos',
+        dataStreamDesc: 'Filtra señales de datos corruptas',
+        cosmicGatekeeper: 'Guardián Cósmico',
+        cosmicGatekeeperDesc: 'Protege los umbrales dimensionales',
+        paused: 'PAUSADO',
+        resume: 'CONTINUAR',
+        exitGame: 'Salir del Juego',
+        howToPlay: 'CÓMO JUGAR',
+        tutorialText: 'Desliza los símbolos a izquierda o derecha\nsegún las reglas—deja caer los demás',
+        gotIt: '¡ENTENDIDO!',
+        newSymbol: '✨ NUEVO SÍMBOLO ✨',
+        swipeLeft: 'DESLIZA IZQUIERDA',
+        swipeRight: 'DESLIZA DERECHA',
+        letFall: 'DEJAR CAER',
+        tapToContinue: 'Toca para continuar',
+        gameOver: 'Fin del Juego',
+        newHighScore: '🎉 ¡NUEVO RÉCORD!',
+        bestCombo: 'Mejor Combo',
+        symbolsSorted: 'Símbolos Ordenados',
+        playAgain: 'JUGAR DE NUEVO',
+        menu: 'Menú',
+        next: 'Siguiente',
+        at: 'en',
+        allUnlocked: '✓ ¡Todos los símbolos desbloqueados!',
+        circle: 'Círculo', square: 'Cuadrado', triangle: 'Triángulo', star: 'Estrella',
+        droplet: 'Gota', crescent: 'Media Luna', lightning: 'Rayo', cross: 'Cruz',
+        moon: 'Luna', heart: 'Corazón', omega: 'Omega', infinity: 'Infinito',
+        getReady: 'PREPÁRATE...',
+        privacyText: 'Política de Privacidad: SORTEX no recopila datos personales. Las puntuaciones se guardan solo en tu dispositivo.',
+        aboutText: 'SORTEX v1.2\n\nUn juego de clasificación de símbolos de ritmo rápido.\n\nHecho con JavaScript puro.'
+      },
+      fr: {
+        tapToPlay: 'APPUYEZ POUR JOUER',
+        best: 'Meilleur',
+        settings: 'Paramètres',
+        theme: 'Thème',
+        language: 'Langue',
+        audio: 'Audio',
+        soundEffects: 'Effets Sonores',
+        soundOn: 'Son: ON',
+        soundOff: 'Son: OFF',
+        about: 'À propos',
+        privacyPolicy: 'Politique de Confidentialité',
+        backToMenu: 'Retour au Menu',
+        backToGame: 'Retour au Jeu',
+        spellCaster: 'Lanceur de Sorts',
+        spellCasterDesc: 'Canalisez des runes magiques chaotiques',
+        dataStream: 'Flux de Données',
+        dataStreamDesc: 'Filtrez les signaux de données corrompus',
+        cosmicGatekeeper: 'Gardien Cosmique',
+        cosmicGatekeeperDesc: 'Gardez les seuils dimensionnels',
+        paused: 'PAUSE',
+        resume: 'REPRENDRE',
+        exitGame: 'Quitter le Jeu',
+        howToPlay: 'COMMENT JOUER',
+        tutorialText: 'Glissez les symboles à gauche ou à droite\nselon les règles—laissez tomber les autres',
+        gotIt: 'COMPRIS!',
+        newSymbol: '✨ NOUVEAU SYMBOLE ✨',
+        swipeLeft: 'GLISSER GAUCHE',
+        swipeRight: 'GLISSER DROITE',
+        letFall: 'LAISSER TOMBER',
+        tapToContinue: 'Appuyez pour continuer',
+        gameOver: 'Fin de Partie',
+        newHighScore: '🎉 NOUVEAU RECORD!',
+        bestCombo: 'Meilleur Combo',
+        symbolsSorted: 'Symboles Triés',
+        playAgain: 'REJOUER',
+        menu: 'Menu',
+        next: 'Suivant',
+        at: 'à',
+        allUnlocked: '✓ Tous les symboles débloqués!',
+        circle: 'Cercle', square: 'Carré', triangle: 'Triangle', star: 'Étoile',
+        droplet: 'Goutte', crescent: 'Croissant', lightning: 'Éclair', cross: 'Croix',
+        moon: 'Lune', heart: 'Cœur', omega: 'Oméga', infinity: 'Infini',
+        getReady: 'PRÉPAREZ-VOUS...',
+        privacyText: 'Politique de Confidentialité: SORTEX ne collecte aucune donnée personnelle. Les scores sont stockés uniquement sur votre appareil.',
+        aboutText: 'SORTEX v1.2\n\nUn jeu de tri de symboles rapide.\n\nCréé avec JavaScript pur.'
+      },
+      de: {
+        tapToPlay: 'ZUM SPIELEN TIPPEN',
+        best: 'Beste',
+        settings: 'Einstellungen',
+        theme: 'Thema',
+        language: 'Sprache',
+        audio: 'Audio',
+        soundEffects: 'Soundeffekte',
+        soundOn: 'Ton: AN',
+        soundOff: 'Ton: AUS',
+        about: 'Über',
+        privacyPolicy: 'Datenschutz',
+        backToMenu: 'Zurück zum Menü',
+        backToGame: 'Zurück zum Spiel',
+        spellCaster: 'Zauberwirker',
+        spellCasterDesc: 'Kanalisiere chaotische magische Runen',
+        dataStream: 'Datenstrom',
+        dataStreamDesc: 'Filtere beschädigte Datensignale',
+        cosmicGatekeeper: 'Kosmischer Wächter',
+        cosmicGatekeeperDesc: 'Bewache dimensionale Schwellen',
+        paused: 'PAUSIERT',
+        resume: 'FORTSETZEN',
+        exitGame: 'Spiel Beenden',
+        howToPlay: 'SPIELANLEITUNG',
+        tutorialText: 'Wische Symbole nach links oder rechts\ngemäß den Regeln—lass andere fallen',
+        gotIt: 'VERSTANDEN!',
+        newSymbol: '✨ NEUES SYMBOL ✨',
+        swipeLeft: 'NACH LINKS WISCHEN',
+        swipeRight: 'NACH RECHTS WISCHEN',
+        letFall: 'FALLEN LASSEN',
+        tapToContinue: 'Tippen zum Fortfahren',
+        gameOver: 'Spiel Vorbei',
+        newHighScore: '🎉 NEUER REKORD!',
+        bestCombo: 'Bestes Combo',
+        symbolsSorted: 'Sortierte Symbole',
+        playAgain: 'NOCHMAL SPIELEN',
+        menu: 'Menü',
+        next: 'Nächstes',
+        at: 'bei',
+        allUnlocked: '✓ Alle Symbole freigeschaltet!',
+        circle: 'Kreis', square: 'Quadrat', triangle: 'Dreieck', star: 'Stern',
+        droplet: 'Tropfen', crescent: 'Mondsichel', lightning: 'Blitz', cross: 'Kreuz',
+        moon: 'Mond', heart: 'Herz', omega: 'Omega', infinity: 'Unendlich',
+        getReady: 'MACH DICH BEREIT...',
+        privacyText: 'Datenschutz: SORTEX sammelt keine persönlichen Daten. Highscores werden nur lokal auf Ihrem Gerät gespeichert.',
+        aboutText: 'SORTEX v1.2\n\nEin schnelles Symbol-Sortierspiel.\n\nMit purem JavaScript erstellt.'
+      },
+      ja: {
+        tapToPlay: 'タップしてプレイ',
+        best: 'ベスト',
+        settings: '設定',
+        theme: 'テーマ',
+        language: '言語',
+        audio: 'オーディオ',
+        soundEffects: '効果音',
+        soundOn: 'サウンド: ON',
+        soundOff: 'サウンド: OFF',
+        about: 'このアプリについて',
+        privacyPolicy: 'プライバシーポリシー',
+        backToMenu: 'メニューに戻る',
+        backToGame: 'ゲームに戻る',
+        spellCaster: 'スペルキャスター',
+        spellCasterDesc: '混沌の魔法ルーンを操る',
+        dataStream: 'データストリーム',
+        dataStreamDesc: '破損したデータ信号をフィルタ',
+        cosmicGatekeeper: 'コズミックゲートキーパー',
+        cosmicGatekeeperDesc: '次元の境界を守る',
+        paused: '一時停止',
+        resume: '再開',
+        exitGame: 'ゲームを終了',
+        howToPlay: '遊び方',
+        tutorialText: 'シンボルを左右にスワイプして\nルールに従って分類—他は落とす',
+        gotIt: 'わかった！',
+        newSymbol: '✨ 新シンボル ✨',
+        swipeLeft: '左にスワイプ',
+        swipeRight: '右にスワイプ',
+        letFall: '落とす',
+        tapToContinue: 'タップして続ける',
+        gameOver: 'ゲームオーバー',
+        newHighScore: '🎉 新記録！',
+        bestCombo: '最高コンボ',
+        symbolsSorted: '分類したシンボル',
+        playAgain: 'もう一度プレイ',
+        menu: 'メニュー',
+        next: '次',
+        at: '',
+        allUnlocked: '✓ 全シンボル解放！',
+        circle: '円', square: '四角', triangle: '三角', star: '星',
+        droplet: 'しずく', crescent: '三日月', lightning: '雷', cross: '十字',
+        moon: '月', heart: 'ハート', omega: 'オメガ', infinity: '無限',
+        getReady: '準備...',
+        privacyText: 'プライバシーポリシー：SORTEXは個人データを収集しません。ハイスコアはデバイスにのみ保存されます。',
+        aboutText: 'SORTEX v1.2\n\n高速シンボル分類ゲーム。\n\nバニラJavaScriptで構築。'
+      }
+    };
+
+    const LANGUAGE_NAMES = {
+      en: 'English',
+      es: 'Español',
+      fr: 'Français',
+      de: 'Deutsch',
+      ja: '日本語'
+    };
+
+    // Detect language from browser, fallback to English
+    function detectLanguage() {
+      const browserLang = (navigator.language || navigator.userLanguage || 'en').split('-')[0].toLowerCase();
+      return TRANSLATIONS[browserLang] ? browserLang : 'en';
+    }
+
+    let currentLanguage = localStorage.getItem('sortex_language') || detectLanguage();
+
+    // Translation function
+    function t(key) {
+      return TRANSLATIONS[currentLanguage]?.[key] || TRANSLATIONS.en[key] || key;
+    }
+
+    function setLanguage(lang) {
+      if (TRANSLATIONS[lang]) {
+        currentLanguage = lang;
+        try { localStorage.setItem('sortex_language', lang); } catch(e) {}
+        updateAllText();
+        updateLanguageOptions();
+      }
+    }
+
+    // Touch tracking
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let activeSymbolEl = null;
+
+    // ==========================================
+    // AUDIO SYSTEM (Web Audio API)
+    // ==========================================
+    let audioCtx = null;
+    let audioEnabled = localStorage.getItem('sortex_sound') !== 'off'; // Default ON
+    let hapticsEnabled = true;
+    try { hapticsEnabled = localStorage.getItem('sortex_haptics') !== 'false'; } catch(e) {} // Default ON
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function toggleSound() {
+      audioEnabled = !audioEnabled;
+      try { localStorage.setItem('sortex_sound', audioEnabled ? 'on' : 'off'); } catch(e) {}
+      updateSoundToggleUI();
+    }
+
+    function updateSoundToggleUI() {
+      // Update all sound toggle buttons
+      const menuToggle = document.getElementById('sound-toggle-menu');
+      const pauseToggle = document.getElementById('pause-sound-toggle');
+      const icon = audioEnabled ? '🔊' : '🔇';
+      const text = audioEnabled ? t('soundOn') : t('soundOff');
+
+      if (menuToggle) menuToggle.textContent = text;
+      if (pauseToggle) {
+        pauseToggle.querySelector('.sound-icon').textContent = icon;
+        pauseToggle.querySelector('.sound-text').textContent = text;
+      }
+    }
+
+    function toggleHaptics() {
+      hapticsEnabled = !hapticsEnabled;
+      try { localStorage.setItem('sortex_haptics', hapticsEnabled ? 'true' : 'false'); } catch(e) {}
+      updateHapticsToggleUI();
+    }
+
+    function updateHapticsToggleUI() {
+      const pauseToggle = document.getElementById('pause-haptics-toggle');
+      const icon = hapticsEnabled ? '📳' : '📴';
+      const text = hapticsEnabled ? 'Vibration ON' : 'Vibration OFF';
+      if (pauseToggle) {
+        pauseToggle.querySelector('.haptics-icon').textContent = icon;
+        pauseToggle.querySelector('.haptics-text').textContent = text;
+      }
+    }
+
+    function playSound(type, comboCount = 1) {
+      if (!audioEnabled || !audioCtx) return;
+      try {
+        const now = audioCtx.currentTime;
+
+        if (type === 'correct') {
+          // Pitch rises with combo (caps at 1.5x at combo 25+)
+          const pitchMult = 1 + Math.min(comboCount, 25) * 0.02;
+
+          // Satisfying whoosh + high chime (0.2s)
+          const osc1 = audioCtx.createOscillator();
+          const gain1 = audioCtx.createGain();
+          osc1.connect(gain1);
+          gain1.connect(audioCtx.destination);
+          osc1.type = 'sine';
+          osc1.frequency.setValueAtTime(400 * pitchMult, now);
+          osc1.frequency.exponentialRampToValueAtTime(800 * pitchMult, now + 0.08);
+          gain1.gain.setValueAtTime(0.12, now);
+          gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+          osc1.start(now);
+          osc1.stop(now + 0.15);
+
+          // Add high chime
+          const osc2 = audioCtx.createOscillator();
+          const gain2 = audioCtx.createGain();
+          osc2.connect(gain2);
+          gain2.connect(audioCtx.destination);
+          osc2.type = 'sine';
+          osc2.frequency.setValueAtTime(1047 * pitchMult, now + 0.05); // C6 base
+          gain2.gain.setValueAtTime(0.08, now + 0.05);
+          gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+          osc2.start(now + 0.05);
+          osc2.stop(now + 0.2);
+
+        } else if (type === 'wrong') {
+          // Low muted thud (0.2s) - not punishing, informative
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(120, now);
+          osc.frequency.exponentialRampToValueAtTime(60, now + 0.15);
+          gain.gain.setValueAtTime(0.15, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+          osc.start(now);
+          osc.stop(now + 0.2);
+
+        } else if (type === 'escape') {
+          // Soft descending fade tone (0.3s)
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(300, now);
+          osc.frequency.exponentialRampToValueAtTime(150, now + 0.25);
+          gain.gain.setValueAtTime(0.08, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+          osc.start(now);
+          osc.stop(now + 0.3);
+
+        } else if (type === 'combo') {
+          // Sparkle arpeggio (0.4s) - for combo milestones
+          const notes = [523, 659, 784, 1047]; // C5, E5, G5, C6
+          notes.forEach((freq, i) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, now + i * 0.08);
+            gain.gain.setValueAtTime(0.1, now + i * 0.08);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.08 + 0.15);
+            osc.start(now + i * 0.08);
+            osc.stop(now + i * 0.08 + 0.15);
+          });
+
+        } else if (type === 'unlock') {
+          // Triumphant fanfare (1.5s) - for new symbol unlock
+          const fanfare = [
+            { freq: 523, time: 0, dur: 0.2 },      // C5
+            { freq: 659, time: 0.15, dur: 0.2 },   // E5
+            { freq: 784, time: 0.3, dur: 0.3 },    // G5
+            { freq: 1047, time: 0.5, dur: 0.5 },   // C6 (hold)
+            { freq: 1319, time: 0.8, dur: 0.6 },   // E6 (final)
+          ];
+          fanfare.forEach(note => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(note.freq, now + note.time);
+            gain.gain.setValueAtTime(0.12, now + note.time);
+            gain.gain.setValueAtTime(0.12, now + note.time + note.dur * 0.7);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + note.time + note.dur);
+            osc.start(now + note.time);
+            osc.stop(now + note.time + note.dur);
+          });
+
+        } else if (type === 'gameover') {
+          // Gentle descending tone (1.0s)
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(440, now);
+          osc.frequency.exponentialRampToValueAtTime(220, now + 0.8);
+          gain.gain.setValueAtTime(0.1, now);
+          gain.gain.setValueAtTime(0.1, now + 0.5);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 1.0);
+          osc.start(now);
+          osc.stop(now + 1.0);
+
+        } else if (type === 'highscore') {
+          // Celebratory ascending arpeggio (0.5s) - brighter than unlock
+          const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51]; // C5, E5, G5, C6, E6
+          notes.forEach((freq, i) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.type = 'triangle'; // Brighter tone
+            osc.frequency.setValueAtTime(freq, now + i * 0.09);
+            gain.gain.setValueAtTime(0.13, now + i * 0.09);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.09 + 0.25);
+            osc.start(now + i * 0.09);
+            osc.stop(now + i * 0.09 + 0.25);
+          });
+        }
+      } catch (e) {
+        // Audio not available, continue silently
+      }
+    }
+
+    // ==========================================
+    // SYMBOL DEFINITIONS
+    // ==========================================
+    // 8 symbols total (3-3-2 distribution) with 2x scaling unlock gaps
+    // Start: 1 LEFT, 1 RIGHT, 1 IGNORE for immediate variety
+    // Unlocks based on PEAK score (persists across deaths)
+    // Option D thresholds: 100, 300, 600, 1200, 2000 (clean doubling pattern)
+    const SYMBOL_DEFS = [
+      { id: 'circle', score: 0 },       // LEFT - start
+      { id: 'square', score: 0 },       // RIGHT - start
+      { id: 'triangle', score: 0 },     // IGNORE - start
+      { id: 'droplet', score: 100 },    // LEFT - first unlock
+      { id: 'crescent', score: 300 },   // RIGHT - 2x gap (200)
+      { id: 'star', score: 600 },       // IGNORE - 2x gap (300)
+      { id: 'heart', score: 1200 },     // LEFT - 2x gap (600)
+      { id: 'lightning', score: 2000 }, // RIGHT - final unlock (800 gap)
+    ];
+
+    // Get symbols with theme-appropriate colors
+    function getSymbols() {
+      const colors = THEMES[currentTheme].symbolColors;
+      return SYMBOL_DEFS.map((sym, i) => ({
+        ...sym,
+        color: colors[i % colors.length]
+      }));
+    }
+
+    // Alias for backward compatibility
+    let SYMBOLS = getSymbols();
+    
+    // Speed tiers for 8-symbol system (pure score-based progression)
+    const SPEED_TIERS = [
+      { maxSymbols: 3, fallTime: 1400, spawnRate: 1100 },   // Learning (1-1-1 start)
+      { maxSymbols: 5, fallTime: 1100, spawnRate: 900 },    // Building
+      { maxSymbols: 7, fallTime: 900, spawnRate: 750 },     // Challenging
+      { maxSymbols: 8, fallTime: 750, spawnRate: 600 },     // Master (all 8)
+    ];
+
+    // Track max speed achieved (doesn't drop on mistake)
+    let maxSpeedMultiplier = 1.0;
+
+    // Post-unlock slowdown: temporary 20% speed reduction after unlocking new symbol
+    // Applied independently of combo system (won't be overridden)
+    // 1.0 = normal speed, 1.2 = 20% slower
+    let postUnlockSlowdown = 1.0;
+
+    // Warmup multiplier: start slower when player has earned symbols
+    // 1.3 = 30% slower at start, decays by 0.1 per correct swipe until 1.0
+    let warmupMultiplier = 1.0;
+
+    // Combo-based speed multiplier (faster when on a streak)
+    // Speed is EARNED and kept - doesn't drop on mistake
+    // Continuous combo scaling - every swipe feels faster
+    // Formula: multiplier decreases by 1.2% per combo, capped at 0.75 (1.33x speed max)
+    function getComboSpeedMultiplier() {
+      // Cap at 0.75x (1.33x speed) - reached at combo 21
+      const currentMultiplier = Math.max(0.75, 1 - (combo * 0.012));
+
+      // Update max achieved speed (lower = faster) - speed is EARNED, never lost
+      if (currentMultiplier < maxSpeedMultiplier) {
+        maxSpeedMultiplier = currentMultiplier;
+      }
+
+      return maxSpeedMultiplier;
+    }
+    
+    // ==========================================
+    // SVG SYMBOL PATHS
+    // ==========================================
+    function getSymbolSVG(type, color, size = 72) {
+      const paths = {
+        circle: `<circle cx="30" cy="30" r="22" fill="none" stroke="${color}" stroke-width="4"/>`,
+        square: `<rect x="10" y="10" width="40" height="40" fill="none" stroke="${color}" stroke-width="4"/>`,
+        triangle: `<polygon points="30,8 54,52 6,52" fill="none" stroke="${color}" stroke-width="4" stroke-linejoin="round"/>`,
+        star: `<polygon points="30,6 36,24 54,24 40,36 46,54 30,44 14,54 20,36 6,24 24,24" fill="none" stroke="${color}" stroke-width="3" stroke-linejoin="round"/>`,
+        droplet: `<path d="M30,6 C30,6 10,26 10,38 C10,49 19,54 30,54 C41,54 50,49 50,38 C50,26 30,6 30,6 Z" fill="none" stroke="${color}" stroke-width="4" stroke-linejoin="round"/>`,
+        crescent: `<path d="M38,8 A22,22 0 1,0 38,52 A16,16 0 1,1 38,8" fill="none" stroke="${color}" stroke-width="4"/>`,
+        lightning: `<polygon points="35,4 15,28 27,28 22,56 45,28 32,28" fill="none" stroke="${color}" stroke-width="3" stroke-linejoin="round"/>`,
+        cross: `<path d="M30,8 L30,52 M8,30 L52,30" fill="none" stroke="${color}" stroke-width="6" stroke-linecap="round"/>`,
+        moon: `<path d="M40,10 A22,22 0 1,0 40,50 A16,16 0 1,1 40,10" fill="none" stroke="${color}" stroke-width="4"/>`,
+        heart: `<path d="M30,52 L12,34 A12,12 0 0,1 30,16 A12,12 0 0,1 48,34 Z" fill="none" stroke="${color}" stroke-width="3" stroke-linejoin="round"/>`,
+        omega: `<path d="M8,52 L18,52 L18,42 A16,16 0 1,1 42,42 L42,52 L52,52" fill="none" stroke="${color}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>`,
+        infinity: `<path d="M30,30 C24,22 14,22 12,30 C10,38 18,42 24,38 C28,35 30,30 30,30 C30,30 32,25 36,22 C42,18 50,22 48,30 C46,38 36,38 30,30" fill="none" stroke="${color}" stroke-width="4" stroke-linecap="round"/>`,
+      };
+      
+      return `<svg width="${size}" height="${size}" viewBox="0 0 60 60" style="overflow:visible;filter:drop-shadow(0 0 6px ${color});">
+        ${paths[type]}
+      </svg>`;
+    }
+    
+    // ==========================================
+    // GAME FUNCTIONS
+    // ==========================================
+    let unlockedSymbolsCache = { score: -1, symbols: null };
+
+    function getUnlockedSymbols() {
+      // Use peak score for persistent unlocks (symbols stay unlocked across deaths)
+      const effectiveScore = Math.max(score, peakScore);
+      if (unlockedSymbolsCache.score !== effectiveScore) {
+        unlockedSymbolsCache.score = effectiveScore;
+        unlockedSymbolsCache.symbols = SYMBOLS.filter(s => s.score <= effectiveScore);
+      }
+      return unlockedSymbolsCache.symbols;
+    }
+    
+    function getSpeedTier() {
+      const count = getUnlockedSymbols().length;
+      return SPEED_TIERS.find(t => count <= t.maxSymbols) || SPEED_TIERS[SPEED_TIERS.length - 1];
+    }
+    
+    function generateRules() {
+      // FIXED RULES: Each symbol ALWAYS goes to the same category
+      // No more shuffling - players build muscle memory like juggling
+      const unlocked = getUnlockedSymbols();
+
+      rules = {
+        left: unlocked.filter(s => FIXED_RULES[s.id] === 'left').map(s => s.id),
+        right: unlocked.filter(s => FIXED_RULES[s.id] === 'right').map(s => s.id),
+        ignore: unlocked.filter(s => FIXED_RULES[s.id] === 'ignore').map(s => s.id),
+      };
+
+      updateRulesDisplay();
+    }
+    
+    function updateRulesDisplay() {
+      const leftSymbols = document.getElementById('left-symbols');
+      const rightSymbols = document.getElementById('right-symbols');
+      const newSymbol = window.newUnlockedSymbol;
+
+      // Show symbols in portal containers (ignore symbols not shown - "others fall")
+      leftSymbols.innerHTML = rules.left.map(id => {
+        const sym = SYMBOLS.find(s => s.id === id);
+        const svg = getSymbolSVG(id, sym.color, 24);
+        // Add highlight class to new symbol
+        if (id === newSymbol) {
+          return svg.replace('<svg ', '<svg class="new-symbol-highlight" ');
+        }
+        return svg;
+      }).join('');
+
+      rightSymbols.innerHTML = rules.right.map(id => {
+        const sym = SYMBOLS.find(s => s.id === id);
+        const svg = getSymbolSVG(id, sym.color, 24);
+        // Add highlight class to new symbol
+        if (id === newSymbol) {
+          return svg.replace('<svg ', '<svg class="new-symbol-highlight" ');
+        }
+        return svg;
+      }).join('');
+    }
+    
+    function spawnSymbol() {
+      // Guard clause: prevent spawning in any non-playing state (race condition fix)
+      if (gameState !== 'playing' || isPaused || isCelebrating) return;
+      if (performance.now() < graceUntil) return; // Don't spawn during grace period
+
+      const unlocked = getUnlockedSymbols();
+
+      // Guaranteed spawns for new symbol after unlock
+      let randomSymbol;
+      if (window.guaranteedSpawnsRemaining > 0 && window.newUnlockedSymbol) {
+        randomSymbol = unlocked.find(s => s.id === window.newUnlockedSymbol);
+        window.guaranteedSpawnsRemaining--;
+        if (window.guaranteedSpawnsRemaining === 0) {
+          window.newUnlockedSymbol = null; // Clear after guaranteed spawns done
+        }
+      }
+      if (!randomSymbol) {
+        randomSymbol = unlocked[Math.floor(Math.random() * unlocked.length)];
+      }
+      
+      // Find safe X position - spawn in center channel between portal containers
+      const existingX = activeSymbols.map(s => s.x);
+      let x = 20 + Math.random() * 60; // 20-80% keeps symbols clear of edge portals
+      let attempts = 0;
+      while (attempts < 10 && existingX.some(ex => Math.abs(ex - x) < 18)) {
+        x = 20 + Math.random() * 60;
+        attempts++;
+      }
+      
+      const symbol = {
+        id: nextSymbolId++,  // Use integer ID to avoid precision issues
+        type: randomSymbol.id,
+        color: randomSymbol.color,
+        x: x,
+        y: -5,
+        spawnTime: performance.now(),
+      };
+      
+      activeSymbols.push(symbol);
+      renderSymbol(symbol);
+    }
+    
+    function renderSymbol(symbol) {
+      const playArea = document.getElementById('play-area');
+      const el = document.createElement('div');
+      el.className = 'symbol above-zone';
+      el.dataset.id = symbol.id;
+      el.innerHTML = getSymbolSVG(symbol.type, symbol.color, 72);
+      el.style.left = symbol.x + '%';
+      el.style.top = symbol.y + '%';
+      
+      // Touch events - all non-passive to prevent scroll interference
+      el.addEventListener('touchstart', handleTouchStart, { passive: false });
+      el.addEventListener('touchmove', handleTouchMove, { passive: false });
+      el.addEventListener('touchend', handleTouchEnd, { passive: false });
+      el.addEventListener('touchcancel', handleTouchCancel, { passive: false });
+      el.addEventListener('mousedown', handleMouseDown);
+
+      playArea.appendChild(el);
+    }
+    
+    function updateSymbols(delta) {
+      const tier = getSpeedTier();
+      const now = performance.now();
+      const comboMultiplier = getComboSpeedMultiplier();
+      // Apply postUnlockSlowdown and warmupMultiplier AFTER combo multiplier
+      const effectiveFallTime = tier.fallTime * comboMultiplier * postUnlockSlowdown * warmupMultiplier;
+
+      // Grace period after unpause - freeze symbols in place
+      if (now < graceUntil) {
+        activeSymbols.forEach(s => s.spawnTime += delta);
+        return;
+      }
+
+      activeSymbols = activeSymbols.filter(symbol => {
+        // Early exit if game ended during iteration
+        if (gameState !== 'playing') return false;
+
+        // Calculate position based on elapsed time since spawn (immune to rAF throttling)
+        const elapsed = now - symbol.spawnTime;
+        // Position goes from -5 to 100% (105 total) over fallTime milliseconds
+        // Padding-bottom on play-area provides buffer for symbol's bottom half
+        symbol.y = -5 + (elapsed / effectiveFallTime) * 105;
+
+        const el = document.querySelector(`[data-id="${symbol.id}"]`);
+        if (!el) return false;
+
+        el.style.top = symbol.y + '%';
+
+        // Visual fade in top 35% for hierarchy, but symbols ARE swipeable
+        // Lower threshold = more preview time, symbols brighten closer to action zone
+        if (symbol.y > 35) {
+          el.classList.remove('above-zone');
+        }
+
+        // Smooth fade from 88% to 105% (17% range - synchronized with removal point)
+        // Allows swiping symbols much closer to the bottom, fade ends exactly at removal
+        if (symbol.y > 88) {
+          // Linear fade: 88% = opacity 1, 105% = opacity 0
+          const fadeProgress = Math.min(1, (symbol.y - 88) / 17); // 0 to 1, capped
+          const opacity = Math.max(0, 1 - fadeProgress);
+          el.style.opacity = opacity;
+        } else {
+          el.style.opacity = 1;
+        }
+
+        // Check if escaped (at 105% - extended zone for swipeability)
+        if (symbol.y > 105) {
+          // If this symbol is being actively swiped, defer removal
+          if (String(symbol.id) === String(swipePendingId)) return true;
+
+          // Check if it should have been swiped (only lose life if game still active)
+          if (gameState === 'playing' && (rules.left.includes(symbol.type) || rules.right.includes(symbol.type))) {
+            loseLife();
+          } else if (gameState === 'playing') {
+            // Ignore symbol escaped correctly - soft feedback sound
+            playSound('escape');
+          }
+          el.remove();
+          return false;
+        }
+
+        return true;
+      });
+    }
+    
+    function loseLife() {
+      lives--;
+      combo = 0;
+      updatePortalGlow(0); // Reset portal glow
+
+      // Speed penalty: drop back ~10 combos worth of progress
+      // Can't go slower than starting speed (1.0)
+      maxSpeedMultiplier = Math.min(1.0, maxSpeedMultiplier + 0.12);
+
+      updateUI();
+
+      // Audio feedback
+      playSound('wrong');
+
+      // Screen shake feedback
+      const gameScreen = document.getElementById('game-screen');
+      gameScreen.classList.add('screen-shake');
+      setTimeout(() => gameScreen.classList.remove('screen-shake'), 300);
+
+      // Visual feedback
+      showFeedback(false);
+
+      // Update spawn rate to reflect speed change
+      updateSpawnRate();
+
+      if (lives <= 0) {
+        endGame();
+      }
+    }
+    
+    function handleSwipe(symbolId, direction) {
+      // Use string comparison to avoid any type coercion issues
+      const symbolIndex = activeSymbols.findIndex(s => String(s.id) === String(symbolId));
+      if (symbolIndex === -1) {
+        debugLog('FAIL: symbol id=' + symbolId + ' not found!');
+        return;
+      }
+
+      const symbol = activeSymbols[symbolIndex];
+
+      // Symbols swipeable as soon as they appear (y > 5% = slight spawn buffer)
+      if (symbol.y < 5) {
+        debugLog('FAIL: y=' + Math.round(symbol.y) + '% (still spawning)');
+        return;
+      }
+      debugLog('OK! ' + symbol.type + ' -> ' + direction + ' (y=' + Math.round(symbol.y) + '%)');
+
+      const isCorrect = (direction === 'left' && rules.left.includes(symbol.type)) ||
+                        (direction === 'right' && rules.right.includes(symbol.type));
+
+      const el = document.querySelector(`[data-id="${symbolId}"]`);
+
+      // Show visual feedback
+      showFeedback(isCorrect);
+
+      // Haptic feedback (mobile devices)
+      if (hapticsEnabled && navigator.vibrate) {
+        navigator.vibrate(isCorrect ? 10 : [30, 20, 30]);
+      }
+
+      if (el) {
+        if (isCorrect) {
+          el.classList.add(direction === 'left' ? 'swiped-left' : 'swiped-right');
+
+          // Create particle burst at symbol location
+          const rect = el.getBoundingClientRect();
+          const playArea = document.getElementById('play-area');
+          const playRect = playArea.getBoundingClientRect();
+          createParticles(rect.left - playRect.left + rect.width/2, rect.top - playRect.top + rect.height/2, symbol.color);
+        } else {
+          el.classList.add('swiped-wrong');
+        }
+      }
+
+      if (isCorrect) {
+        combo++;
+
+        // Update portal glow intensity
+        updatePortalGlow(combo);
+
+        // COMBO TIER SCORING - Skill rewards faster progression
+        // Combo 1-9:  1 point per swipe (learning)
+        // Combo 10-24: 2 points per swipe (building momentum)
+        // Combo 25+:   3 points per swipe (mastery)
+        const basePoints = combo < 10 ? 1 : combo < 25 ? 2 : 3;
+        // Symbol count multiplier: more symbols = higher reward for increased difficulty
+        // 3 syms=1.0x, 4-5=1.5x, 6-7=2.0x, 8=2.5x
+        const symbolCount = getUnlockedSymbols().length;
+        const symbolMultiplier = symbolCount <= 3 ? 1.0 : symbolCount <= 5 ? 1.5 : symbolCount <= 7 ? 2.0 : 2.5;
+        const pointsEarned = Math.floor(basePoints * symbolMultiplier);
+        score += pointsEarned;
+
+        bestCombo = Math.max(bestCombo, combo);
+        symbolsSorted++;
+
+        // Play correct sound (pitch rises with combo)
+        playSound('correct', combo);
+
+        // Play combo milestone sound and show visual
+        if (combo === 10 || combo === 25 || combo === 50 || combo === 100) {
+          playSound('combo');
+          showComboMilestone(combo);
+        }
+
+        // Gradually restore speed after unlock (10 correct swipes to normalize)
+        if (postUnlockSlowdown > 1.0) {
+          postUnlockSlowdown = Math.max(1.0, postUnlockSlowdown - 0.02);
+        }
+        // Warmup decay: 0.1 per correct swipe until normalized (3 swipes to full speed)
+        if (warmupMultiplier > 1.0) {
+          warmupMultiplier = Math.max(1.0, warmupMultiplier - 0.1);
+        }
+
+        // Check for new symbol unlocks (grants bonus life)
+        checkSymbolUnlock();
+
+        // Update spawn rate if needed
+        updateSpawnRate();
+      } else {
+        // Wrong swipe - lose life (handles sound, speed penalty, etc.)
+        loseLife();
+
+        if (lives <= 0) {
+          return;
+        }
+      }
+
+      // Remove symbol after animation
+      activeSymbols.splice(symbolIndex, 1);
+      setTimeout(() => {
+        if (el) el.remove();
+      }, 300);
+
+      updateUI();
+    }
+    
+    function updateSpawnRate() {
+      if (!spawnInterval) return;
+
+      const tier = getSpeedTier();
+      const comboMultiplier = getComboSpeedMultiplier();
+      // Apply postUnlockSlowdown and warmupMultiplier AFTER combo multiplier
+      const effectiveSpawnRate = Math.round(tier.spawnRate * comboMultiplier * postUnlockSlowdown * warmupMultiplier);
+
+      // Reset interval if effective spawn rate changed
+      if (effectiveSpawnRate !== currentSpawnRate) {
+        clearInterval(spawnInterval);
+        currentSpawnRate = effectiveSpawnRate;
+        spawnInterval = setInterval(spawnSymbol, effectiveSpawnRate);
+      }
+    }
+
+    // Check for new symbol unlocks and celebrate with 5-second pause
+    function checkSymbolUnlock() {
+      const currentUnlocked = getUnlockedSymbols().length;
+      if (currentUnlocked > lastUnlockedCount) {
+        // New symbol unlocked!
+        debugLog('SYMBOL UNLOCKED! ' + lastUnlockedCount + ' -> ' + currentUnlocked);
+
+        // Pause game for celebration
+        isPaused = true;
+        isCelebrating = true; // Block manual pause
+        celebrationStartTime = performance.now();
+
+        // Update rules FIRST so new symbol appears in rules bar
+        generateRules();
+
+        // Play unlock fanfare sound
+        playSound('unlock');
+
+        // Add celebration class to rules bar for enhanced animation
+        const rulesBar = document.getElementById('rules-bar');
+        rulesBar.classList.add('celebrating');
+
+        // Show "NEW SYMBOL UNLOCKED!" celebration overlay
+        showUnlockCelebration(currentUnlocked);
+
+        // NO auto-resume - player must tap to continue
+        // This respects the moment and prevents unfair deaths
+
+        lastUnlockedCount = currentUnlocked;
+      }
+    }
+
+    function endCelebration() {
+      if (!isCelebrating) return; // Already ended (skipped)
+
+      isCelebrating = false;
+
+      const rulesBar = document.getElementById('rules-bar');
+      rulesBar.classList.remove('celebrating');
+
+      // FRESH START: Clear all active symbols to prevent unfair pile-ups
+      // Player just unlocked a new symbol - give them a clean slate
+      const playArea = document.getElementById('play-area');
+      activeSymbols.forEach(s => {
+        const el = document.querySelector(`[data-id="${s.id}"]`);
+        if (el) el.remove();
+      });
+      activeSymbols = [];
+
+      // Hide celebration overlay
+      hideUnlockCelebration();
+
+      // ADAPTIVE GRACE SYSTEM: Scale based on player performance
+      // Grace period after unlock - player already tapped to continue, so keep it short
+      // 2 seconds is enough to see cleared area + new rules bar highlight
+      const adaptiveGrace = 2000;
+
+      // Apply post-unlock slowdown (independent of combo system - won't be overridden)
+      // 20% slower to give player time to learn new symbol
+      postUnlockSlowdown = 1.2;
+      updateSpawnRate();
+
+      // Apply adaptive grace period
+      graceUntil = performance.now() + adaptiveGrace;
+
+      // NOW resume the game
+      isPaused = false;
+    }
+
+    function showUnlockCelebration(symbolCount) {
+      const milestone = document.getElementById('combo-milestone');
+      const newSymbol = SYMBOL_DEFS[symbolCount - 1]; // Get the newly unlocked symbol
+      const symbolId = newSymbol ? newSymbol.id : 'symbol';
+      const symbolColor = SYMBOLS.find(s => s.id === symbolId)?.color || '#a855f7';
+
+      // Determine direction from FIXED_RULES (never changes!)
+      const fixedRule = FIXED_RULES[symbolId];
+      let direction = t('letFall');
+      let directionIcon = '↓';
+      let directionClass = 'ignore';
+      if (fixedRule === 'left') {
+        direction = t('swipeLeft');
+        directionIcon = '◀';
+        directionClass = 'left';
+      } else if (fixedRule === 'right') {
+        direction = t('swipeRight');
+        directionIcon = '▶';
+        directionClass = 'right';
+      }
+
+      // Track new symbol for guaranteed spawns (5 spawns to build familiarity)
+      window.newUnlockedSymbol = symbolId;
+      window.guaranteedSpawnsRemaining = 5;
+
+      milestone.innerHTML = `
+        <div class="unlock-title">${t('newSymbol')}</div>
+        <div class="unlock-symbol-visual">${getSymbolSVG(symbolId, symbolColor, 80)}</div>
+        <div class="unlock-direction ${directionClass}">${directionIcon} ${direction}</div>
+        <div class="unlock-skip" id="skip-hint" style="opacity: 0;">${t('tapToContinue')}</div>
+      `;
+      milestone.classList.remove('show');
+      void milestone.offsetWidth; // Force reflow
+      milestone.classList.add('show', 'unlock-celebration');
+
+      // Enable skip after 1 second
+      window.canSkipCelebration = false;
+      setTimeout(() => {
+        window.canSkipCelebration = true;
+        const skipHint = document.getElementById('skip-hint');
+        if (skipHint) skipHint.style.opacity = '1';
+      }, 1000);
+
+      // Add click/touch handler to skip
+      milestone.style.pointerEvents = 'auto';
+      milestone.style.cursor = 'pointer';
+      milestone.onclick = skipCelebration;
+      milestone.ontouchend = skipCelebration;
+    }
+
+    function skipCelebration(e) {
+      if (e) e.preventDefault();
+      if (!isCelebrating || !window.canSkipCelebration) return;
+      endCelebration();
+    }
+
+    function hideUnlockCelebration() {
+      const milestone = document.getElementById('combo-milestone');
+      milestone.classList.remove('show', 'unlock-celebration');
+      milestone.style.pointerEvents = 'none';
+      milestone.style.cursor = 'default';
+      milestone.onclick = null;
+      milestone.ontouchend = null;
+      window.canSkipCelebration = false;
+    }
+    
+    function updateUI() {
+      document.getElementById('score-display').textContent = score;
+      // Only show combo at 5+ to reduce clutter
+      // Combo display removed per UX feedback - score is sufficient
+
+      const hearts = document.querySelectorAll('#lives-display .heart');
+      hearts.forEach((heart, i) => {
+        heart.classList.toggle('lost', i >= lives);
+      });
+
+      // Show next unlock progress after first unlock (Option B)
+      const nextUnlockEl = document.getElementById('next-unlock');
+      if (lastUnlockedCount > 3) {
+        // Find next symbol to unlock (use peakScore for persistent unlocks)
+        const effectiveScoreForUnlock = Math.max(score, peakScore);
+        const nextSymbol = SYMBOL_DEFS.find(s => s.score > effectiveScoreForUnlock);
+        if (nextSymbol) {
+          const symbolName = t(nextSymbol.id);
+          const atWord = t('at');
+          nextUnlockEl.textContent = `${t('next')}: ${symbolName} ${atWord} ${nextSymbol.score}`;
+          nextUnlockEl.classList.add('show');
+        } else {
+          // All symbols unlocked
+          nextUnlockEl.textContent = t('allUnlocked');
+          nextUnlockEl.classList.add('show');
+        }
+      } else {
+        nextUnlockEl.classList.remove('show');
+      }
+
+      // Update spawn rate based on combo (faster spawns at higher combos)
+      updateSpawnRate();
+    }
+
+    function showComboMilestone(comboValue) {
+      // Don't show combo milestone during unlock celebration (they share same element)
+      if (isCelebrating) return;
+
+      const milestone = document.getElementById('combo-milestone');
+      milestone.textContent = comboValue + 'x COMBO!';
+      milestone.classList.remove('show');
+      // Force reflow to restart animation
+      void milestone.offsetWidth;
+      milestone.classList.add('show');
+
+      // Remove class after animation
+      setTimeout(() => {
+        // Only remove if not celebrating (unlock celebration takes priority)
+        if (!isCelebrating) {
+          milestone.classList.remove('show');
+        }
+      }, 800);
+    }
+    
+    // Game loop using setInterval for consistent timing (immune to tab visibility)
+    let gameIntervalId = null;
+
+    function gameLoop() {
+      if (gameState !== 'playing' || isPaused) {
+        return;
+      }
+
+      const now = performance.now();
+      const delta = now - lastUpdate;
+      lastUpdate = now;
+
+      // Always update symbols (time-based positioning handles large deltas gracefully)
+      if (delta > 0) {
+        updateSymbols(delta);
+      }
+    }
+
+    function startGameLoop() {
+      if (gameIntervalId) clearInterval(gameIntervalId);
+      lastUpdate = performance.now();
+      gameIntervalId = setInterval(gameLoop, 16); // ~60fps
+    }
+
+    function stopGameLoop() {
+      if (gameIntervalId) {
+        clearInterval(gameIntervalId);
+        gameIntervalId = null;
+      }
+    }
+    
+    // ==========================================
+    // DEBUG HELPER
+    // ==========================================
+    function debugLog(msg) {
+      console.log('[SORTEX]', msg);
+    }
+
+    // ==========================================
+    // INPUT HANDLERS
+    // ==========================================
+    let touchCurrentX = 0;
+    let touchCurrentY = 0;
+    let isSwiping = false;
+
+    // Swipe protection: prevent symbol removal during active swipe gesture
+    let swipePendingId = null;
+    let swipePendingTimeout = null;
+    const SWIPE_PROTECTION_TIMEOUT = 500;
+
+    function setSwipePending(id) {
+      swipePendingId = id;
+      if (swipePendingTimeout) clearTimeout(swipePendingTimeout);
+      swipePendingTimeout = setTimeout(() => { swipePendingId = null; }, SWIPE_PROTECTION_TIMEOUT);
+    }
+
+    function clearSwipePending() {
+      swipePendingId = null;
+      if (swipePendingTimeout) clearTimeout(swipePendingTimeout);
+    }
+
+    function handleTouchStart(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      const touch = e.touches[0];
+      touchStartX = touch.clientX;
+      touchStartY = touch.clientY;
+      touchCurrentX = touch.clientX;
+      touchCurrentY = touch.clientY;
+      activeSymbolEl = e.currentTarget;
+      isSwiping = true;
+      setSwipePending(activeSymbolEl ? activeSymbolEl.dataset.id : null);
+      debugLog('TouchStart id=' + (activeSymbolEl ? activeSymbolEl.dataset.id : 'null'));
+    }
+
+    function handleTouchMove(e) {
+      if (!isSwiping || !activeSymbolEl) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const touch = e.touches[0];
+      touchCurrentX = touch.clientX;
+      touchCurrentY = touch.clientY;
+    }
+
+    function handleTouchEnd(e) {
+      if (!activeSymbolEl || !isSwiping) {
+        debugLog('TouchEnd IGNORED (no active symbol)');
+        return;
+      }
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      // Use touchCurrentX/Y if changedTouches is empty (iOS edge case)
+      let endX = touchCurrentX;
+      let endY = touchCurrentY;
+
+      if (e.changedTouches && e.changedTouches.length > 0) {
+        endX = e.changedTouches[0].clientX;
+        endY = e.changedTouches[0].clientY;
+      }
+
+      const deltaX = endX - touchStartX;
+      const deltaY = endY - touchStartY;
+
+      debugLog('TouchEnd dX=' + Math.round(deltaX) + ' dY=' + Math.round(deltaY));
+
+      if (Math.abs(deltaX) > 30 && Math.abs(deltaX) > Math.abs(deltaY)) {
+        const direction = deltaX > 0 ? 'right' : 'left';
+        debugLog('SWIPE ' + direction.toUpperCase() + ' id=' + activeSymbolEl.dataset.id);
+        handleSwipe(activeSymbolEl.dataset.id, direction);
+      } else {
+        debugLog('NO SWIPE (need >30px horizontal)');
+      }
+
+      clearSwipePending();
+      activeSymbolEl = null;
+      isSwiping = false;
+    }
+
+    function handleTouchCancel(e) {
+      // Handle touch cancel (e.g., phone call, notification)
+      clearSwipePending();
+      activeSymbolEl = null;
+      isSwiping = false;
+    }
+
+    function handleMouseDown(e) {
+      touchStartX = e.clientX;
+      touchStartY = e.clientY;
+      activeSymbolEl = e.currentTarget;
+      setSwipePending(activeSymbolEl ? activeSymbolEl.dataset.id : null);
+    }
+
+    function handleMouseUp(e) {
+      if (!activeSymbolEl) {
+        clearSwipePending();
+        return;
+      }
+
+      const deltaX = e.clientX - touchStartX;
+      const deltaY = e.clientY - touchStartY;
+
+      if (Math.abs(deltaX) > 30 && Math.abs(deltaX) > Math.abs(deltaY)) {
+        const direction = deltaX > 0 ? 'right' : 'left';
+        handleSwipe(activeSymbolEl.dataset.id, direction);
+      }
+
+      clearSwipePending();
+      activeSymbolEl = null;
+    }
+    
+    // ==========================================
+    // GAME FLOW
+    // ==========================================
+    function showFeedback(isCorrect) {
+      // Only show flash for wrong swipes - correct swipes have sound + animation
+      // Green flash was redundant and created visual noise during fast play
+      if (isCorrect) return;
+
+      const flash = document.createElement('div');
+      flash.className = 'screen-flash wrong';
+      document.body.appendChild(flash);
+      setTimeout(() => flash.remove(), 200);
+    }
+
+    // Particle burst effect on correct swipe
+    function createParticles(x, y, color) {
+      const playArea = document.getElementById('play-area');
+      const particleCount = 6;
+
+      for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = x + 'px';
+        particle.style.top = y + 'px';
+        particle.style.backgroundColor = color;
+        // Calculate radial burst direction
+        const angle = (i / particleCount) * Math.PI * 2;
+        const distance = 50;
+        particle.style.setProperty('--tx', Math.cos(angle) * distance + 'px');
+        particle.style.setProperty('--ty', Math.sin(angle) * distance + 'px');
+        playArea.appendChild(particle);
+
+        // Clean up after animation
+        setTimeout(() => particle.remove(), 500);
+      }
+    }
+
+    // Update portal glow intensity based on combo
+    function updatePortalGlow(currentCombo) {
+      const portals = document.querySelectorAll('.portal-container');
+
+      portals.forEach(portal => {
+        // Update combo intensity classes for CSS animation speed
+        portal.classList.remove('combo-active', 'combo-high');
+        if (currentCombo >= 25) {
+          portal.classList.add('combo-high');
+        } else if (currentCombo >= 10) {
+          portal.classList.add('combo-active');
+        }
+      });
+    }
+
+    // Store tutorial timeout so it can be cancelled if player pauses first
+    let tutorialTimeoutId = null;
+
+    function showTutorial() {
+      tutorialTimeoutId = null; // Clear the reference
+      tutorialActive = true;
+
+      // If already paused (player pressed pause button before tutorial),
+      // hide pause overlay - tutorial takes over the pause
+      const pauseOverlay = document.getElementById('pause-overlay');
+      if (isPaused && pauseOverlay.style.display !== 'none') {
+        pauseOverlay.style.display = 'none';
+      }
+
+      isPaused = true;
+      pauseStartTime = performance.now();
+      if (spawnInterval) clearInterval(spawnInterval);
+      document.getElementById('tutorial-overlay').style.display = 'flex';
+    }
+
+    function dismissTutorial() {
+      tutorialActive = false;
+      tutorialShown = true;
+      try { localStorage.setItem('sortex_tutorial', 'done'); } catch(e) {}
+      document.getElementById('tutorial-overlay').style.display = 'none';
+
+      // Reset pause button to show pause icon (since game is resuming)
+      const pauseBtn = document.getElementById('pause-btn');
+      if (pauseBtn) {
+        pauseBtn.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>';
+        pauseBtn.setAttribute('aria-label', 'Pause game');
+      }
+
+      // Resume game
+      isPaused = false;
+      const pauseDuration = performance.now() - pauseStartTime;
+      activeSymbols.forEach(s => s.spawnTime += pauseDuration);
+      // Use effective spawn rate (preserves postUnlockSlowdown)
+      const tier = getSpeedTier();
+      const comboMultiplier = getComboSpeedMultiplier();
+      const effectiveSpawnRate = Math.round(tier.spawnRate * comboMultiplier * postUnlockSlowdown * warmupMultiplier);
+      spawnInterval = setInterval(spawnSymbol, effectiveSpawnRate);
+      lastUpdate = performance.now();
+    }
+
+    function togglePause() {
+      if (gameState !== 'playing' && !isPaused) return;
+      if (tutorialActive) return; // Don't allow pause during tutorial
+      if (isCelebrating) return; // Don't allow pause during unlock celebration
+
+      const overlay = document.getElementById('pause-overlay');
+      const pauseBtn = document.getElementById('pause-btn');
+      const graceIndicator = document.getElementById('grace-indicator');
+      if (!overlay || !pauseBtn) return; // Null safety before mutation
+
+      isPaused = !isPaused;
+
+      if (isPaused) {
+        // Pause the game
+        pauseStartTime = performance.now();
+        if (spawnInterval) clearInterval(spawnInterval);
+        // Cancel pending tutorial timeout (prevents race condition)
+        if (tutorialTimeoutId !== null) {
+          clearTimeout(tutorialTimeoutId);
+          tutorialTimeoutId = null;
+        }
+        overlay.style.display = 'flex';
+        // SVG play icon (triangle)
+        pauseBtn.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+        pauseBtn.setAttribute('aria-label', 'Resume game');
+      } else {
+        // Resume the game
+        // SVG pause icon (two bars)
+        pauseBtn.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>';
+        pauseBtn.setAttribute('aria-label', 'Pause game');
+
+        // Adjust spawn times for pause duration
+        const pauseDuration = performance.now() - pauseStartTime;
+        activeSymbols.forEach(s => s.spawnTime += pauseDuration);
+
+        // Grace period - symbols frozen for 2000ms after unpause to let player re-orient
+        graceUntil = performance.now() + 2000;
+
+        // Show grace indicator (clear any existing timeout first)
+        if (graceTimeoutId) clearTimeout(graceTimeoutId);
+        if (graceIndicator) {
+          graceIndicator.classList.add('show');
+          graceTimeoutId = setTimeout(() => {
+            graceIndicator.classList.remove('show');
+            graceTimeoutId = null;
+          }, 2000);
+        }
+
+        // Restart spawn interval with effective rate (preserves postUnlockSlowdown)
+        const tier = getSpeedTier();
+        const comboMultiplier = getComboSpeedMultiplier();
+        const effectiveSpawnRate = Math.round(tier.spawnRate * comboMultiplier * postUnlockSlowdown * warmupMultiplier);
+        lastUpdate = performance.now();
+        spawnInterval = setInterval(spawnSymbol, effectiveSpawnRate);
+
+        // Reschedule tutorial if it was pending and not yet shown
+        if (gameState === 'playing' && !tutorialShown && tutorialTimeoutId === null) {
+          tutorialTimeoutId = setTimeout(showTutorial, 800);
+        }
+
+        overlay.style.display = 'none';
+      }
+    }
+
+    function pauseToMenu() {
+      // Stop the game and return to menu
+      stopGameLoop();
+      if (spawnInterval) clearInterval(spawnInterval);
+      isPaused = false;
+      document.getElementById('pause-overlay').style.display = 'none';
+      showMenu();
+    }
+
+    function pauseToTheme() {
+      // Go to theme settings (game stays paused in background)
+      document.getElementById('pause-overlay').style.display = 'none';
+      document.getElementById('game-screen').style.display = 'none';
+      document.getElementById('settings-screen').style.display = 'flex';
+      // Mark that we came from pause so we can return
+      window.returnToPause = true;
+      // Update button text to reflect destination
+      document.getElementById('settings-back-btn').textContent = 'Back to Game';
+    }
+
+    function showMenu() {
+      gameState = 'menu';
+      document.getElementById('menu-screen').style.display = 'flex';
+      document.getElementById('game-screen').style.display = 'none';
+      document.getElementById('gameover-screen').style.display = 'none';
+      
+      if (highScore > 0) {
+        document.getElementById('high-score-display').textContent = 'Best: ' + highScore;
+      }
+    }
+    
+    function startGame() {
+      // Initialize audio on first user interaction
+      initAudio();
+
+      // Clear any existing intervals/loops first
+      stopGameLoop();
+      if (spawnInterval) {
+        clearInterval(spawnInterval);
+        spawnInterval = null;
+      }
+
+      // Reset state
+      score = 0;
+      lives = 3;
+      combo = 0;
+      bestCombo = 0;
+      symbolsSorted = 0;
+      updatePortalGlow(0); // Reset portal glow
+      lastUnlockedCount = getUnlockedSymbols().length;  // Match actual unlocked count (prevents false popup)
+      activeSymbols = [];
+      isPaused = false;
+      isCelebrating = false;  // Reset celebration state
+      hideUnlockCelebration();  // Clean up any celebration overlay
+      const rulesBar = document.getElementById('rules-bar');
+      if (rulesBar) rulesBar.classList.remove('celebrating');  // Remove celebration glow
+
+      // Reset pause UI state
+      if (graceTimeoutId) { clearTimeout(graceTimeoutId); graceTimeoutId = null; }
+      const pauseOverlay = document.getElementById('pause-overlay');
+      if (pauseOverlay) pauseOverlay.style.display = 'none';
+      const pauseBtn = document.getElementById('pause-btn');
+      if (pauseBtn) {
+        // SVG pause icon (two bars)
+        pauseBtn.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>';
+        pauseBtn.setAttribute('aria-label', 'Pause game');
+      }
+      window.newUnlockedSymbol = null;  // Reset new symbol tracking
+      window.guaranteedSpawnsRemaining = 0;
+      maxSpeedMultiplier = 1.0;  // Reset speed progression
+      postUnlockSlowdown = 1.0;  // Reset post-unlock slowdown
+      // Warmup: Start 30% slower if player has earned symbols (more than base 3)
+      warmupMultiplier = getUnlockedSymbols().length > 3 ? 1.3 : 1.0;
+      generateRules();  // Use earned symbols based on peakScore (not hardcoded)
+
+      // Hide next unlock indicator (shows after first unlock)
+      document.getElementById('next-unlock').classList.remove('show');
+
+      // Clear play area
+      const playArea = document.getElementById('play-area');
+      playArea.querySelectorAll('.symbol').forEach(el => el.remove());
+
+      // Show game screen
+      gameState = 'playing';
+      document.getElementById('menu-screen').style.display = 'none';
+      document.getElementById('game-screen').style.display = 'flex';
+      document.getElementById('gameover-screen').style.display = 'none';
+
+      updateUI();
+      updateRulesDisplay();
+
+      // Start game loop
+      startGameLoop();
+
+      // Start spawning - use exact tier spawn rate
+      const tier = getSpeedTier();
+      currentSpawnRate = tier.spawnRate;
+      spawnInterval = setInterval(spawnSymbol, tier.spawnRate);
+
+      // Initial spawn after short delay
+      setTimeout(spawnSymbol, 500);
+
+      // Show tutorial on first play
+      if (!tutorialShown) {
+        tutorialTimeoutId = setTimeout(showTutorial, 800);
+      }
+
+    }
+    
+    function endGame() {
+      gameState = 'gameover';
+
+      // Play game over sound
+      playSound('gameover');
+
+      // Stop loops
+      stopGameLoop();
+      if (spawnInterval) clearInterval(spawnInterval);
+      // Cancel pending tutorial timeout (prevents tutorial on game over screen)
+      if (tutorialTimeoutId !== null) {
+        clearTimeout(tutorialTimeoutId);
+        tutorialTimeoutId = null;
+      }
+      
+      // Update high score
+      if (score > highScore) {
+        highScore = score;
+        try { localStorage.setItem('sortex_highscore', highScore.toString()); } catch(e) {}
+        document.getElementById('gameover-title').textContent = t('newHighScore');
+        playSound('highscore'); // Celebratory sound for new high score
+      } else {
+        document.getElementById('gameover-title').textContent = t('gameOver');
+      }
+
+      // Update peak score for persistent unlocks
+      if (score > peakScore) {
+        peakScore = score;
+        try { localStorage.setItem('sortex_peak', score.toString()); } catch(e) {}
+      }
+      
+      // Show game over screen
+      document.getElementById('final-score').textContent = score;
+      document.getElementById('final-combo').textContent = bestCombo;
+      document.getElementById('final-sorted').textContent = symbolsSorted;
+      
+      document.getElementById('game-screen').style.display = 'none';
+      document.getElementById('gameover-screen').style.display = 'flex';
+    }
+    
+    // ==========================================
+    // SETTINGS & THEME
+    // ==========================================
+    function showSettings() {
+      document.getElementById('menu-screen').style.display = 'none';
+      document.getElementById('settings-screen').style.display = 'flex';
+      // Ensure button text is correct when coming from menu
+      document.getElementById('settings-back-btn').textContent = 'Back to Menu';
+      updateThemeOptions();
+    }
+
+    function hideSettings() {
+      document.getElementById('settings-screen').style.display = 'none';
+      if (window.returnToPause) {
+        window.returnToPause = false;
+        document.getElementById('game-screen').style.display = 'flex';
+        document.getElementById('pause-overlay').style.display = 'flex';
+      } else {
+        document.getElementById('menu-screen').style.display = 'flex';
+      }
+    }
+
+    function resetProgress() {
+      if (confirm('DELETE all progress (scores and unlocks)?\n\nThis cannot be undone.')) {
+        try {
+          localStorage.removeItem('sortex_peak');
+          localStorage.removeItem('sortex_highscore');
+          // Don't remove tutorial - tutorial is one-time per installation
+        } catch(e) {}
+        highScore = 0;
+        peakScore = 0;
+        unlockedSymbolsCache = { score: -1, symbols: null }; // Force recalculation
+        document.getElementById('high-score-display').textContent = 'High Score: 0';
+      }
+    }
+
+    function selectTheme(themeName) {
+      currentTheme = themeName;
+      try { localStorage.setItem('sortex_theme', themeName); } catch(e) {}
+      applyTheme();
+      updateThemeOptions();
+    }
+
+    function applyTheme() {
+      // Set data-theme on body for CSS variables
+      document.body.setAttribute('data-theme', currentTheme);
+
+      // Update SYMBOLS with new theme colors
+      SYMBOLS = getSymbols();
+
+      // Update subtitle text
+      const subtitle = document.getElementById('theme-subtitle');
+      if (subtitle) {
+        subtitle.textContent = THEMES[currentTheme].subtitle;
+      }
+    }
+
+    function updateThemeOptions() {
+      const options = document.querySelectorAll('.theme-option');
+      options.forEach(opt => {
+        const theme = opt.getAttribute('data-theme');
+        opt.classList.toggle('active', theme === currentTheme);
+      });
+    }
+
+    function updateLanguageOptions() {
+      const options = document.querySelectorAll('.language-option');
+      options.forEach(opt => {
+        const lang = opt.getAttribute('data-lang');
+        opt.classList.toggle('active', lang === currentLanguage);
+      });
+    }
+
+    function updateAllText() {
+      // Update all elements with data-i18n attribute
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        el.textContent = t(key);
+      });
+
+      // Update specific dynamic elements
+      // Menu
+      document.querySelector('.play-btn')?.setAttribute('textContent', t('tapToPlay'));
+      const playBtn = document.querySelector('#menu-screen .play-btn');
+      if (playBtn) playBtn.textContent = t('tapToPlay');
+
+      const playAgainBtn = document.querySelector('#gameover-screen .play-btn');
+      if (playAgainBtn) playAgainBtn.textContent = t('playAgain');
+
+      // High score display
+      if (highScore > 0) {
+        const highScoreEl = document.getElementById('high-score-display');
+        if (highScoreEl) highScoreEl.textContent = t('best') + ': ' + highScore;
+      }
+
+      // Settings title
+      const settingsTitle = document.querySelector('#settings-screen h2');
+      if (settingsTitle) settingsTitle.textContent = t('settings');
+
+      // Theme section title and descriptions
+      const themeSection = document.querySelector('#settings-screen .settings-section:first-of-type h3');
+      if (themeSection) themeSection.textContent = t('theme');
+
+      // Update theme names/descriptions
+      const themeOptions = document.querySelectorAll('.theme-option');
+      themeOptions.forEach(opt => {
+        const theme = opt.getAttribute('data-theme');
+        const nameEl = opt.querySelector('.theme-name');
+        const descEl = opt.querySelector('.theme-desc');
+        if (theme === 'spell-caster') {
+          if (nameEl) nameEl.textContent = t('spellCaster');
+          if (descEl) descEl.textContent = t('spellCasterDesc');
+        } else if (theme === 'data-stream') {
+          if (nameEl) nameEl.textContent = t('dataStream');
+          if (descEl) descEl.textContent = t('dataStreamDesc');
+        } else if (theme === 'cosmic-gatekeeper') {
+          if (nameEl) nameEl.textContent = t('cosmicGatekeeper');
+          if (descEl) descEl.textContent = t('cosmicGatekeeperDesc');
+        }
+      });
+
+      // Pause overlay
+      const pauseTitle = document.querySelector('#pause-overlay h2');
+      if (pauseTitle) pauseTitle.textContent = t('paused');
+
+      const resumeBtn = document.querySelector('#pause-overlay .resume-btn');
+      if (resumeBtn) resumeBtn.textContent = t('resume');
+
+      const exitBtn = document.querySelector('#pause-overlay .exit-btn');
+      if (exitBtn) exitBtn.textContent = t('exitGame');
+
+      // Tutorial
+      const tutorialTitle = document.querySelector('#tutorial-overlay h2');
+      if (tutorialTitle) tutorialTitle.textContent = t('howToPlay');
+
+      const tutorialStep = document.querySelector('#tutorial-overlay .tutorial-step');
+      if (tutorialStep) tutorialStep.innerHTML = t('tutorialText').replace('\n', '<br>');
+
+      const gotItBtn = document.querySelector('#tutorial-overlay .start-btn');
+      if (gotItBtn) gotItBtn.textContent = t('gotIt');
+
+      // Game over
+      const gameOverTitle = document.getElementById('gameover-title');
+      // Don't update if showing "NEW HIGH SCORE!"
+      if (gameOverTitle && !gameOverTitle.textContent.includes('🎉')) {
+        gameOverTitle.textContent = t('gameOver');
+      }
+
+      const statsBox = document.getElementById('stats-box');
+      if (statsBox) {
+        const divs = statsBox.querySelectorAll('div');
+        if (divs[0]) divs[0].innerHTML = t('bestCombo') + ': <span id="final-combo">' + (bestCombo || 0) + '</span>';
+        if (divs[1]) divs[1].innerHTML = t('symbolsSorted') + ': <span id="final-sorted">' + (symbolsSorted || 0) + '</span>';
+      }
+
+      const menuBtn = document.querySelector('#gameover-screen .menu-btn');
+      if (menuBtn) menuBtn.textContent = t('menu');
+
+      // Grace indicator
+      const graceIndicator = document.getElementById('grace-indicator');
+      if (graceIndicator) graceIndicator.textContent = t('getReady');
+
+      // Sound toggle
+      updateSoundToggleUI();
+      // Haptics toggle
+      updateHapticsToggleUI();
+    }
+
+    // ==========================================
+    // INIT
+    // ==========================================
+    document.addEventListener('touchend', handleTouchEnd);
+    document.addEventListener('mouseup', handleMouseUp);
+
+    // Auto-pause when app loses focus (spec 8.4)
+    let autoPausePending = false;
+    function handleVisibilityLoss() {
+      // Guard: only pause if playing and not already paused/pending
+      if (gameState !== 'playing' || isPaused || autoPausePending || isCelebrating) return;
+
+      try {
+        autoPausePending = true;
+        togglePause();
+        // Brief delay to prevent double-toggle from multiple events
+        setTimeout(() => { autoPausePending = false; }, 150);
+      } catch (e) {
+        autoPausePending = false;
+        console.warn('Auto-pause failed:', e);
+      }
+    }
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) handleVisibilityLoss();
+    });
+
+    window.addEventListener('blur', handleVisibilityLoss);
+
+    // Apply saved theme on load
+    applyTheme();
+
+    // Load peak score for persistent unlocks
+    loadPeakScore();
+
+    // Apply saved language on load
+    updateLanguageOptions();
+    updateAllText();
+
+    // Update sound toggle UI to reflect saved state
+    updateSoundToggleUI();
+    // Update haptics toggle UI to reflect saved state
+    updateHapticsToggleUI();
+
+    // Start on menu
+    // ==========================================
+    // PWA SERVICE WORKER REGISTRATION
+    // ==========================================
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(reg => console.log('[PWA] Service Worker registered:', reg.scope))
+          .catch(err => console.log('[PWA] Service Worker registration failed:', err));
+      });
+    }
+
+    showMenu();
+  </script>
+</body>
+</html>

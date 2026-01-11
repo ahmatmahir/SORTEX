@@ -1,0 +1,28 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Node (if ever added)
+node_modules/
+npm-debug.log*
+
+# Build outputs
+dist/
+build/
+
+# Local testing
+*.log
+.env
+.env.local
+
+# Screenshots from testing
+screenshot*.png
