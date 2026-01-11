@@ -520,16 +520,13 @@
        ARTIFACT REACTOR SYSTEM
        ========================================== */
     #artifact-container {
-      position: fixed;
-      bottom: 80px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: min(280px, 60vw);
+      /* Positioned in header between score and lives */
+      flex: 1;
       display: flex;
-      flex-direction: column;
+      justify-content: center;
       align-items: center;
-      padding: 6px 16px;
-      z-index: 100;
+      max-width: 120px;
+      padding: 0 8px;
     }
 
     #artifact-label {
@@ -542,16 +539,16 @@
       text-transform: uppercase;
     }
 
-    /* The Artifact Strip - matches burst aesthetic */
+    /* The Artifact Crystal - compact for header */
     #artifact-crystal {
       position: relative;
-      width: 100%;
+      width: 50px;
       height: 50px;
       background: var(--rules-bg);
       border: 2px solid var(--rules-border);
-      border-radius: 8px;
+      border-radius: 12px;
       overflow: hidden;
-      box-shadow: inset 0 0 20px rgba(0,0,0,0.3), 0 4px 15px rgba(0, 0, 0, 0.3);
+      box-shadow: inset 0 0 15px rgba(0,0,0,0.3), 0 2px 10px rgba(0, 0, 0, 0.3);
       transition: all 0.3s ease;
     }
 
@@ -796,6 +793,25 @@
       30% { transform: scale(1.1); filter: brightness(2); }
       60% { transform: scale(0.95); }
       100% { transform: scale(1); filter: brightness(1); }
+    }
+
+    /* Crescendo text animation */
+    @keyframes crescendoFloat {
+      0% { opacity: 0; transform: translateX(-50%) translateY(20px) scale(0.5); }
+      20% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1.2); }
+      50% { transform: translateX(-50%) translateY(-10px) scale(1); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-40px) scale(0.8); }
+    }
+
+    /* Crescendo crystal state */
+    #artifact-crystal.crescendo {
+      animation: artifactVibrate 0.05s infinite;
+      filter: brightness(1.3);
+    }
+
+    /* Building excitement state */
+    #artifact-crystal.building {
+      animation: artifactVibrate 0.1s infinite;
     }
 
     #artifact-stats {
@@ -1736,19 +1752,17 @@
         <div id="score-display">0</div>
         <div id="next-unlock"></div>
       </div>
-      <div id="combo-display"></div>
+      <!-- ARTIFACT REACTOR - in header between score and lives -->
+      <div id="artifact-container">
+        <div id="artifact-crystal" class="dormant">
+          <div id="artifact-fill"></div>
+          <div id="artifact-particles"></div>
+        </div>
+      </div>
       <div id="lives-display">
         <span class="heart">♥</span>
         <span class="heart">♥</span>
         <span class="heart">♥</span>
-      </div>
-    </div>
-
-    <!-- ARTIFACT REACTOR - Visual excitement shows progress (no numbers) -->
-    <div id="artifact-container">
-      <div id="artifact-crystal" class="dormant">
-        <div id="artifact-fill"></div>
-        <div id="artifact-particles"></div>
       </div>
     </div>
 
@@ -1848,56 +1862,51 @@
     let symbolsSorted = 0;
     let lastUnlockedCount = 3;  // Track unlocked symbols for celebration
 
-    // ARTIFACT REACTOR SYSTEM
-    // Combo-based progression with formula-driven thresholds
-    let artifactCombo = 0;              // Current combo progress toward artifact
-    let artifactsUnlocked = 0;          // Total artifacts unlocked
-    let isArtifactUnlocking = false;
-    let artifactParticles = [];         // Particles inside artifact
+    // ARTIFACT REACTOR SYSTEM - Crescendo/Critical Mass Progression
+    // Two-tier system: Crescendos (frequent) build toward Critical Mass (rare, unlocks symbols)
+    let cmProgress = { cm: 0, crescendos: 0, swipes: 0 }; // Critical Mass progress
+    let artifactParticles = [];         // Particles inside artifact (max 30)
+    let isAnimatingArtifact = false;    // Lock during crescendo/CM animations
+    let queuedSwipe = null;             // Max 1 queued swipe during animation
+    let lastCMSaveTime = 0;             // Track auto-save timing
 
-    // Formula-based progression (no hardcoded arrays)
-    const PROGRESSION = {
-      // Symbol unlocks at artifacts: 25, 75, 200, 500, 1500
-      symbols(n) {
-        if (n < 25) return 3;
-        if (n < 75) return 4;
-        if (n < 200) return 5;
-        if (n < 500) return 6;
-        if (n < 1500) return 7;
-        return 8;
-      },
-      // Particles scale with symbols and artifacts
-      particles(n) {
-        const s = this.symbols(n);
-        return Math.min(45, Math.max(4, Math.floor(4 + 1.5 * (s - 3) + 0.07 * s * Math.sqrt(n))));
-      },
-      // Threshold to unlock artifact (combo needed) - starts at 20, scales up
-      threshold(n) {
-        const s = this.symbols(n);
-        return Math.min(60, Math.max(20, Math.floor(20 + Math.log(1 + n) * (0.8 + 0.15 * s) + n / 200)));
-      },
-      // Artifact tier - visual evolution with more unlocks
-      // Each tier brings new colors, more glow, enhanced particles
-      tier(n) {
-        if (n < 25) return { level: 1, name: 'bronze', glow: 1.0, hue: 0 };
-        if (n < 75) return { level: 2, name: 'silver', glow: 1.3, hue: 0 };
-        if (n < 200) return { level: 3, name: 'gold', glow: 1.6, hue: 15 };
-        if (n < 500) return { level: 4, name: 'platinum', glow: 2.0, hue: 30 };
-        if (n < 1500) return { level: 5, name: 'diamond', glow: 2.5, hue: 45 };
-        return { level: 6, name: 'prismatic', glow: 3.0, hue: 0, rainbow: true };
-      }
-    };
+    // Crescendo/Critical Mass lookup tables
+    const SWIPES_PER_CRESCENDO = [40, 100, 150, 200, 200];  // CM 1-5
+    const CRESCENDOS_PER_CM = [3, 10, 20, 40, 120];         // CM 1-5
 
-    function getArtifactThreshold() {
-      return PROGRESSION.threshold(artifactsUnlocked);
+    function getSwipesPerCrescendo(cm) {
+      return SWIPES_PER_CRESCENDO[cm] || 200;  // cm is 0-indexed (current CM being worked toward)
     }
 
+    function getCrescendosForCM(cm) {
+      return CRESCENDOS_PER_CM[cm] || 120;
+    }
+
+    function getCMPenalty(cm) {
+      // 10% of current crescendo threshold - same feel at all levels
+      return Math.floor(getSwipesPerCrescendo(cm) * 0.10);
+    }
+
+    // Particle count = crescendos completed × 3, capped at 30
     function getArtifactParticleCount() {
-      return PROGRESSION.particles(artifactsUnlocked);
+      return Math.min(30, cmProgress.crescendos * 3);
     }
 
+    // Visual tier based on critical masses completed
     function getArtifactTier() {
-      return PROGRESSION.tier(artifactsUnlocked);
+      const cm = cmProgress.cm;
+      if (cm === 0) return { level: 1, name: 'bronze', glow: 1.0 };
+      if (cm === 1) return { level: 2, name: 'silver', glow: 1.3 };
+      if (cm === 2) return { level: 3, name: 'gold', glow: 1.6 };
+      if (cm === 3) return { level: 4, name: 'platinum', glow: 2.0 };
+      if (cm === 4) return { level: 5, name: 'diamond', glow: 2.5 };
+      return { level: 6, name: 'prismatic', glow: 3.0, rainbow: true };
+    }
+
+    // Symbols unlocked based on critical mass (not score)
+    function getSymbolCountFromCM() {
+      // Start with 3 (circle, square, triangle), unlock 1 per CM
+      return Math.min(8, 3 + cmProgress.cm);
     }
 
     let activeSymbols = [];
@@ -2468,15 +2477,17 @@
     // Unlocks based on PEAK score (persists across deaths)
     // v9 thresholds: Expert math @ 1.5 swipes/sec, combo 25+ = ~2.5 pts/sec avg
     // 3 mins = 450 pts, 5 mins = 750 pts, 10 mins = 1500 pts
+    // Symbol definitions - unlocked via Critical Mass, not score
+    // Order matters: index 0-2 start unlocked, 3-7 unlock with CM 1-5
     const SYMBOL_DEFS = [
-      { id: 'circle', score: 0 },        // LEFT - start
-      { id: 'square', score: 0 },        // RIGHT - start
-      { id: 'triangle', score: 0 },      // IGNORE - start
-      { id: 'droplet', score: 750 },     // LEFT - ~3 min expert (was 300)
-      { id: 'crescent', score: 1800 },   // RIGHT - ~7 min expert (was 700)
-      { id: 'star', score: 4000 },       // IGNORE - ~15 min expert (was 1400)
-      { id: 'heart', score: 8000 },      // LEFT - ~30 min expert (was 2800)
-      { id: 'lightning', score: 15000 }, // RIGHT - ~1 hr expert (was 5000)
+      { id: 'circle', cmRequired: 0 },     // LEFT - start
+      { id: 'square', cmRequired: 0 },     // RIGHT - start
+      { id: 'triangle', cmRequired: 0 },   // IGNORE - start
+      { id: 'droplet', cmRequired: 1 },    // LEFT - CM1 (~2 min)
+      { id: 'crescent', cmRequired: 2 },   // RIGHT - CM2 (~19 min)
+      { id: 'star', cmRequired: 3 },       // IGNORE - CM3 (~1h 9min)
+      { id: 'heart', cmRequired: 4 },      // LEFT - CM4 (~3h 22min)
+      { id: 'lightning', cmRequired: 5 },  // RIGHT - CM5 (~10h)
     ];
 
     // Get symbols with theme-appropriate colors
@@ -2554,14 +2565,14 @@
     // ==========================================
     // GAME FUNCTIONS
     // ==========================================
-    let unlockedSymbolsCache = { score: -1, symbols: null };
+    let unlockedSymbolsCache = { cm: -1, symbols: null };
 
     function getUnlockedSymbols() {
-      // Use peak score for persistent unlocks (symbols stay unlocked across deaths)
-      const effectiveScore = Math.max(score, peakScore);
-      if (unlockedSymbolsCache.score !== effectiveScore) {
-        unlockedSymbolsCache.score = effectiveScore;
-        unlockedSymbolsCache.symbols = SYMBOLS.filter(s => s.score <= effectiveScore);
+      // Symbols unlock based on Critical Mass progress (persists across deaths)
+      const completedCM = cmProgress.cm;
+      if (unlockedSymbolsCache.cm !== completedCM) {
+        unlockedSymbolsCache.cm = completedCM;
+        unlockedSymbolsCache.symbols = SYMBOLS.filter(s => s.cmRequired <= completedCM);
       }
       return unlockedSymbolsCache.symbols;
     }
@@ -3115,6 +3126,7 @@
 
       // Animate artifact particles with physics
       animateArtifactParticles();
+      checkAnimationTimeout(); // Failsafe for stuck animation flag
     }
 
     function startGameLoop() {
@@ -3378,97 +3390,348 @@
     // ARTIFACT REACTOR SYSTEM FUNCTIONS
     // ==========================================
 
-    // Load artifact progress
-    function loadArtifactProgress() {
+    // Load Critical Mass progress
+    function loadCMProgress() {
       try {
-        const data = JSON.parse(localStorage.getItem('sortex_artifacts') || '{}');
-        artifactsUnlocked = Math.max(0, parseInt(data.unlocked) || 0);
-        artifactCombo = 0; // Always reset combo on load
+        const data = localStorage.getItem('sortex_cm_progress');
+        if (!data) {
+          cmProgress = { cm: 0, crescendos: 0, swipes: 0 };
+          return;
+        }
+        const parsed = JSON.parse(data);
+        cmProgress = {
+          cm: Math.max(0, Math.min(5, parseInt(parsed.cm, 10) || 0)),
+          crescendos: Math.max(0, Math.min(120, parseInt(parsed.crescendos, 10) || 0)),
+          swipes: Math.max(0, Math.min(200, parseInt(parsed.swipes, 10) || 0))
+        };
       } catch(e) {
-        artifactsUnlocked = 0;
-        artifactCombo = 0;
+        cmProgress = { cm: 0, crescendos: 0, swipes: 0 };
       }
     }
 
-    // Save artifact progress
-    function saveArtifactProgress() {
+    // Save Critical Mass progress
+    function saveCMProgress() {
       try {
-        localStorage.setItem('sortex_artifacts', JSON.stringify({
-          unlocked: artifactsUnlocked
-        }));
+        localStorage.setItem('sortex_cm_progress', JSON.stringify(cmProgress));
+        lastCMSaveTime = performance.now();
       } catch(e) {
         // localStorage disabled - continue in memory
       }
     }
 
-    // Update artifact on correct swipe (called from handleSwipe)
-    function updateArtifact() {
-      if (isPaused || isArtifactUnlocking || gameState !== 'playing') return;
-
-      artifactCombo++;
-      updateArtifactUI();
-      updateArtifactParticles();
-
-      const threshold = getArtifactThreshold();
-      if (artifactCombo >= threshold) {
-        unlockArtifact();
+    // Auto-save every 60 seconds during gameplay
+    function checkAutoSave() {
+      if (gameState === 'playing' && !isPaused) {
+        const now = performance.now();
+        if (now - lastCMSaveTime > 60000) {
+          saveCMProgress();
+        }
       }
     }
 
-    // Unlock artifact with celebration
-    function unlockArtifact() {
-      if (isArtifactUnlocking) return;
-      isArtifactUnlocking = true;
+    // Update artifact on correct swipe (called from handleSwipe)
+    function updateArtifact() {
+      if (isPaused || isAnimatingArtifact || gameState !== 'playing') return;
+      if (cmProgress.cm >= 5) return; // All symbols unlocked, arcade mode
 
-      artifactsUnlocked++;
+      cmProgress.swipes++;
+      updateArtifactUI();
+      checkAutoSave();
 
-      // Visual feedback
+      const threshold = getSwipesPerCrescendo(cmProgress.cm);
+      if (cmProgress.swipes >= threshold) {
+        triggerCrescendo();
+      }
+    }
+
+    // Trigger crescendo - frequent small celebration
+    function triggerCrescendo() {
+      // Concurrency guard - prevent overlapping animations
+      if (isAnimatingArtifact) return;
+      isAnimatingArtifact = true;
+      animationStartTime = performance.now(); // For failsafe timeout
+
+      // Increment crescendo, reset swipes
+      cmProgress.crescendos++;
+      cmProgress.swipes = 0;
+
+      // Visual feedback - flash and particle spawn
+      const crystal = document.getElementById('artifact-crystal');
+      if (crystal) crystal.classList.add('crescendo');
+
+      // Show "POWER UP!" text
+      showCrescendoText();
+      playSound('correct', 15); // Higher pitch
+
+      // Add 3 particles to artifact
+      addParticlesToArtifact(3);
+
+      // Save progress immediately (before potential critical mass)
+      saveCMProgress();
+
+      // Check if critical mass reached
+      const crescendosNeeded = getCrescendosForCM(cmProgress.cm);
+      if (cmProgress.crescendos >= crescendosNeeded) {
+        // Trigger critical mass after crescendo animation
+        setTimeout(() => {
+          if (crystal) crystal.classList.remove('crescendo');
+          triggerCriticalMass();
+        }, 300);
+      } else {
+        // Just crescendo, no critical mass
+        setTimeout(() => {
+          isAnimatingArtifact = false;
+          animationStartTime = 0;
+          if (crystal) crystal.classList.remove('crescendo');
+          updateArtifactUI();
+        }, 300);
+      }
+    }
+
+    // Trigger Critical Mass - rare, unlocks new symbol
+    function triggerCriticalMass() {
+      isAnimatingArtifact = true;
+      animationStartTime = performance.now(); // For failsafe timeout
+
+      // Increment CM, reset crescendos
+      cmProgress.cm++;
+      cmProgress.crescendos = 0;
+      cmProgress.swipes = 0;
+
+      // Clear symbol cache to force recalculation
+      unlockedSymbolsCache.cm = -1;
+
+      // Massive visual feedback
       const crystal = document.getElementById('artifact-crystal');
       if (crystal) crystal.classList.add('unlocking');
 
-      showArtifactUnlocked();
+      // Explosion effects
+      showCriticalMassExplosion();
+      createArtifactBurst();
       playSound('unlock');
 
-      // Create burst particles at artifact
-      createArtifactBurst();
+      // Show symbol unlock celebration (reuse existing system)
+      const newSymbolCount = getUnlockedSymbols().length;
+      if (newSymbolCount > lastUnlockedCount) {
+        // Pause game for celebration
+        isPaused = true;
+        isCelebrating = true;
+        celebrationStartTime = performance.now();
 
-      // Reset after animation
+        // Update rules with new symbol
+        generateRules();
+
+        // Find newly unlocked symbol
+        const newSymbol = SYMBOL_DEFS[newSymbolCount - 1];
+        if (newSymbol) {
+          window.newUnlockedSymbol = newSymbol.id;
+          window.guaranteedSpawnsRemaining = 3;
+        }
+
+        // Show unlock overlay
+        showUnlockCelebration(newSymbolCount);
+        lastUnlockedCount = newSymbolCount;
+      }
+
+      // Reset artifact after animation
       setTimeout(() => {
-        artifactCombo = 0;
-        isArtifactUnlocking = false;
-
+        isAnimatingArtifact = false;
+        animationStartTime = 0;
         if (crystal) crystal.classList.remove('unlocking');
+
+        // Clear particles for fresh start
+        artifactParticles = [];
+        const container = document.getElementById('artifact-particles');
+        if (container) container.innerHTML = '';
+
         updateArtifactUI();
-        updateArtifactParticles();
-        saveArtifactProgress();
-      }, 600);
+        saveCMProgress();
+      }, 800);
     }
 
-    // Update artifact visual state based on combo progress (excitement shows progress, no numbers)
+    // Show "POWER UP!" floating text
+    function showCrescendoText() {
+      const text = document.createElement('div');
+      text.className = 'crescendo-text';
+      text.textContent = '⚡ POWER UP!';
+      text.style.cssText = `
+        position: fixed;
+        top: 20%;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--accent-primary);
+        text-shadow: 0 0 20px var(--accent-primary), 2px 2px 0 #000;
+        pointer-events: none;
+        z-index: 1000;
+        animation: crescendoFloat 0.6s ease-out forwards;
+      `;
+      document.body.appendChild(text);
+      setTimeout(() => text.remove(), 600);
+    }
+
+    // Critical Mass explosion effects
+    function showCriticalMassExplosion() {
+      // Screen flash
+      const flash = document.createElement('div');
+      flash.style.cssText = `
+        position: fixed;
+        inset: 0;
+        background: rgba(255, 255, 255, 0.6);
+        pointer-events: none;
+        z-index: 999;
+        animation: flashEffect 0.3s ease-out forwards;
+      `;
+      document.body.appendChild(flash);
+      setTimeout(() => flash.remove(), 300);
+
+      // Screen shake
+      document.body.classList.add('screen-shake-mega');
+      setTimeout(() => document.body.classList.remove('screen-shake-mega'), 300);
+
+      // Shockwaves from artifact
+      const crystal = document.getElementById('artifact-crystal');
+      if (crystal) {
+        const rect = crystal.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+
+        for (let i = 0; i < 3; i++) {
+          setTimeout(() => {
+            const ring = document.createElement('div');
+            ring.className = 'artifact-shockwave';
+            ring.style.left = (cx - 10) + 'px';
+            ring.style.top = (cy - 10) + 'px';
+            document.body.appendChild(ring);
+            setTimeout(() => ring.remove(), 600);
+          }, i * 100);
+        }
+      }
+    }
+
+    // Add particles to artifact (called on crescendo)
+    // Ensures equal distribution across all active symbols
+    function addParticlesToArtifact(count) {
+      const container = document.getElementById('artifact-particles');
+      if (!container) return;
+
+      // Get active symbol shapes (left/right only, not ignore)
+      const unlockedSymbols = getUnlockedSymbols();
+      const activeSymbolIds = unlockedSymbols
+        .filter(s => FIXED_RULES[s.id] === 'left' || FIXED_RULES[s.id] === 'right')
+        .map(s => s.id);
+      const shapes = activeSymbolIds.length > 0 ? activeSymbolIds : ['circle', 'square'];
+
+      // Count current particles per shape
+      const shapeCounts = {};
+      shapes.forEach(s => shapeCounts[s] = 0);
+      artifactParticles.forEach(p => {
+        if (p.shape && shapeCounts[p.shape] !== undefined) {
+          shapeCounts[p.shape]++;
+        }
+      });
+
+      for (let i = 0; i < count; i++) {
+        // Remove oldest if at cap
+        if (artifactParticles.length >= 30) {
+          const oldest = artifactParticles.shift();
+          if (oldest && oldest.el) oldest.el.remove();
+          // Decrement count for removed shape
+          if (oldest.shape && shapeCounts[oldest.shape] !== undefined) {
+            shapeCounts[oldest.shape]--;
+          }
+        }
+
+        // Pick shape with lowest count (equal distribution)
+        let minCount = Infinity;
+        let minShape = shapes[0];
+        shapes.forEach(s => {
+          if (shapeCounts[s] < minCount) {
+            minCount = shapeCounts[s];
+            minShape = s;
+          }
+        });
+        shapeCounts[minShape]++;
+
+        const particle = document.createElement('div');
+        particle.className = 'inner-particle ' + minShape;
+
+        // Spawn from center with random velocity
+        const x = container.offsetWidth / 2;
+        const y = container.offsetHeight / 2;
+
+        particle.style.left = x + 'px';
+        particle.style.top = y + 'px';
+
+        container.appendChild(particle);
+        artifactParticles.push({
+          el: particle,
+          x: x,
+          y: y,
+          vx: (Math.random() - 0.5) * 3,
+          vy: (Math.random() - 0.5) * 3,
+          shape: minShape  // Track shape for rebalancing
+        });
+      }
+    }
+
+    // Apply penalty on wrong swipe (called from handleSwipe)
+    function applyCMPenalty() {
+      if (cmProgress.cm >= 5) return; // Arcade mode, no penalty
+      try {
+        const penalty = getCMPenalty(cmProgress.cm) || 4; // Fallback to 4 if undefined
+        cmProgress.swipes = Math.max(0, cmProgress.swipes - penalty);
+        updateArtifactUI();
+      } catch(e) {
+        // Silently fail - don't break game flow
+        console.warn('CM penalty error:', e);
+      }
+    }
+
+    // Failsafe: Reset animation flag if stuck (called from game loop)
+    let animationStartTime = 0;
+    function checkAnimationTimeout() {
+      if (isAnimatingArtifact && animationStartTime > 0) {
+        const elapsed = performance.now() - animationStartTime;
+        if (elapsed > 2000) { // 2 second failsafe
+          isAnimatingArtifact = false;
+          animationStartTime = 0;
+          console.warn('Animation timeout - forced reset');
+        }
+      }
+    }
+
+    // Update artifact visual state based on crescendo progress
     function updateArtifactUI() {
       const crystal = document.getElementById('artifact-crystal');
       const fill = document.getElementById('artifact-fill');
 
       if (!crystal || !fill) return;
 
-      const threshold = getArtifactThreshold();
-      const progress = Math.min(artifactCombo / threshold, 1);
+      // Progress toward next crescendo (swipes / threshold)
+      const threshold = getSwipesPerCrescendo(cmProgress.cm);
+      const swipeProgress = Math.min(cmProgress.swipes / threshold, 1);
 
-      // Update fill height
-      fill.style.height = (progress * 100) + '%';
+      // Overall progress toward critical mass (crescendos / needed)
+      const crescendosNeeded = getCrescendosForCM(cmProgress.cm);
+      const cmProgressPercent = cmProgress.crescendos / crescendosNeeded;
 
-      // Update visual state based on progress - excitement communicates proximity to unlock
-      crystal.classList.remove('dormant', 'stirring', 'awakening', 'surging', 'critical');
-      if (progress < 0.2) {
+      // Fill shows overall CM progress (not swipe progress)
+      fill.style.height = (cmProgressPercent * 100) + '%';
+
+      // Update visual state based on swipe progress (excitement within current crescendo)
+      crystal.classList.remove('dormant', 'stirring', 'building', 'surging', 'crescendo');
+      if (swipeProgress < 0.2) {
         crystal.classList.add('dormant');
-      } else if (progress < 0.4) {
+      } else if (swipeProgress < 0.4) {
         crystal.classList.add('stirring');
-      } else if (progress < 0.6) {
-        crystal.classList.add('awakening');
-      } else if (progress < 0.9) {
+      } else if (swipeProgress < 0.7) {
+        crystal.classList.add('building');
+      } else if (swipeProgress < 0.9) {
         crystal.classList.add('surging');
       } else {
-        crystal.classList.add('critical');
+        crystal.classList.add('crescendo');
       }
 
       // Apply tier-based visual evolution (colors, glow intensity)
@@ -3478,6 +3741,7 @@
     }
 
     // Initialize symbol-shaped particles inside artifact with physics properties
+    // Ensures equal distribution across all active symbols
     function initArtifactParticles() {
       const container = document.getElementById('artifact-particles');
       if (!container) return;
@@ -3494,10 +3758,24 @@
         .map(s => s.id);
       const shapes = activeSymbolIds.length > 0 ? activeSymbolIds : ['circle', 'square'];
 
+      // Create equal particles per shape
+      const shapeCounts = {};
+      shapes.forEach(s => shapeCounts[s] = 0);
+
       for (let i = 0; i < particleCount; i++) {
+        // Pick shape with lowest count (equal distribution)
+        let minCount = Infinity;
+        let minShape = shapes[0];
+        shapes.forEach(s => {
+          if (shapeCounts[s] < minCount) {
+            minCount = shapeCounts[s];
+            minShape = s;
+          }
+        });
+        shapeCounts[minShape]++;
+
         const particle = document.createElement('div');
-        const shape = shapes[Math.floor(Math.random() * shapes.length)];
-        particle.className = 'inner-particle ' + shape;
+        particle.className = 'inner-particle ' + minShape;
 
         const x = Math.random() * (container.offsetWidth - 14);
         const y = Math.random() * (container.offsetHeight - 14);
@@ -3511,7 +3789,8 @@
           x: x,
           y: y,
           vx: (Math.random() - 0.5) * 0.5,
-          vy: (Math.random() - 0.5) * 0.5
+          vy: (Math.random() - 0.5) * 0.5,
+          shape: minShape
         });
       }
     }
@@ -3523,8 +3802,8 @@
 
       const containerWidth = container.offsetWidth - 12;
       const containerHeight = container.offsetHeight - 12;
-      const threshold = getArtifactThreshold();
-      const progress = artifactCombo / threshold;
+      const threshold = getSwipesPerCrescendo(cmProgress.cm);
+      const progress = cmProgress.swipes / threshold;
 
       // Speed and jitter based on combo progress
       let speedMultiplier, jitter;
@@ -3675,36 +3954,19 @@
 
     // Reset artifact UI on game start
     function resetArtifactUI() {
-      loadArtifactProgress();
-      artifactCombo = 0;
-      isArtifactUnlocking = false;
+      loadCMProgress();
+      cmProgress.swipes = 0; // Reset swipes on new game, but keep crescendos/cm
+      isAnimatingArtifact = false;
+      queuedSwipe = null;
+      lastCMSaveTime = performance.now();
       updateArtifactUI();
-      updateArtifactParticles();
+      // Initialize particles based on current crescendo count
+      initArtifactParticles();
     }
 
-    // Graduated miss penalty - lose less combo when close to threshold
+    // Apply miss penalty to crescendo progress (10% of threshold)
     function applyMissPenalty() {
-      const threshold = getArtifactThreshold();
-      const progress = artifactCombo / threshold;
-
-      let penalty;
-      if (progress >= 0.9) {
-        // 90%+: Only lose 3 combo (mercy)
-        penalty = 3;
-      } else if (progress >= 0.8) {
-        // 80%+: Lose 5 combo
-        penalty = 5;
-      } else if (progress >= 0.5) {
-        // 50%+: Lose 30% of combo
-        penalty = Math.floor(artifactCombo * 0.3);
-      } else {
-        // Below 50%: Lose 50% of combo
-        penalty = Math.floor(artifactCombo * 0.5);
-      }
-
-      artifactCombo = Math.max(0, artifactCombo - penalty);
-      updateArtifactUI();
-      updateArtifactParticles();
+      applyCMPenalty(); // Use the new CM penalty system
     }
 
     // Store tutorial timeout so it can be cancelled if player pauses first
@@ -4001,7 +4263,9 @@
         } catch(e) {}
         highScore = 0;
         peakScore = 0;
-        unlockedSymbolsCache = { score: -1, symbols: null }; // Force recalculation
+        unlockedSymbolsCache = { cm: -1, symbols: null }; // Force recalculation
+        cmProgress = { cm: 0, crescendos: 0, swipes: 0 }; // Reset CM progress
+        try { localStorage.removeItem('sortex_cm_progress'); } catch(e) {}
         document.getElementById('high-score-display').textContent = 'High Score: 0';
       }
     }
@@ -4162,10 +4426,12 @@
 
     // DEBUG: Expose artifact state for testing
     window.getArtifactState = () => ({
-      combo: artifactCombo,
-      threshold: getArtifactThreshold(),
-      unlocked: artifactsUnlocked,
-      isUnlocking: isArtifactUnlocking,
+      cm: cmProgress.cm,
+      crescendos: cmProgress.crescendos,
+      swipes: cmProgress.swipes,
+      swipesNeeded: getSwipesPerCrescendo(cmProgress.cm),
+      crescendosNeeded: getCrescendosForCM(cmProgress.cm),
+      isAnimating: isAnimatingArtifact,
       gameState: gameState,
       isPaused: isPaused
     });
@@ -4199,8 +4465,8 @@
     // Load peak score for persistent unlocks
     loadPeakScore();
 
-    // Load artifact reactor progress
-    loadArtifactProgress();
+    // Load Critical Mass progress
+    loadCMProgress();
 
     // Apply saved language on load
     updateLanguageOptions();
