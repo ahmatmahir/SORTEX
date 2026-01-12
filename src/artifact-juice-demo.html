@@ -181,21 +181,26 @@
       align-items: flex-start;
       gap: 2px;
       flex-shrink: 0;
-      min-width: 45px; /* Fixed width prevents layout shift */
+      min-width: 50px; /* Fixed width prevents layout shift */
+      max-width: 70px; /* Prevent expansion from long text */
     }
 
     #score-display {
       color: var(--text-primary);
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       font-weight: 700;
-      min-width: 45px;
+      white-space: nowrap;
     }
 
     #next-unlock {
-      font-size: 0.7rem;
+      font-size: 0.6rem;
       color: var(--text-secondary);
       opacity: 0.7;
-      display: none; /* Hidden until first unlock */
+      display: none; /* Hidden until needed */
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 70px;
     }
 
     #next-unlock.show {
@@ -3059,31 +3064,23 @@
     }
     
     function updateUI() {
-      document.getElementById('score-display').textContent = score;
-      // Only show combo at 5+ to reduce clutter
-      // Combo display removed per UX feedback - score is sufficient
+      // Show crescendo progress instead of raw score: "3/10" (crescendos done / needed for CM)
+      const crescendosNeeded = getCrescendosForCM(cmProgress.cm);
+      const progressDisplay = cmProgress.cm >= 5
+        ? '★ MAX' // All symbols unlocked - arcade mode
+        : `${cmProgress.crescendos}/${crescendosNeeded}`;
+      document.getElementById('score-display').textContent = progressDisplay;
 
       const hearts = document.querySelectorAll('#lives-display .heart');
       hearts.forEach((heart, i) => {
         heart.classList.toggle('lost', i >= lives);
       });
 
-      // Show next unlock progress after first unlock (Option B)
+      // Show CM level indicator
       const nextUnlockEl = document.getElementById('next-unlock');
-      if (lastUnlockedCount > 3) {
-        // Find next symbol to unlock (use peakScore for persistent unlocks)
-        const effectiveScoreForUnlock = Math.max(score, peakScore);
-        const nextSymbol = SYMBOL_DEFS.find(s => s.score > effectiveScoreForUnlock);
-        if (nextSymbol) {
-          const symbolName = t(nextSymbol.id);
-          const atWord = t('at');
-          nextUnlockEl.textContent = `${t('next')}: ${symbolName} ${atWord} ${nextSymbol.score}`;
-          nextUnlockEl.classList.add('show');
-        } else {
-          // All symbols unlocked
-          nextUnlockEl.textContent = t('allUnlocked');
-          nextUnlockEl.classList.add('show');
-        }
+      if (cmProgress.cm > 0) {
+        nextUnlockEl.textContent = `CM ${cmProgress.cm}`;
+        nextUnlockEl.classList.add('show');
       } else {
         nextUnlockEl.classList.remove('show');
       }
@@ -3401,16 +3398,19 @@
         const data = localStorage.getItem('sortex_cm_progress');
         if (!data) {
           cmProgress = { cm: 0, crescendos: 0, swipes: 0 };
-          return;
+        } else {
+          const parsed = JSON.parse(data);
+          cmProgress = {
+            cm: Math.max(0, Math.min(5, parseInt(parsed.cm, 10) || 0)),
+            crescendos: Math.max(0, Math.min(120, parseInt(parsed.crescendos, 10) || 0)),
+            swipes: Math.max(0, Math.min(200, parseInt(parsed.swipes, 10) || 0))
+          };
         }
-        const parsed = JSON.parse(data);
-        cmProgress = {
-          cm: Math.max(0, Math.min(5, parseInt(parsed.cm, 10) || 0)),
-          crescendos: Math.max(0, Math.min(120, parseInt(parsed.crescendos, 10) || 0)),
-          swipes: Math.max(0, Math.min(200, parseInt(parsed.swipes, 10) || 0))
-        };
+        // Force recalculation of unlocked symbols based on loaded CM
+        unlockedSymbolsCache.cm = -1;
       } catch(e) {
         cmProgress = { cm: 0, crescendos: 0, swipes: 0 };
+        unlockedSymbolsCache.cm = -1;
       }
     }
 
@@ -3649,14 +3649,14 @@
         }
 
         // Pick shape with lowest count (equal distribution)
+        // When tied, rotate through shapes to ensure fairness
         let minCount = Infinity;
-        let minShape = shapes[0];
         shapes.forEach(s => {
-          if (shapeCounts[s] < minCount) {
-            minCount = shapeCounts[s];
-            minShape = s;
-          }
+          if (shapeCounts[s] < minCount) minCount = shapeCounts[s];
         });
+        // Get all shapes with min count, pick based on iteration for fairness
+        const minShapes = shapes.filter(s => shapeCounts[s] === minCount);
+        const minShape = minShapes[i % minShapes.length];
         shapeCounts[minShape]++;
 
         const particle = document.createElement('div');
@@ -3769,14 +3769,13 @@
 
       for (let i = 0; i < particleCount; i++) {
         // Pick shape with lowest count (equal distribution)
+        // When tied, rotate through shapes to ensure fairness
         let minCount = Infinity;
-        let minShape = shapes[0];
         shapes.forEach(s => {
-          if (shapeCounts[s] < minCount) {
-            minCount = shapeCounts[s];
-            minShape = s;
-          }
+          if (shapeCounts[s] < minCount) minCount = shapeCounts[s];
         });
+        const minShapes = shapes.filter(s => shapeCounts[s] === minCount);
+        const minShape = minShapes[i % minShapes.length];
         shapeCounts[minShape]++;
 
         const particle = document.createElement('div');
