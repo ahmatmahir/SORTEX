@@ -167,11 +167,11 @@
     }
 
     #game-header {
-      padding: 8px 12px;
+      padding: 8px 10px; /* Match play-area margins so artifact aligns with spawn zone */
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       flex-shrink: 0; /* Prevent header from shrinking */
     }
 
@@ -3829,10 +3829,24 @@
         jitter = 4;
       }
 
-      artifactParticles.forEach(p => {
+      artifactParticles.forEach((p, i) => {
         // Add jitter
         p.vx += (Math.random() - 0.5) * jitter * 0.1;
         p.vy += (Math.random() - 0.5) * jitter * 0.1;
+
+        // Particle-particle repulsion to prevent visual merging
+        artifactParticles.forEach((other, j) => {
+          if (i === j) return;
+          const dx = p.x - other.x;
+          const dy = p.y - other.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          const minDist = 16; // Minimum distance between particles
+          if (dist < minDist && dist > 0) {
+            const force = (minDist - dist) / minDist * 0.3;
+            p.vx += (dx / dist) * force;
+            p.vy += (dy / dist) * force;
+          }
+        });
 
         // Apply velocity
         p.x += p.vx * speedMultiplier;
