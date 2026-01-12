@@ -165,11 +165,11 @@
     }
     
     #game-header {
-      padding: calc(12px + env(safe-area-inset-top, 0px)) 20px 12px 20px;
+      padding: calc(8px + env(safe-area-inset-top, 0px)) 12px 8px 12px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 20px;
+      gap: 10px;
     }
 
     #score-section {
@@ -177,13 +177,15 @@
       flex-direction: column;
       align-items: flex-start;
       gap: 2px;
+      flex-shrink: 0;
+      min-width: 45px; /* Fixed width prevents layout shift */
     }
 
     #score-display {
       color: var(--text-primary);
-      font-size: 1.5rem;
+      font-size: 1.2rem;
       font-weight: 700;
-      min-width: 50px;
+      min-width: 45px;
     }
 
     #next-unlock {
@@ -203,9 +205,9 @@
 
     #lives-display {
       display: flex;
-      gap: 6px;
-      font-size: 1.2rem;
-      /* Lives now sit at far right of header (pause moved to bottom) */
+      gap: 5px;
+      font-size: 1rem;
+      flex-shrink: 0;
     }
 
     #lives-display .heart {
@@ -542,10 +544,10 @@
     #artifact-crystal {
       position: relative;
       width: 100%;
-      height: 36px;
+      height: 55px;
       background: var(--rules-bg);
       border: 2px solid var(--rules-border);
-      border-radius: 10px;
+      border-radius: 12px;
       overflow: hidden;
       box-shadow: inset 0 0 15px rgba(0,0,0,0.3), 0 2px 10px rgba(0, 0, 0, 0.3);
       transition: all 0.3s ease;
@@ -576,7 +578,7 @@
       width: 12px;
       height: 12px;
       opacity: 0.9;
-      transition: all 0.1s ease;
+      /* No transition - JS handles smooth animation */
     }
 
     /* Circle - outline style matching game */
