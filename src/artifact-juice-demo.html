@@ -3077,10 +3077,10 @@
         heart.classList.toggle('lost', i >= lives);
       });
 
-      // Show CM level indicator
+      // Show tier level indicator (clearer than "CM")
       const nextUnlockEl = document.getElementById('next-unlock');
       if (cmProgress.cm > 0) {
-        nextUnlockEl.textContent = `CM ${cmProgress.cm}`;
+        nextUnlockEl.textContent = `Tier ${cmProgress.cm}`;
         nextUnlockEl.classList.add('show');
       } else {
         nextUnlockEl.classList.remove('show');
@@ -3545,12 +3545,13 @@
         animationStartTime = 0;
         if (crystal) crystal.classList.remove('unlocking');
 
-        // Clear particles for fresh start
+        // Clear particles for fresh start, then reinitialize with new symbol types
         artifactParticles = [];
         const container = document.getElementById('artifact-particles');
         if (container) container.innerHTML = '';
 
         updateArtifactUI();
+        initArtifactParticles(); // Recreate particles with newly unlocked symbol
         saveCMProgress();
       }, 800);
     }
