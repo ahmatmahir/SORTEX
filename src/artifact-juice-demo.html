@@ -1896,10 +1896,11 @@
       return Math.floor(getSwipesPerCrescendo(cm) * 0.10);
     }
 
-    // Particle count = crescendos completed × 3, capped at 30
+    // Particle count = crescendos completed × 2, capped at 30
+    // Using 2 per crescendo ensures even totals for equal distribution
     function getArtifactParticleCount() {
       // Always start with 4 particles (2 per symbol), grow with crescendos
-      return Math.min(30, 4 + cmProgress.crescendos * 3);
+      return Math.min(30, 4 + cmProgress.crescendos * 2);
     }
 
     // Visual tier based on critical masses completed
@@ -3468,8 +3469,8 @@
       showCrescendoText();
       playSound('correct', 15); // Higher pitch
 
-      // Add 3 particles to artifact
-      addParticlesToArtifact(3);
+      // Add 2 particles to artifact (keeps total even for equal distribution)
+      addParticlesToArtifact(2);
 
       // Save progress immediately (before potential critical mass)
       saveCMProgress();
