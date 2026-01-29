@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>SORTEX - Symbol Sorting Game</title>
+  <title>SORTEX - Artifact Reactor</title>
 
   <!-- PWA Meta Tags -->
   <meta name="description" content="A fast-paced symbol sorting reflex game. Swipe symbols left or right to match the rules!">
@@ -32,6 +32,12 @@
     /* Theme 1: Spell Caster (Default) - Purple, indigo, mystical blues */
     :root, [data-theme="spell-caster"] {
       --bg-gradient: linear-gradient(180deg, #1e1b4b 0%, #3b0764 50%, #0f172a 100%);
+      --bg-pattern: none;
+      --bg-overlay: none;
+      --bg-noise: none;
+      --bg-pattern-size: 0 0;
+      --bg-overlay-size: 0 0;
+      --bg-noise-size: 0 0;
       --text-primary: #e9d5ff;
       --text-secondary: #c4b5fd;
       --accent-primary: #a855f7;
@@ -40,6 +46,8 @@
       --portal-left-bg: rgba(168, 85, 247, 0.4);
       --portal-right: #3b82f6;
       --portal-right-bg: rgba(59, 130, 246, 0.4);
+      --droplet-color: #f472b6;
+      --rail-error: var(--danger-line);
       --danger-line: #ef4444;
       --btn-gradient: linear-gradient(135deg, #a855f7, #3b82f6);
       --btn-glow: rgba(168, 85, 247, 0.5);
@@ -49,11 +57,19 @@
       --heart-glow: #c4b5fd;
       --correct-flash: rgba(34, 197, 94, 0.4);
       --wrong-flash: rgba(239, 68, 68, 0.4);
+      --artifact-overlay: none;
+      --artifact-overlay-opacity: 0;
     }
 
     /* Theme 2: Data Stream - Green, cyan, matrix-style */
     [data-theme="data-stream"] {
       --bg-gradient: linear-gradient(180deg, #021a0d 0%, #0a2818 50%, #010d05 100%);
+      --bg-pattern: repeating-linear-gradient(90deg, rgba(34, 197, 94, 0.08) 0 1px, transparent 1px 36px);
+      --bg-overlay: repeating-linear-gradient(180deg, rgba(6, 182, 212, 0.09) 0 1px, transparent 1px 6px);
+      --bg-noise: radial-gradient(circle, rgba(34, 197, 94, 0.08) 0 1px, transparent 1.5px);
+      --bg-pattern-size: 36px 36px;
+      --bg-overlay-size: 100% 6px;
+      --bg-noise-size: 24px 24px;
       --text-primary: #4ade80;
       --text-secondary: #22d3ee;
       --accent-primary: #22c55e;
@@ -62,6 +78,8 @@
       --portal-left-bg: rgba(34, 197, 94, 0.4);
       --portal-right: #06b6d4;
       --portal-right-bg: rgba(6, 182, 212, 0.4);
+      --droplet-color: #34d399;
+      --rail-error: var(--danger-line);
       --danger-line: #f97316;
       --btn-gradient: linear-gradient(135deg, #22c55e, #06b6d4);
       --btn-glow: rgba(34, 197, 94, 0.5);
@@ -71,11 +89,19 @@
       --heart-glow: #4ade80;
       --correct-flash: rgba(34, 197, 94, 0.5);
       --wrong-flash: rgba(249, 115, 22, 0.4);
+      --artifact-overlay: repeating-linear-gradient(90deg, rgba(34, 197, 94, 0.2) 0 1px, transparent 1px 8px);
+      --artifact-overlay-opacity: 0.6;
     }
 
     /* Theme 3: Cosmic Gatekeeper - Rose, deep red, cosmic purple */
     [data-theme="cosmic-gatekeeper"] {
       --bg-gradient: linear-gradient(180deg, #1a0a1e 0%, #3d0f24 50%, #0f0518 100%);
+      --bg-pattern: radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.12) 0 1px, transparent 2px);
+      --bg-overlay: radial-gradient(circle at 50% 20%, rgba(225, 29, 72, 0.25) 0%, transparent 55%);
+      --bg-noise: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0 1px, transparent 2px);
+      --bg-pattern-size: 140px 140px;
+      --bg-overlay-size: 100% 100%;
+      --bg-noise-size: 220px 220px;
       --text-primary: #fda4af;
       --text-secondary: #f472b6;
       --accent-primary: #e11d48;
@@ -84,6 +110,8 @@
       --portal-left-bg: rgba(225, 29, 72, 0.4);
       --portal-right: #a855f7;
       --portal-right-bg: rgba(168, 85, 247, 0.4);
+      --droplet-color: #f472b6;
+      --rail-error: var(--danger-line);
       --danger-line: #fbbf24;
       --btn-gradient: linear-gradient(135deg, #e11d48, #a855f7);
       --btn-glow: rgba(225, 29, 72, 0.5);
@@ -93,15 +121,39 @@
       --heart-glow: #fda4af;
       --correct-flash: rgba(74, 222, 128, 0.4);
       --wrong-flash: rgba(251, 191, 36, 0.4);
+      --artifact-overlay: radial-gradient(circle at 50% 50%, rgba(168, 85, 247, 0.25) 0%, transparent 60%);
+      --artifact-overlay-opacity: 0.7;
     }
 
     body {
       font-family: 'Segoe UI', system-ui, sans-serif;
-      background: var(--bg-gradient);
+      background-color: #000;
+      background-image: var(--bg-gradient), var(--bg-pattern), var(--bg-overlay), var(--bg-noise);
+      background-size: cover, var(--bg-pattern-size), var(--bg-overlay-size), var(--bg-noise-size);
+      background-repeat: no-repeat, repeat, repeat, repeat;
+      background-attachment: fixed;
       min-height: 100vh;
       overflow: hidden;
       touch-action: none;
       user-select: none;
+    }
+
+    body[data-theme="data-stream"] {
+      animation: dataStreamDrift 12s linear infinite;
+    }
+
+    body[data-theme="cosmic-gatekeeper"] {
+      animation: cosmicDrift 28s linear infinite;
+    }
+
+    @keyframes dataStreamDrift {
+      0% { background-position: 0 0, 0 0, 0 0, 0 0; }
+      100% { background-position: 0 0, 120px 0, 0 60px, 80px 120px; }
+    }
+
+    @keyframes cosmicDrift {
+      0% { background-position: 0 0, 0 0, 0 0, 0 0; }
+      100% { background-position: 0 0, 140px 240px, 0 0, -180px 140px; }
     }
     
     /* MENU SCREEN */
@@ -161,36 +213,56 @@
       flex-direction: column;
       height: 100vh;
       height: 100dvh; /* Dynamic viewport height for mobile */
+      padding-top: env(safe-area-inset-top, 0px);
       padding-bottom: env(safe-area-inset-bottom, 0px);
+      box-sizing: border-box;
     }
-    
+
     #game-header {
-      padding: calc(12px + env(safe-area-inset-top, 0px)) 20px 12px 20px;
+      padding: 8px 10px; /* Match play-area margins so artifact aligns with spawn zone */
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 20px;
+      gap: 8px;
+      flex-shrink: 0; /* Prevent header from shrinking */
     }
 
     #score-section {
       display: flex;
       flex-direction: column;
       align-items: flex-start;
+      justify-content: center;
       gap: 2px;
+      flex-shrink: 0;
+      min-width: 70px; /* Keep room for "Level" label */
+      max-width: 90px; /* Prevent expansion from long text */
     }
 
     #score-display {
       color: var(--text-primary);
-      font-size: 1.5rem;
+      font-size: 1rem;
       font-weight: 700;
-      min-width: 50px;
+      white-space: nowrap;
     }
+
+    #score-value {
+      color: var(--text-primary);
+      font-size: 1.1rem;
+      font-weight: 800;
+      letter-spacing: 0.2px;
+    }
+
+    /* Removed crescendo dots (progress bar replaces them) */
 
     #next-unlock {
       font-size: 0.7rem;
       color: var(--text-secondary);
       opacity: 0.7;
-      display: none; /* Hidden until first unlock */
+      display: none; /* Hidden until needed */
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 70px;
     }
 
     #next-unlock.show {
@@ -204,8 +276,8 @@
     #lives-display {
       display: flex;
       gap: 6px;
-      font-size: 1.2rem;
-      /* Lives now sit at far right of header (pause moved to bottom) */
+      font-size: 1.05rem;
+      flex-shrink: 0;
     }
 
     #lives-display .heart {
@@ -228,6 +300,26 @@
       box-sizing: border-box; /* Ensure padding is included in flex calculation */
     }
 
+    body.paused #play-area,
+    body.paused .symbol {
+      pointer-events: none;
+    }
+
+    /* Pause rail breathing when game is paused */
+    body.paused .side-rail .rail-core {
+      animation-play-state: paused;
+    }
+
+    /* Respect reduced motion preference */
+    @media (prefers-reduced-motion: reduce) {
+      .side-rail .rail-core {
+        animation: none;
+      }
+      .rail-ripple-wave {
+        animation: none;
+        opacity: 0;
+      }
+    }
 
     @keyframes screenShake {
       0%, 100% { transform: translateX(0); }
@@ -282,12 +374,22 @@
       position: absolute;
       transform: translate(-50%, -50%);
       cursor: grab;
-      transition: opacity 0.2s, filter 0.2s;
-      filter: drop-shadow(0 0 8px currentColor);
+      transition: opacity 0.2s;
+      /* drop-shadow removed for performance - symbols use stroke for visibility */
       touch-action: none;
       -webkit-touch-callout: none;
       -webkit-user-select: none;
       user-select: none;
+      will-change: transform;
+    }
+
+    [data-theme="cosmic-gatekeeper"] .symbol::after {
+      content: '';
+      position: absolute;
+      inset: -10px;
+      border-radius: 50%;
+      box-shadow: 0 0 18px rgba(168, 85, 247, 0.25);
+      opacity: 0.7;
     }
 
     /* Generous touch zone - 30px invisible buffer around symbol (20% larger than original 25px) */
@@ -304,13 +406,44 @@
       pointer-events: none;
     }
 
+    [data-theme="data-stream"] .symbol::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: -16px;
+      width: 3px;
+      height: 12px;
+      transform: translateX(-50%);
+      border-radius: 999px;
+      background: linear-gradient(to top, rgba(34, 197, 94, 0), rgba(34, 197, 94, 0.22));
+      opacity: 0.35;
+      filter: blur(0.6px);
+      mix-blend-mode: screen;
+    }
+
+    [data-theme="data-stream"] .symbol svg *,
+    [data-theme="data-stream"] .portal-container .symbols svg *,
+    [data-theme="data-stream"] .side-rail .rail-symbol svg * {
+      stroke-dasharray: 5 3;
+      stroke-dashoffset: 1;
+      stroke-linecap: square;
+      stroke-linejoin: miter;
+    }
+
+    [data-theme="cosmic-gatekeeper"] .symbol svg *,
+    [data-theme="cosmic-gatekeeper"] .portal-container .symbols svg *,
+    [data-theme="cosmic-gatekeeper"] .side-rail .rail-symbol svg * {
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
     .symbol.above-zone {
       opacity: 0.6;
-      filter: drop-shadow(0 0 4px currentColor);
+      /* drop-shadow removed for performance */
     }
 
     .symbol:not(.above-zone) {
-      filter: drop-shadow(0 0 12px currentColor) drop-shadow(0 0 20px currentColor);
+      /* drop-shadow removed for performance - stroke provides visibility */
     }
 
     .symbol.swiped-left {
@@ -325,45 +458,53 @@
       animation: swipeWrong 0.3s ease-out forwards;
     }
 
+    /* Absorption animation - symbol fades before reaching rail */
     @keyframes swipeLeft {
       0% {
-        transform: translate(-50%, -50%) scale(1);
+        transform: translate(-50%, -50%) translateY(var(--swipe-start-y, 0px)) scale(1);
         opacity: 1;
       }
       50% {
-        transform: translate(-200%, -30%) scale(0.8);
+        transform: translate(-120%, -50%) translateY(var(--swipe-start-y, 0px)) scale(0.7);
         opacity: 1;
       }
+      75% {
+        transform: translate(-180%, -50%) translateY(var(--swipe-start-y, 0px)) scale(0.4);
+        opacity: 0.5;
+      }
       100% {
-        transform: translate(-400%, 0%) scale(0.3);
+        transform: translate(-220%, -50%) translateY(var(--swipe-start-y, 0px)) scale(0.1);
         opacity: 0;
-        filter: brightness(2) blur(2px);
       }
     }
 
+    /* Absorption animation - symbol fades before reaching rail */
     @keyframes swipeRight {
       0% {
-        transform: translate(-50%, -50%) scale(1);
+        transform: translate(-50%, -50%) translateY(var(--swipe-start-y, 0px)) scale(1);
         opacity: 1;
       }
       50% {
-        transform: translate(100%, -30%) scale(0.8);
+        transform: translate(20%, -50%) translateY(var(--swipe-start-y, 0px)) scale(0.7);
         opacity: 1;
       }
+      75% {
+        transform: translate(80%, -50%) translateY(var(--swipe-start-y, 0px)) scale(0.4);
+        opacity: 0.5;
+      }
       100% {
-        transform: translate(300%, 0%) scale(0.3);
+        transform: translate(120%, -50%) translateY(var(--swipe-start-y, 0px)) scale(0.1);
         opacity: 0;
-        filter: brightness(2) blur(2px);
       }
     }
 
     @keyframes swipeWrong {
-      0% { transform: translate(-50%, -50%) scale(1); }
-      20% { transform: translate(-40%, -50%) rotate(-5deg); }
-      40% { transform: translate(-60%, -50%) rotate(5deg); }
-      60% { transform: translate(-45%, -50%) rotate(-3deg); }
-      80% { transform: translate(-55%, -50%) rotate(2deg); }
-      100% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+      0% { transform: translate(-50%, -50%) translateY(var(--swipe-start-y, 0px)) scale(1); }
+      20% { transform: translate(-40%, -50%) translateY(var(--swipe-start-y, 0px)) rotate(-5deg); }
+      40% { transform: translate(-60%, -50%) translateY(var(--swipe-start-y, 0px)) rotate(5deg); }
+      60% { transform: translate(-45%, -50%) translateY(var(--swipe-start-y, 0px)) rotate(-3deg); }
+      80% { transform: translate(-55%, -50%) translateY(var(--swipe-start-y, 0px)) rotate(2deg); }
+      100% { transform: translate(-50%, -50%) translateY(var(--swipe-start-y, 0px)) scale(0.5); opacity: 0; }
     }
 
     .screen-flash {
@@ -390,6 +531,44 @@
       100% { opacity: 0; }
     }
 
+    .symbol.disintegrating {
+      animation: symbolDisintegrate 0.2s ease-out forwards;
+      pointer-events: none;
+    }
+
+    @keyframes symbolDisintegrate {
+      0% { transform: translate(-50%, -50%) translateY(var(--swipe-start-y, 0px)) scale(1); opacity: 1; }
+      100% { transform: translate(-50%, -50%) translateY(var(--swipe-start-y, 0px)) scale(0.2); opacity: 0; }
+    }
+
+    .disintegration-particle {
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--particle-color, #ff6b6b) 0%, rgba(255, 100, 100, 0.5) 50%, transparent 70%);
+      opacity: 0.95;
+      pointer-events: none;
+      z-index: 80;
+      animation: fizzle 0.45s ease-out forwards;
+      box-shadow: 0 0 10px var(--particle-color, #ff6b6b), 0 0 20px var(--particle-color, #ff6b6b);
+    }
+
+    .disintegration-particle.p1 { --dx: -40px; --dy: -30px; animation-delay: 0ms; }
+    .disintegration-particle.p2 { --dx: 42px; --dy: -28px; animation-delay: 25ms; }
+    .disintegration-particle.p3 { --dx: -35px; --dy: 25px; animation-delay: 50ms; }
+    .disintegration-particle.p4 { --dx: 38px; --dy: 22px; animation-delay: 35ms; }
+    .disintegration-particle.p5 { --dx: -10px; --dy: -45px; animation-delay: 15ms; }
+    .disintegration-particle.p6 { --dx: 12px; --dy: 40px; animation-delay: 60ms; }
+    .disintegration-particle.p7 { --dx: -50px; --dy: 8px; animation-delay: 30ms; }
+    .disintegration-particle.p8 { --dx: 48px; --dy: -8px; animation-delay: 40ms; }
+
+    @keyframes fizzle {
+      0% { transform: translate(0, 0) scale(1.3); opacity: 0.95; }
+      40% { opacity: 0.8; }
+      100% { transform: translate(var(--dx), var(--dy)) scale(0.2); opacity: 0; }
+    }
+
     /* Respect reduced motion preference */
     @media (prefers-reduced-motion: reduce) {
       .screen-shake,
@@ -397,6 +576,29 @@
       .symbol.swiped-right {
         animation-duration: 0.1s;
       }
+      .rail-crack {
+        animation: none;
+        opacity: 0.7;
+        transform: scaleX(1);
+      }
+      .side-rail.critical .rail-crack {
+        animation: none;
+      }
+    }
+
+    body.low-flash .rail-hit-flash,
+    body.low-flash .screen-flash,
+    body.low-flash .disintegration-particle {
+      display: none;
+    }
+
+    body.low-flash .rail-crack {
+      box-shadow: 0 0 4px var(--rail-barrier-color);
+      animation: none;
+    }
+
+    body.low-flash .rail-shell {
+      filter: brightness(0.75);
     }
 
     /* Particle effects */
@@ -421,6 +623,626 @@
       }
     }
 
+    /* Enhanced shatter particles for successful sorts - MORE ASTONISHING */
+    .shatter-particle {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 100;
+      animation: shatterBurst 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    }
+
+    @keyframes shatterBurst {
+      0% {
+        transform: translate(-50%, -50%) scale(1.5) rotate(0deg);
+        opacity: 1;
+        filter: brightness(1.5);
+      }
+      30% {
+        transform: translate(-50%, -50%)
+                   translate(calc(var(--tx) * 0.5), calc(var(--ty) * 0.5))
+                   scale(1.2)
+                   rotate(calc(var(--rotation) * 0.3));
+        opacity: 1;
+        filter: brightness(1.3);
+      }
+      100% {
+        transform: translate(-50%, -50%)
+                   translate(var(--tx), var(--ty))
+                   scale(0.3)
+                   rotate(var(--rotation));
+        opacity: 0;
+        filter: brightness(1);
+      }
+    }
+
+    /* Screen shake at combo milestones (10, 25, 50, 100) */
+    #game-screen.combo-shake {
+      animation: comboShake 0.15s ease-out;
+    }
+
+    @keyframes comboShake {
+      0%, 100% { transform: translate(0, 0); }
+      20% { transform: translate(-1px, 0.5px); }
+      40% { transform: translate(1px, -0.5px); }
+      60% { transform: translate(-0.5px, 0.5px); }
+      80% { transform: translate(0.5px, -0.5px); }
+    }
+
+    /* Accessibility: respect reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      #game-screen.combo-shake {
+        animation: none;
+      }
+    }
+
+    /* Power-up screen border glow effect */
+    .power-up-border-glow {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 999;
+      box-shadow:
+        inset 0 0 30px var(--accent-primary),
+        inset 0 0 60px var(--accent-secondary),
+        0 0 20px var(--accent-primary);
+      animation: powerUpBorderGlow 0.8s ease-out forwards;
+    }
+
+    @keyframes powerUpBorderGlow {
+      0% {
+        opacity: 0;
+        box-shadow:
+          inset 0 0 10px var(--accent-primary),
+          inset 0 0 20px var(--accent-secondary);
+      }
+      30% {
+        opacity: 1;
+        box-shadow:
+          inset 0 0 50px var(--accent-primary),
+          inset 0 0 100px var(--accent-secondary),
+          0 0 40px var(--accent-primary);
+      }
+      100% {
+        opacity: 0;
+      }
+    }
+
+    /* Accessibility: respect reduced motion for border glow */
+    @media (prefers-reduced-motion: reduce) {
+      .power-up-border-glow {
+        animation: none;
+        opacity: 0;
+      }
+    }
+
+    /* ==========================================
+       COMBO BURST SYSTEM (Simplified with CSS vars)
+       ========================================== */
+
+    /* Burst bonus floating text - uses CSS custom properties for tier variants */
+    .burst-bonus {
+      --burst-color: #fbbf24;
+      --burst-glow: #f59e0b;
+      --burst-size: 48px;
+      position: fixed;
+      top: 15%;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: var(--burst-size);
+      font-weight: 800;
+      color: var(--burst-color);
+      text-shadow: 0 0 20px var(--burst-color), 0 0 40px var(--burst-glow),
+        2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000;
+      pointer-events: none;
+      z-index: 1001; /* Above combo-milestone (500) */
+      animation: burstBonusFloat 0.8s ease-out forwards;
+    }
+    .burst-bonus.major { --burst-color: #f97316; --burst-glow: #ea580c; --burst-size: 56px; }
+    .burst-bonus.mega { --burst-color: #ef4444; --burst-glow: #dc2626; --burst-size: 64px; }
+    .burst-bonus.ultra { --burst-color: #a855f7; --burst-glow: #9333ea; --burst-size: 72px; animation: burstBonusFloatUltra 1.2s ease-out forwards; }
+
+    @keyframes burstBonusFloat {
+      0% { opacity: 0; transform: translateX(-50%) translateY(20px) scale(0.5); }
+      20% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1.2); }
+      40% { transform: translateX(-50%) translateY(-10px) scale(1); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-50px) scale(0.8); }
+    }
+    @keyframes burstBonusFloatUltra {
+      0% { opacity: 0; transform: translateX(-50%) translateY(30px) scale(0.3); }
+      15% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1.4); }
+      50% { transform: translateX(-50%) translateY(-25px) scale(1); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-80px) scale(0.6); }
+    }
+
+    /* Screen shake */
+    .screen-shake { animation: screenShake 0.2s ease-out; }
+    .screen-shake-mega { animation: screenShakeMega 0.3s ease-out; }
+    @keyframes screenShake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-2px); }
+      75% { transform: translateX(2px); }
+    }
+    @keyframes screenShakeMega {
+      0%, 100% { transform: translateX(0); }
+      15% { transform: translate(-3px, 1px); }
+      30% { transform: translate(3px, -1px); }
+      45% { transform: translate(-2px, 0); }
+      60% { transform: translate(2px, 1px); }
+      80% { transform: translate(-1px, 0); }
+    }
+
+    /* Screen flash */
+    .screen-flash {
+      position: fixed; inset: 0;
+      pointer-events: none;
+      z-index: 999;
+      animation: flashEffect 0.15s ease-out forwards;
+    }
+    .screen-flash.mega { background: rgba(255, 255, 255, 0.4); }
+    .screen-flash.ultra { background: linear-gradient(135deg, rgba(168, 85, 247, 0.5), rgba(59, 130, 246, 0.5)); animation-duration: 0.3s; }
+    @keyframes flashEffect { from { opacity: 1; } to { opacity: 0; } }
+
+    /* Burst particles - CSS vars for tier variants */
+    .burst-particle {
+      --p-size: 6px;
+      --p-color: #fbbf24;
+      --p-glow: 8px;
+      position: fixed;
+      width: var(--p-size);
+      height: var(--p-size);
+      border-radius: 50%;
+      background: var(--p-color);
+      box-shadow: 0 0 var(--p-glow) var(--p-color);
+      pointer-events: none;
+      z-index: 1000;
+      animation: burstParticleExplode 0.6s ease-out forwards;
+    }
+    .burst-particle.major { --p-size: 8px; --p-color: #f97316; --p-glow: 12px; }
+    .burst-particle.mega { --p-size: 10px; --p-color: #ef4444; --p-glow: 16px; }
+    .burst-particle.ultra {
+      --p-size: 12px;
+      background: linear-gradient(135deg, #a855f7, #3b82f6);
+      box-shadow: 0 0 20px #a855f7, 0 0 40px #3b82f6;
+      animation: burstParticleExplode 1s ease-out forwards;
+    }
+    @keyframes burstParticleExplode {
+      0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+      100% { transform: translate(-50%, -50%) translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+    }
+
+    /* ==========================================
+       ARTIFACT REACTOR SYSTEM
+       ========================================== */
+    #artifact-container {
+      /* Positioned in header between score and lives - wide rectangle */
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      gap: 6px;
+      padding: 0 4px;
+    }
+
+    #artifact-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      letter-spacing: 1px;
+      opacity: 0.8;
+      margin-bottom: 2px;
+      text-transform: uppercase;
+    }
+
+    /* The Artifact Crystal - compact for header */
+    #artifact-crystal {
+      position: relative;
+      width: 100%;
+      height: 66px;
+      background: var(--rules-bg);
+      border: 2px solid var(--rules-border);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: inset 0 0 15px rgba(0,0,0,0.3), 0 2px 10px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .crescendo-progress {
+      width: 120px;
+      height: 5px;
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .crescendo-progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #a855f7, #c084fc);
+      box-shadow: 0 0 6px #a855f7;
+      transition: width 0.2s ease-out;
+    }
+
+    /* Inner glow based on state */
+    #artifact-crystal::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at center,
+        rgba(168, 85, 247, var(--glow-intensity, 0)) 0%,
+        transparent 70%);
+      pointer-events: none;
+      transition: all 0.3s ease;
+    }
+
+    #artifact-crystal::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--artifact-overlay);
+      opacity: var(--artifact-overlay-opacity, 0);
+      pointer-events: none;
+      mix-blend-mode: screen;
+    }
+
+    [data-theme="data-stream"] #artifact-crystal {
+      background: linear-gradient(135deg, rgba(4, 24, 13, 0.92), rgba(10, 40, 24, 0.85));
+      border-color: rgba(34, 197, 94, 0.45);
+      box-shadow: inset 0 0 18px rgba(34, 197, 94, 0.35), 0 0 16px rgba(6, 182, 212, 0.25);
+    }
+
+    [data-theme="cosmic-gatekeeper"] #artifact-crystal {
+      background: radial-gradient(circle at 50% 35%, rgba(168, 85, 247, 0.25), rgba(15, 5, 24, 0.92) 70%);
+      border-color: rgba(253, 164, 175, 0.45);
+      box-shadow: inset 0 0 20px rgba(225, 29, 72, 0.35), 0 0 22px rgba(168, 85, 247, 0.35);
+    }
+
+    /* Particle container inside artifact */
+    #artifact-particles {
+      position: absolute;
+      inset: 4px;
+      overflow: hidden;
+    }
+
+    /* Symbol-shaped particles inside artifact - matching game symbol outlines */
+    .inner-particle {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      opacity: 0.9;
+      /* No transition - JS handles smooth animation */
+      will-change: transform;
+    }
+
+    /* Circle - outline style matching game */
+    .inner-particle.circle {
+      border: 2px solid var(--accent-primary);
+      border-radius: 50%;
+      background: transparent;
+      /* drop-shadow removed for performance */
+    }
+    /* Square - outline style matching game */
+    .inner-particle.square {
+      border: 2px solid var(--accent-secondary);
+      background: transparent;
+      /* drop-shadow removed for performance */
+    }
+    /* Triangle - outline style matching game */
+    .inner-particle.triangle {
+      width: 0;
+      height: 0;
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+      border-bottom: 10px solid var(--danger-line);
+      background: transparent;
+      /* drop-shadow removed for performance */
+    }
+    /* Star - outline style */
+    .inner-particle.star {
+      border: 2px solid #fbbf24;
+      background: transparent;
+      clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+      width: 14px;
+      height: 14px;
+      /* drop-shadow removed for performance */
+    }
+    /* Droplet - matching game symbol (uses mask-image for dynamic coloring) */
+    .inner-particle.droplet {
+      width: 14px;
+      height: 16px;
+      background: var(--droplet-color);
+      -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 60'><path d='M30 6 C30 6 50 26 50 38 C50 49 41 54 30 54 C19 54 10 49 10 38 C10 26 30 6 30 6 Z' fill='white' stroke='white' stroke-width='6'/></svg>");
+      mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 60'><path d='M30 6 C30 6 50 26 50 38 C50 49 41 54 30 54 C19 54 10 49 10 38 C10 26 30 6 30 6 Z' fill='white' stroke='white' stroke-width='6'/></svg>");
+      -webkit-mask-size: contain;
+      mask-size: contain;
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
+      -webkit-mask-position: center;
+      mask-position: center;
+      /* drop-shadow removed for performance */
+    }
+    /* Crescent - matching game symbol */
+    .inner-particle.crescent {
+      border: 3px solid var(--portal-right);
+      border-right-color: transparent;
+      background: transparent;
+      border-radius: 50%;
+      filter: drop-shadow(0 0 4px var(--portal-right));
+    }
+    /* Heart - matching game symbol */
+    .inner-particle.heart {
+      position: relative;
+      width: 12px;
+      height: 11px;
+      background: transparent;
+    }
+    .inner-particle.heart::before {
+      content: '♡';
+      position: absolute;
+      font-size: 12px;
+      color: var(--text-secondary);
+      filter: drop-shadow(0 0 3px var(--text-secondary));
+    }
+    #artifact-crystal.tier-diamond .inner-particle.heart::before,
+    #artifact-crystal.tier-prismatic .inner-particle.heart::before {
+      color: var(--accent-primary);
+      filter: drop-shadow(0 0 4px var(--accent-primary));
+    }
+    /* Lightning - matching game symbol */
+    .inner-particle.lightning {
+      position: relative;
+      width: 10px;
+      height: 14px;
+      background: transparent;
+    }
+    .inner-particle.lightning::before {
+      content: '⚡';
+      position: absolute;
+      font-size: 12px;
+      color: #fbbf24;
+      filter: drop-shadow(0 0 4px #fbbf24);
+    }
+
+    [data-theme="data-stream"] .inner-particle {
+      border-style: dashed;
+      box-shadow: 0 0 6px rgba(34, 197, 94, 0.45);
+    }
+
+    [data-theme="data-stream"] .inner-particle.triangle {
+      border-bottom-color: #22c55e;
+      filter: drop-shadow(0 0 4px rgba(34, 197, 94, 0.6));
+    }
+
+    [data-theme="cosmic-gatekeeper"] .inner-particle {
+      box-shadow: 0 0 8px rgba(225, 29, 72, 0.35), 0 0 14px rgba(168, 85, 247, 0.3);
+    }
+
+    [data-theme="cosmic-gatekeeper"] .inner-particle.heart::before,
+    [data-theme="cosmic-gatekeeper"] .inner-particle.lightning::before {
+      filter: drop-shadow(0 0 6px rgba(253, 164, 175, 0.6));
+    }
+
+    /* Spark effects */
+    .artifact-spark {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: #fbbf24;
+      border-radius: 50%;
+      pointer-events: none;
+      animation: sparkFly 0.4s ease-out forwards;
+    }
+
+    @keyframes sparkFly {
+      0% { transform: translate(0, 0) scale(1); opacity: 1; }
+      100% { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; }
+    }
+
+    /* Artifact tier visual evolution */
+    /* Tier 2: Silver - brighter glow */
+    #artifact-crystal.tier-silver .inner-particle {
+      filter: drop-shadow(0 0 5px currentColor);
+    }
+    #artifact-crystal.tier-silver {
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.2), inset 0 0 10px rgba(255, 255, 255, 0.1);
+    }
+
+    /* Tier 3: Gold - golden hue, intense glow */
+    #artifact-crystal.tier-gold .inner-particle {
+      filter: drop-shadow(0 0 6px currentColor) hue-rotate(15deg) saturate(1.3);
+    }
+    #artifact-crystal.tier-gold {
+      box-shadow: 0 0 20px rgba(251, 191, 36, 0.3), inset 0 0 15px rgba(251, 191, 36, 0.15);
+      border-color: rgba(251, 191, 36, 0.4);
+    }
+
+    /* Tier 4: Platinum - white/silver glow, larger particles */
+    #artifact-crystal.tier-platinum .inner-particle {
+      filter: drop-shadow(0 0 8px currentColor) hue-rotate(30deg) brightness(1.2);
+      transform: scale(1.15);
+    }
+    #artifact-crystal.tier-platinum {
+      box-shadow: 0 0 25px rgba(255, 255, 255, 0.4), inset 0 0 20px rgba(200, 200, 255, 0.2);
+      border-color: rgba(200, 200, 255, 0.5);
+    }
+
+    /* Tier 5: Diamond - brilliant white, strong glow */
+    #artifact-crystal.tier-diamond .inner-particle {
+      filter: drop-shadow(0 0 10px currentColor) hue-rotate(45deg) brightness(1.4) saturate(1.5);
+      transform: scale(1.25);
+    }
+    #artifact-crystal.tier-diamond {
+      box-shadow: 0 0 30px rgba(255, 255, 255, 0.5), 0 0 60px rgba(100, 200, 255, 0.3), inset 0 0 25px rgba(255, 255, 255, 0.25);
+      border-color: rgba(100, 200, 255, 0.6);
+    }
+
+    /* Tier 6: Prismatic - rainbow cycling animation */
+    #artifact-crystal.tier-prismatic .inner-particle {
+      animation: prismaticShift 3s linear infinite;
+      filter: drop-shadow(0 0 12px currentColor) brightness(1.5) saturate(2);
+      transform: scale(1.3);
+    }
+    #artifact-crystal.tier-prismatic {
+      animation: prismaticGlow 4s linear infinite;
+      border-color: rgba(255, 255, 255, 0.7);
+    }
+
+    @keyframes prismaticShift {
+      0% { filter: drop-shadow(0 0 12px currentColor) hue-rotate(0deg) brightness(1.5); }
+      50% { filter: drop-shadow(0 0 15px currentColor) hue-rotate(180deg) brightness(1.7); }
+      100% { filter: drop-shadow(0 0 12px currentColor) hue-rotate(360deg) brightness(1.5); }
+    }
+
+    @keyframes prismaticGlow {
+      0% { box-shadow: 0 0 35px rgba(255, 100, 100, 0.5), inset 0 0 30px rgba(255, 100, 100, 0.2); }
+      33% { box-shadow: 0 0 35px rgba(100, 255, 100, 0.5), inset 0 0 30px rgba(100, 255, 100, 0.2); }
+      66% { box-shadow: 0 0 35px rgba(100, 100, 255, 0.5), inset 0 0 30px rgba(100, 100, 255, 0.2); }
+      100% { box-shadow: 0 0 35px rgba(255, 100, 100, 0.5), inset 0 0 30px rgba(255, 100, 100, 0.2); }
+    }
+
+    /* Artifact visual states - using burst colors */
+    #artifact-crystal.dormant {
+      --glow-intensity: 0;
+      border-color: var(--rules-border);
+    }
+
+    #artifact-crystal.stirring {
+      --glow-intensity: 0.1;
+      border-color: var(--accent-primary);
+    }
+
+    #artifact-crystal.building {
+      --glow-intensity: 0.2;
+      border-color: var(--accent-primary);
+      box-shadow: inset 0 0 20px rgba(0,0,0,0.2), 0 0 10px var(--accent-primary);
+    }
+
+    #artifact-crystal.surging {
+      --glow-intensity: 0.35;
+      border-color: var(--accent-secondary);
+      box-shadow: inset 0 0 25px rgba(0,0,0,0.1), 0 0 20px var(--accent-secondary);
+    }
+
+    #artifact-crystal.crescendo {
+      --glow-intensity: 0.5;
+      border-color: #fbbf24;
+      animation: artifactVibrate 0.05s infinite;
+      box-shadow: inset 0 0 30px rgba(251, 191, 36, 0.2), 0 0 30px rgba(251, 191, 36, 0.5);
+    }
+
+    #artifact-crystal.maximum {
+      --glow-intensity: 0.7;
+      border-color: #ffffff;
+      animation: artifactShake 0.03s infinite;
+      box-shadow: inset 0 0 40px rgba(255, 255, 255, 0.3), 0 0 40px rgba(255, 255, 255, 0.6);
+    }
+
+    @keyframes artifactVibrate {
+      0%, 100% { transform: translateX(0); }
+      50% { transform: translateX(1px); }
+    }
+
+    @keyframes artifactShake {
+      0%, 100% { transform: translate(0, 0); }
+      25% { transform: translate(2px, -1px); }
+      50% { transform: translate(-1px, 2px); }
+      75% { transform: translate(1px, 1px); }
+    }
+
+    /* Artifact unlock explosion */
+    #artifact-crystal.unlocking {
+      animation: artifactUnlock 0.6s ease-out forwards;
+    }
+
+    @keyframes artifactUnlock {
+      0% { transform: scale(1); filter: brightness(1); }
+      30% { transform: scale(1.1); filter: brightness(2); }
+      60% { transform: scale(0.95); }
+      100% { transform: scale(1); filter: brightness(1); }
+    }
+
+    /* Crescendo text animation */
+    @keyframes crescendoFloat {
+      0% { opacity: 0; transform: translateX(-50%) translateY(20px) scale(0.5); }
+      20% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1.2); }
+      50% { transform: translateX(-50%) translateY(-10px) scale(1); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-40px) scale(0.8); }
+    }
+
+    /* Crescendo crystal state */
+    #artifact-crystal.crescendo {
+      animation: artifactVibrate 0.05s infinite;
+      filter: brightness(1.3);
+    }
+
+    /* Building excitement state */
+    #artifact-crystal.building {
+      animation: artifactVibrate 0.1s infinite;
+    }
+
+    #artifact-stats {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-top: 4px;
+      opacity: 0.8;
+    }
+
+    #artifact-stats .threshold {
+      color: var(--accent-primary);
+    }
+
+    /* Artifact unlock explosion - shockwave ring */
+    .artifact-shockwave {
+      position: fixed;
+      border-radius: 50%;
+      border: 3px solid #fbbf24;
+      pointer-events: none;
+      z-index: 1001;
+      animation: shockwaveExpand 0.6s ease-out forwards;
+    }
+
+    @keyframes shockwaveExpand {
+      0% {
+        width: 20px;
+        height: 20px;
+        opacity: 1;
+        border-width: 4px;
+        box-shadow: 0 0 20px #fbbf24, inset 0 0 20px rgba(251, 191, 36, 0.3);
+      }
+      100% {
+        width: 200px;
+        height: 200px;
+        opacity: 0;
+        border-width: 1px;
+        box-shadow: 0 0 40px transparent;
+      }
+    }
+
+    /* Screen flash on artifact unlock */
+    .artifact-flash {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at var(--flash-x, 50%) var(--flash-y, 50%),
+        rgba(251, 191, 36, 0.4) 0%,
+        rgba(251, 191, 36, 0.1) 30%,
+        transparent 60%);
+      pointer-events: none;
+      z-index: 1000;
+      animation: flashPulse 0.4s ease-out forwards;
+    }
+
+    @keyframes flashPulse {
+      0% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
     /* Portal glow intensifies with combo */
     .portal-container {
       transition: box-shadow 0.3s ease, filter 0.3s ease;
@@ -428,15 +1250,15 @@
 
     #pause-btn {
       position: fixed;
-      bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+      bottom: calc(12px + env(safe-area-inset-bottom, 0px));
       left: 50%;
       transform: translateX(-50%);
       background: rgba(255, 255, 255, 0.1);
       border: 1px solid var(--rules-border);
       border-radius: 50%;
       color: var(--text-secondary);
-      width: 44px;
-      height: 44px;
+      width: 46px;
+      height: 46px;
       cursor: pointer;
       z-index: 102; /* Must be above rules-bar (101) */
       opacity: 0.6;
@@ -688,6 +1510,11 @@
       text-shadow: 0 0 10px var(--portal-right);
     }
 
+    .portal-container.ignore .portal-arrow {
+      color: rgba(255, 255, 255, 0.6);
+      text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+    }
+
     .portal-container .symbols {
       display: flex;
       gap: 4px;
@@ -700,6 +1527,15 @@
       width: 22px;
       height: 22px;
       filter: drop-shadow(0 0 4px currentColor);
+    }
+
+    #rules-bar.compact .portal-container .symbols svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    #rules-bar.compact .portal-container .symbols {
+      gap: 2px;
     }
 
     .portal-container .symbols svg.new-symbol-highlight {
@@ -768,6 +1604,861 @@
 
     #rules-bar.celebrating .portal-container {
       animation: celebrationPulse 1.2s ease-in-out infinite;
+    }
+
+    .rules-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: rgba(255, 255, 255, 0.5);
+      margin-bottom: 4px;
+    }
+
+    .rules-label.left::before { content: "← "; }
+    .rules-label.right::after { content: " →"; }
+
+    /* ==========================================
+       SIDE RAILS - Vertical targets for swipes
+       ========================================== */
+
+    :root {
+      --rail-width: clamp(40px, 6vw, 50px);
+      --rail-height: clamp(300px, 78vh, 600px);
+      --rail-error: #ff4757;
+      --rail-error-glow: rgba(255, 71, 87, 0.6);
+    }
+
+    @media (max-width: 400px) {
+      :root {
+        --rail-width: clamp(34px, 9vw, 42px);
+      }
+    }
+
+    .side-rail {
+      position: fixed;
+      width: var(--rail-width);
+      height: var(--rail-height);
+      top: 52%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      z-index: 45;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-evenly;
+      align-items: center;
+      padding: 20px 0;
+      transition: box-shadow 0.2s ease;
+      overflow: hidden; /* Clip rail cuts/effects that extend beyond bounds */
+    }
+
+    .side-rail.left {
+      left: max(0px, env(safe-area-inset-left, 0px));
+      border-radius: 0 12px 12px 0;
+      --rail-barrier-color: var(--portal-left);
+    }
+
+    .side-rail.right {
+      right: max(0px, env(safe-area-inset-right, 0px));
+      border-radius: 12px 0 0 12px;
+      --rail-barrier-color: var(--portal-right);
+    }
+
+    .rail-base {
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: transparent;
+      border: 0;
+      opacity: 0.35;
+      pointer-events: none;
+    }
+
+    .side-rail.left .rail-base {
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0) 70%);
+    }
+
+    .side-rail.right .rail-base {
+      background: linear-gradient(270deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0) 70%);
+    }
+
+    .rail-core {
+      position: absolute;
+      top: 10px;
+      bottom: 10px;
+      width: 3px;
+      border-radius: 999px;
+      pointer-events: none;
+      opacity: calc(0.25 + (1 - var(--barrier-integrity, 1)) * 0.45);
+      background: linear-gradient(180deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.75) 15%,
+        var(--rail-barrier-color) 45%,
+        var(--rail-barrier-color) 55%,
+        rgba(255, 255, 255, 0.75) 85%,
+        transparent 100%
+      );
+      box-shadow:
+        0 0 8px var(--rail-barrier-color),
+        0 0 14px rgba(255, 255, 255, 0.4);
+      transform-origin: center;
+    }
+
+    .rail-core::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: repeating-linear-gradient(180deg,
+        rgba(255, 255, 255, 0.6) 0px,
+        rgba(255, 255, 255, 0.6) 6px,
+        transparent 6px,
+        transparent 14px
+      );
+      opacity: 0.12;
+      mix-blend-mode: screen;
+      animation: railFlow 1.4s linear infinite;
+      animation-play-state: paused;
+    }
+
+    .side-rail.left .rail-core {
+      right: 7px;
+    }
+
+    .side-rail.right .rail-core {
+      left: 7px;
+    }
+
+    .rail-shell {
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      opacity: calc(0.06 + (1 - var(--barrier-integrity, 1)) * 0.2);
+      pointer-events: none;
+    }
+
+    .side-rail.left .rail-shell {
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0) 70%);
+    }
+
+    .side-rail.right .rail-shell {
+      background: linear-gradient(270deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0) 70%);
+    }
+
+    .rail-shell.reforming {
+      animation: barrierReform 0.28s ease-out forwards;
+    }
+
+    @keyframes barrierReform {
+      0% { opacity: 0; filter: brightness(1.2); }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; filter: brightness(1); }
+    }
+
+    .side-rail.fractured .rail-shell {
+      opacity: 0.2;
+      filter: brightness(1.1);
+    }
+
+    .side-rail.critical .rail-shell {
+      opacity: 0.35;
+      animation: barrierFlicker 0.4s ease-in-out infinite;
+    }
+
+    @keyframes barrierFlicker {
+      0%, 100% { opacity: 0.8; }
+      50% { opacity: 0.5; }
+    }
+
+    .rail-cracks {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      color: var(--rail-barrier-color);
+    }
+
+    .rail-crack-cluster {
+      position: absolute;
+      width: 100%;
+      height: 0;
+      pointer-events: none;
+    }
+
+    .rail-crack {
+      position: absolute;
+      width: 60%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.95) 45%, transparent 100%);
+      opacity: 0;
+      box-shadow:
+        0 0 6px rgba(255, 255, 255, 0.9),
+        0 0 12px var(--rail-barrier-color),
+        0 0 20px var(--rail-barrier-color);
+      transform-origin: center;
+      animation: crackGlow 0.22s ease-out forwards;
+    }
+
+    .side-rail.fractured .rail-crack {
+      opacity: 0.8;
+      box-shadow:
+        0 0 5px rgba(255, 255, 255, 0.85),
+        0 0 10px var(--rail-barrier-color),
+        0 0 20px var(--rail-barrier-color);
+    }
+
+    .side-rail.critical .rail-crack {
+      opacity: 1;
+      height: 3px;
+      box-shadow:
+        0 0 6px rgba(255, 255, 255, 0.95),
+        0 0 14px var(--rail-barrier-color),
+        0 0 28px var(--rail-barrier-color);
+      animation: crackFlicker 0.8s ease-in-out infinite;
+    }
+
+    @keyframes crackGlow {
+      0% { transform: scaleX(0.1); opacity: 0; }
+      50% { opacity: 0.9; }
+      100% { transform: scaleX(1); opacity: 0.75; }
+    }
+
+    @keyframes crackFlicker {
+      0%, 100% { opacity: 0.9; }
+      50% { opacity: 1; }
+    }
+
+    .rail-crack.flare {
+      opacity: 1;
+      box-shadow:
+        0 0 10px rgba(255, 255, 255, 0.95),
+        0 0 22px var(--rail-barrier-color),
+        0 0 44px var(--rail-barrier-color);
+      animation: crackFlare 0.3s ease-out forwards;
+    }
+
+    @keyframes crackFlare {
+      0% { opacity: 1; }
+      100% { opacity: 0; transform: scaleY(2.6); }
+    }
+
+    .side-rail.flare .rail-shell {
+      filter: brightness(1.25);
+      opacity: 0.35;
+    }
+
+    .rail-cuts {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .rail-cut {
+      position: absolute;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, var(--rail-barrier-color) 45%, transparent 70%);
+      clip-path: polygon(0 0, 100% 15%, 85% 100%, 20% 85%);
+      box-shadow:
+        0 0 10px var(--rail-barrier-color),
+        0 0 18px var(--rail-barrier-color);
+      mix-blend-mode: screen;
+      opacity: 0.7;
+    }
+
+    @keyframes chipPulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 0.9; }
+    }
+
+    .rail-ripple {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      border: 1px solid currentColor;
+      opacity: 0.9;
+      transform: translate(-50%, -50%) scale(0.8);
+      animation: railRipple 0.25s ease-out forwards;
+      pointer-events: none;
+    }
+
+    @keyframes railRipple {
+      0% { transform: translate(-50%, -50%) scale(0.6); opacity: 0.9; }
+      100% { transform: translate(-50%, -50%) scale(3); opacity: 0; }
+    }
+
+    .side-rail.stressed .rail-core {
+      animation: railStress 0.45s ease-in-out infinite;
+    }
+
+    @keyframes railStress {
+      0%, 100% { transform: translateX(0) scaleX(1); }
+      50% { transform: translateX(1px) scaleX(1.1); }
+    }
+
+    .rail-hit-flash {
+      position: absolute;
+      width: 18px;
+      height: 28px;
+      border-radius: 999px;
+      background: radial-gradient(ellipse, rgba(255, 255, 255, 0.9) 0%, currentColor 45%, transparent 70%);
+      opacity: 0.95;
+      transform: translate(-50%, -50%) scale(0.7);
+      animation: railHitFlash 0.14s ease-out forwards;
+      pointer-events: none;
+      mix-blend-mode: screen;
+    }
+
+    .side-rail.left .rail-hit-flash {
+      left: calc(100% - 8px);
+    }
+
+    .side-rail.right .rail-hit-flash {
+      left: 8px;
+    }
+
+    @keyframes railHitFlash {
+      0% { opacity: 0.95; transform: translate(-50%, -50%) scale(0.5); }
+      100% { opacity: 0; transform: translate(-50%, -50%) scale(1.4); }
+    }
+
+    /* === CONTAINMENT FIELD RAIL SYSTEM === */
+
+    /* Idle pulse - rails feel alive without shifting */
+    @keyframes railIdlePulse {
+      0%, 100% { filter: brightness(0.95); }
+      50% { filter: brightness(1.15); }
+    }
+
+    @keyframes railFlow {
+      0% { background-position: 0 0; }
+      100% { background-position: 0 20px; }
+    }
+
+    .side-rail .rail-core {
+      animation: railIdlePulse 3s ease-in-out infinite;
+    }
+
+    body.rails-engaged .side-rail .rail-core {
+      opacity: calc(0.45 + (1 - var(--barrier-integrity, 1)) * 0.45);
+      filter: brightness(1.35);
+    }
+
+    body.rails-engaged .side-rail .rail-core::after {
+      opacity: 0.45;
+      animation-play-state: running;
+    }
+
+    /* Elastic punch on hit - thickens the line for impact */
+    @keyframes railElasticPunch {
+      0% {
+        transform: scaleX(1);
+        filter: brightness(1);
+      }
+      35% {
+        transform: scaleX(1.9);
+        filter: brightness(1.5);
+      }
+      100% {
+        transform: scaleX(1);
+        filter: brightness(1);
+      }
+    }
+
+    /* Apply to the line, not the entire rail */
+    .side-rail.elastic-punch .rail-core {
+      animation: railElasticPunch 220ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards !important;
+    }
+
+    /* Ripple wave that travels from impact point */
+    .rail-ripple-wave {
+      position: absolute;
+      width: 18px;
+      height: 14px;
+      background: linear-gradient(90deg,
+        transparent 0%,
+        var(--rail-barrier-color) 15%,
+        rgba(255, 255, 255, 1) 50%,
+        var(--rail-barrier-color) 85%,
+        transparent 100%
+      );
+      border-radius: 999px;
+      pointer-events: none;
+      box-shadow:
+        0 0 12px var(--rail-barrier-color),
+        0 0 22px var(--rail-barrier-color),
+        inset 0 0 8px rgba(255, 255, 255, 0.5);
+      transform: translate(-50%, -50%);
+    }
+
+    .side-rail.left .rail-ripple-wave {
+      left: calc(100% - 8px);
+    }
+
+    .side-rail.right .rail-ripple-wave {
+      left: 8px;
+    }
+
+    .rail-ripple-wave.up {
+      animation: rippleWaveUp 350ms ease-out forwards;
+    }
+
+    .rail-ripple-wave.down {
+      animation: rippleWaveDown 350ms ease-out forwards;
+    }
+
+    @keyframes rippleWaveUp {
+      0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scaleY(1.5);
+      }
+      100% {
+        top: 0 !important;
+        opacity: 0;
+        transform: translate(-50%, -50%) scaleY(0.5);
+      }
+    }
+
+    @keyframes rippleWaveDown {
+      0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scaleY(1.5);
+      }
+      100% {
+        top: 100% !important;
+        opacity: 0;
+        transform: translate(-50%, -50%) scaleY(0.5);
+      }
+    }
+
+    /* === RAIL GLOW PULSE - Primary hit feedback === */
+    @keyframes railGlowPulse {
+      0% {
+        box-shadow:
+          0 0 8px var(--rail-barrier-color),
+          0 0 14px rgba(255, 255, 255, 0.4);
+        filter: brightness(1);
+      }
+      25% {
+        box-shadow:
+          0 0 20px var(--rail-barrier-color),
+          0 0 35px var(--rail-barrier-color),
+          0 0 50px rgba(255, 255, 255, 0.5);
+        filter: brightness(1.6);
+      }
+      100% {
+        box-shadow:
+          0 0 8px var(--rail-barrier-color),
+          0 0 14px rgba(255, 255, 255, 0.4);
+        filter: brightness(1);
+      }
+    }
+
+    .side-rail.glow-pulse .rail-core {
+      animation: railGlowPulse 300ms ease-out forwards !important;
+    }
+
+    /* Low-flash mode: reduce glow intensity */
+    body.low-flash .side-rail.glow-pulse .rail-core {
+      animation: railGlowPulseMild 300ms ease-out forwards !important;
+    }
+
+    @keyframes railGlowPulseMild {
+      0% {
+        filter: brightness(1);
+      }
+      25% {
+        filter: brightness(1.15);
+      }
+      100% {
+        filter: brightness(1);
+      }
+    }
+
+    /* === COMBO INTENSITY - Rails glow brighter with higher combos === */
+    .side-rail {
+      --combo-intensity: 0;
+    }
+
+    .side-rail .rail-core {
+      opacity: calc(0.35 + var(--combo-intensity) * 0.4);
+      transition: opacity 0.3s ease;
+    }
+
+    body.rails-engaged .side-rail .rail-core {
+      opacity: calc(0.5 + var(--combo-intensity) * 0.35);
+    }
+
+    /* Combo level visual tiers */
+    .side-rail[data-combo-tier="1"] .rail-core {
+      filter: brightness(1.1);
+    }
+    .side-rail[data-combo-tier="2"] .rail-core {
+      filter: brightness(1.25);
+    }
+    .side-rail[data-combo-tier="3"] .rail-core {
+      filter: brightness(1.4);
+    }
+
+
+    /* Hit stop - brief freeze on impact */
+    .side-rail.hit-stop .rail-core {
+      animation-play-state: paused !important;
+    }
+
+    /* === SHATTER RAILS - Crystal explosion effect === */
+
+    .crystal-shard {
+      position: fixed;
+      pointer-events: none;
+      z-index: 100;
+      background: var(--shard-color, #a855f7);
+      clip-path: polygon(50% 0%, 100% 35%, 85% 100%, 15% 100%, 0% 35%);
+      box-shadow:
+        0 0 8px var(--shard-color, #a855f7),
+        0 0 16px var(--shard-color, #a855f7);
+    }
+
+    /* Small shard variant */
+    .crystal-shard.small {
+      width: 8px;
+      height: 12px;
+    }
+
+    /* Medium shard variant */
+    .crystal-shard.medium {
+      width: 12px;
+      height: 18px;
+    }
+
+    /* Large shard variant */
+    .crystal-shard.large {
+      width: 16px;
+      height: 24px;
+    }
+
+    /* === END SHATTER RAILS === */
+
+    /* === END CONTAINMENT FIELD SYSTEM === */
+
+    .rail-shard {
+      position: fixed;
+      width: 24px;
+      height: 34px;
+      background: linear-gradient(140deg,
+        rgba(255, 255, 255, 0.65) 0%,
+        currentColor 45%,
+        rgba(255, 255, 255, 0.35) 100%);
+      clip-path: var(--shard-shape, polygon(50% 0%, 90% 100%, 10% 100%));
+      opacity: 1;
+      pointer-events: none;
+      z-index: 60;
+      will-change: transform, opacity;
+      filter: drop-shadow(0 0 12px currentColor) brightness(1.3);
+      box-shadow:
+        0 0 10px currentColor,
+        inset 0 0 6px rgba(255, 255, 255, 0.35);
+    }
+
+    .rail-shard::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.6) 0%, transparent 50%);
+      clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+      opacity: 0.9;
+    }
+
+    /* Glowing trail effect */
+    .rail-shard::before {
+      content: '';
+      position: absolute;
+      width: 140%;
+      height: 180%;
+      left: -20%;
+      top: -40%;
+      background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.35) 0%, transparent 70%);
+      opacity: 0.25;
+      transform: rotate(var(--trail-rotation, 0deg));
+      filter: blur(4px);
+    }
+
+    .rail-shard.crescendo-burst {
+      width: 32px;
+      height: 44px;
+      filter: drop-shadow(0 0 14px currentColor) brightness(1.4);
+      box-shadow:
+        0 0 16px currentColor,
+        inset 0 0 8px rgba(255, 255, 255, 0.5);
+    }
+
+    .rail-shard.crescendo-burst::before {
+      width: 180%;
+      height: 220%;
+      opacity: 0.4;
+    }
+
+    /* Screen flash on crescendo */
+    .crescendo-flash {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at 50% 30%, rgba(255, 255, 255, 0.9) 0%, rgba(168, 85, 247, 0.4) 50%, transparent 80%);
+      z-index: 100;
+      pointer-events: none;
+      animation: crescendoFlash 0.5s ease-out forwards;
+    }
+
+    @keyframes crescendoFlash {
+      0% { opacity: 1; transform: scale(0.8); }
+      50% { opacity: 0.7; }
+      100% { opacity: 0; transform: scale(1.5); }
+    }
+
+    body.low-flash .crescendo-flash {
+      display: none;
+    }
+
+    .rail-shed {
+      position: absolute;
+      inset: 6px;
+      border-radius: inherit;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0.08));
+      mix-blend-mode: screen;
+      pointer-events: none;
+      animation: railShed 0.22s ease-out forwards;
+    }
+
+    @keyframes railShed {
+      0% { opacity: 0; transform: translateY(0) scaleY(1); }
+      40% { opacity: 1; }
+      100% { opacity: 0; transform: translateY(20px) scaleY(0.7); }
+    }
+
+    /* Removed per-hit sparks to reduce lag */
+
+    [data-theme="data-stream"] .side-rail.left,
+    [data-theme="data-stream"] .side-rail.right {
+      border-radius: 4px;
+      background-image:
+        linear-gradient(180deg, rgba(6, 182, 212, 0.08), rgba(2, 26, 13, 0.2)),
+        repeating-linear-gradient(180deg, rgba(34, 197, 94, 0.16) 0 1px, transparent 1px 12px);
+      box-shadow: inset 0 0 22px rgba(34, 197, 94, 0.2), 0 0 14px rgba(6, 182, 212, 0.18);
+    }
+
+    [data-theme="cosmic-gatekeeper"] .side-rail.left,
+    [data-theme="cosmic-gatekeeper"] .side-rail.right {
+      border-radius: 18px;
+      background-image:
+        linear-gradient(to bottom, rgba(225, 29, 72, 0.2), rgba(15, 5, 24, 0.85)),
+        radial-gradient(circle at 50% 10%, rgba(168, 85, 247, 0.25), transparent 70%);
+      box-shadow: inset 0 0 24px rgba(225, 29, 72, 0.3), 0 0 24px rgba(168, 85, 247, 0.25);
+    }
+
+    .rail-symbol {
+      font-size: clamp(28px, 4vh, 36px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .side-rail.dense {
+      padding: 15px 0;
+    }
+
+    .side-rail.dense .rail-symbol {
+      font-size: 28px;
+    }
+
+    /* Rail throb animation on correct hit */
+    @keyframes railThrob {
+      0% {
+        transform: translateY(-50%) scaleX(1) scaleY(1);
+        filter: brightness(1);
+      }
+      15% {
+        transform: translateY(-50%) scaleX(1.4) scaleY(1.08);
+        filter: brightness(1.8);
+      }
+      40% {
+        transform: translateY(-50%) scaleX(1.2) scaleY(1.04);
+        filter: brightness(1.4);
+      }
+      70% {
+        transform: translateY(-50%) scaleX(1.08) scaleY(1.02);
+        filter: brightness(1.15);
+      }
+      100% {
+        transform: translateY(-50%) scaleX(1) scaleY(1);
+        filter: brightness(1);
+      }
+    }
+
+    .side-rail.throb {
+      animation: railThrob 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .side-rail.left.throb {
+      box-shadow:
+        inset 0 0 50px var(--portal-left-bg),
+        0 0 40px var(--portal-left-bg),
+        0 0 80px var(--portal-left-bg),
+        0 0 120px rgba(168, 85, 247, 0.4);
+    }
+
+    .side-rail.right.throb {
+      box-shadow:
+        inset 0 0 50px var(--portal-right-bg),
+        0 0 40px var(--portal-right-bg),
+        0 0 80px var(--portal-right-bg),
+        0 0 120px rgba(34, 211, 238, 0.4);
+    }
+
+    /* Rail reject animation on wrong hit - more aggressive */
+    @keyframes railReject {
+      0% {
+        transform: translateY(-50%) translateX(0) scaleX(1);
+        filter: brightness(1);
+      }
+      10% {
+        transform: translateY(-50%) translateX(-12px) scaleX(0.95);
+        filter: brightness(1.5) saturate(0.5);
+      }
+      25% {
+        transform: translateY(-50%) translateX(10px) scaleX(1.05);
+        filter: brightness(1.3) saturate(0.6);
+      }
+      40% {
+        transform: translateY(-50%) translateX(-8px) scaleX(0.98);
+        filter: brightness(1.4) saturate(0.5);
+      }
+      55% {
+        transform: translateY(-50%) translateX(6px) scaleX(1.02);
+        filter: brightness(1.2) saturate(0.7);
+      }
+      70% {
+        transform: translateY(-50%) translateX(-4px) scaleX(0.99);
+        filter: brightness(1.1) saturate(0.8);
+      }
+      85% {
+        transform: translateY(-50%) translateX(2px) scaleX(1);
+        filter: brightness(1.05) saturate(0.9);
+      }
+      100% {
+        transform: translateY(-50%) translateX(0) scaleX(1);
+        filter: brightness(1) saturate(1);
+      }
+    }
+
+    .side-rail.reject {
+      animation: railReject 0.5s ease-out;
+      box-shadow:
+        inset 0 0 40px var(--rail-error-glow),
+        0 0 30px var(--rail-error-glow),
+        0 0 60px rgba(255, 71, 87, 0.3);
+    }
+
+    /* PWA standalone mode */
+    @media (display-mode: standalone) {
+      :root {
+        --rail-height: clamp(280px, 75vh, 580px);
+      }
+
+      .side-rail {
+        padding-top: max(25px, env(safe-area-inset-top, 0px));
+        padding-bottom: max(25px, env(safe-area-inset-bottom, 0px));
+      }
+    }
+
+    /* Landscape orientation */
+    @media (orientation: landscape) and (max-height: 500px) {
+      :root {
+        --rail-height: clamp(280px, 90vh, 400px);
+        --rail-width: clamp(40px, 5.5vw, 50px);
+      }
+
+      .side-rail {
+        padding: 15px 0;
+      }
+
+      .side-rail .rail-symbol {
+        font-size: 24px;
+      }
+    }
+
+    /* Narrow landscape edge case */
+    @media (max-width: 400px) and (orientation: landscape) and (max-height: 500px) {
+      :root {
+        --rail-width: clamp(36px, 9vw, 44px);
+      }
+    }
+
+    /* Accessibility: Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      .side-rail.throb,
+      .side-rail.reject {
+        animation: none !important;
+      }
+
+      .side-rail.throb {
+        filter: brightness(1.4);
+      }
+
+      .side-rail.reject {
+        filter: brightness(1.2) hue-rotate(-30deg);
+      }
+    }
+
+    /* Accessibility: High contrast */
+    @media (prefers-contrast: high) {
+      .side-rail {
+        border-width: 3px;
+      }
+
+      .rail-symbol {
+        text-shadow: 0 0 4px currentColor;
+      }
+    }
+
+    /* Accessibility: Forced colors */
+    @media (forced-colors: active) {
+      .side-rail {
+        border: 3px solid CanvasText;
+        background: Canvas;
+      }
+    }
+
+    /* Hide rules bar when side rails are active */
+    body.side-rails-active #rules-bar {
+      display: none;
+    }
+
+    /* Only show side rails during gameplay (not on menu/gameover) */
+    .side-rail {
+      display: none;
+    }
+
+    body.side-rails-active .side-rail {
+      display: flex;
+    }
+
+    /* Override portal-container .symbols styles for rails */
+    .side-rail .symbols {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-evenly;
+      align-items: center;
+      width: 100%;
+      height: 100%;
+      max-width: none;
+      flex-wrap: nowrap;
+      gap: 8px;
+    }
+
+    /* Keep symbols away from rail-core line on inner edge */
+    .side-rail.left .symbols {
+      padding-right: 28px;
+    }
+
+    .side-rail.right .symbols {
+      padding-left: 28px;
     }
 
     /* Unlock celebration overlay styles */
@@ -943,6 +2634,20 @@
       margin-bottom: 2rem;
     }
 
+    .settings-header {
+      width: 100%;
+      max-width: 320px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      margin-bottom: 1.5rem;
+    }
+
+    .settings-header h2 {
+      margin: 0;
+    }
+
     .settings-section {
       width: 100%;
       max-width: 320px;
@@ -956,6 +2661,15 @@
       letter-spacing: 1px;
       margin-bottom: 1rem;
       opacity: 0.8;
+    }
+
+    .settings-subtitle {
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin: 12px 0 8px;
+      opacity: 0.75;
     }
 
     .theme-options {
@@ -997,11 +2711,15 @@
     }
 
     .theme-preview.data-stream {
-      background: linear-gradient(135deg, #22c55e, #06b6d4);
+      background:
+        linear-gradient(135deg, #22c55e, #06b6d4),
+        repeating-linear-gradient(180deg, rgba(255,255,255,0.25) 0 1px, transparent 1px 6px);
     }
 
     .theme-preview.cosmic-gatekeeper {
-      background: linear-gradient(135deg, #e11d48, #a855f7);
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255,255,255,0.2) 0 2px, transparent 3px),
+        linear-gradient(135deg, #e11d48, #a855f7);
     }
 
     .theme-info {
@@ -1062,11 +2780,26 @@
       background: transparent;
       border: 1px solid var(--rules-border);
       border-radius: 8px;
-      padding: 12px 32px;
+      padding: 10px 14px;
       color: var(--text-primary);
       cursor: pointer;
-      font-size: 1rem;
-      margin-top: auto;
+      font-size: 0.95rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .back-btn .back-icon {
+      display: block;
+      opacity: 0.85;
+    }
+
+    .settings-back-top {
+      margin: 0 auto 1.2rem;
+      width: 100%;
+      max-width: 320px;
+      display: flex;
+      justify-content: flex-start;
     }
 
     /* Settings button on menu */
@@ -1083,8 +2816,8 @@
       font-size: 1.2rem;
     }
 
-    /* Sound toggle in settings */
-    .sound-toggle-setting {
+    /* Toggle setting in settings */
+    .toggle-setting {
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -1097,17 +2830,17 @@
       margin-bottom: 12px;
     }
 
-    .sound-toggle-setting:hover {
+    .toggle-setting:hover {
       border-color: var(--text-secondary);
     }
 
-    .sound-toggle-setting .sound-label {
+    .toggle-setting .toggle-label {
       color: var(--text-primary);
       font-weight: 600;
       font-size: 1rem;
     }
 
-    .sound-toggle-setting .sound-status {
+    .toggle-setting .toggle-status {
       color: var(--text-secondary);
       font-size: 1.2rem;
     }
@@ -1217,8 +2950,16 @@
   <!-- SETTINGS SCREEN -->
   <div id="settings-screen">
     <h2>Settings</h2>
+    <div class="settings-back-top">
+      <button class="back-btn" onclick="hideSettings()" aria-label="Back">
+        <svg class="back-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
+          <path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
     <div class="settings-section">
-      <h3>Theme</h3>
+      <h3 data-i18n="appearance">Appearance</h3>
+      <div class="settings-subtitle" data-i18n="theme">Theme</div>
       <div class="theme-options">
         <div class="theme-option active" data-theme="spell-caster" onclick="selectTheme('spell-caster')">
           <div class="theme-preview spell-caster"></div>
@@ -1242,9 +2983,7 @@
           </div>
         </div>
       </div>
-    </div>
-    <div class="settings-section">
-      <h3 data-i18n="language">Language</h3>
+      <div class="settings-subtitle" data-i18n="language">Language</div>
       <div class="language-options" id="language-options">
         <div class="language-option active" data-lang="en" onclick="setLanguage('en')">
           <span class="language-flag">🇺🇸</span>
@@ -1269,15 +3008,15 @@
       </div>
     </div>
     <div class="settings-section">
-      <h3 data-i18n="audio">Audio</h3>
-      <div class="sound-toggle-setting" onclick="toggleSound()">
-        <span class="sound-label" data-i18n="soundEffects">Sound Effects</span>
-        <span class="sound-status" id="sound-toggle-menu">Sound: ON</span>
-      </div>
+      <h3 data-i18n="dataSafety">Data & Safety</h3>
+      <button class="reset-progress-btn" onclick="resetProgress()">Reset Progress</button>
     </div>
     <div class="settings-section">
-      <h3>Reset</h3>
-      <button class="reset-progress-btn" onclick="resetProgress()">Reset Progress</button>
+      <h3 data-i18n="accessibility">Accessibility</h3>
+      <button class="toggle-setting" id="low-flash-toggle" onclick="toggleLowFlash()">
+        <span class="toggle-label" data-i18n="lowFlash">Low Flash</span>
+        <span class="toggle-status" id="low-flash-status">OFF</span>
+      </button>
     </div>
     <div class="settings-section">
       <h3 data-i18n="about">About</h3>
@@ -1287,17 +3026,29 @@
         <a href="#" class="settings-link" id="about-link" onclick="alert(t('aboutText')); return false;" data-i18n="about">About</a>
       </div>
     </div>
-    <button class="back-btn" id="settings-back-btn" onclick="hideSettings()" data-i18n="backToMenu">Back to Menu</button>
+    <button class="back-btn" id="settings-back-btn" onclick="hideSettings()">
+      <span id="settings-back-label" data-i18n="backToMenu">Back to Menu</span>
+    </button>
   </div>
   
   <!-- GAME SCREEN -->
   <div id="game-screen">
     <div id="game-header">
       <div id="score-section">
+        <div id="score-value">0</div>
         <div id="score-display">0</div>
         <div id="next-unlock"></div>
       </div>
-      <div id="combo-display"></div>
+      <!-- ARTIFACT REACTOR - in header between score and lives -->
+      <div id="artifact-container">
+        <div id="artifact-crystal" class="dormant">
+          <div id="artifact-fill"></div>
+          <div id="artifact-particles"></div>
+        </div>
+        <div class="crescendo-progress">
+          <div class="crescendo-progress-fill" id="crescendo-progress-fill"></div>
+        </div>
+      </div>
       <div id="lives-display">
         <span class="heart">♥</span>
         <span class="heart">♥</span>
@@ -1328,7 +3079,7 @@
       <div class="pause-options">
         <button class="pause-option-btn restart-btn" onclick="startGame()">Restart</button>
         <button class="pause-option-btn exit-btn" onclick="pauseToMenu()">Exit Game</button>
-        <button class="pause-option-btn" onclick="pauseToTheme()">Theme</button>
+        <button class="pause-option-btn" onclick="pauseToSettings()">Settings</button>
       </div>
     </div>
 
@@ -1337,7 +3088,7 @@
       <h2>HOW TO PLAY</h2>
       <div class="tutorial-step">
         Swipe symbols left or right<br>
-        to match the rules bar—let others fall
+        to match the side indicators
       </div>
       <div class="tutorial-rules-example">
         <div class="tutorial-portal left">
@@ -1349,20 +3100,53 @@
           <span class="tutorial-arrow">▶</span>
         </div>
       </div>
+      <div class="tutorial-step" style="margin-top: 12px; font-size: 0.85rem; opacity: 0.9;">
+        <b>✨ ENERGY</b> — Build combos to charge up!
+      </div>
+      <div class="tutorial-step" style="margin-top: 8px; font-size: 0.75rem; opacity: 0.7;">
+        Desktop: Use ← → arrow keys
+      </div>
       <button class="start-btn" onclick="dismissTutorial()">GOT IT!</button>
+    </div>
+
+    <!-- Side Rails (vertical swipe targets) -->
+    <div class="side-rail left" id="left-rail">
+      <div class="rail-base"></div>
+      <div class="rail-core"></div>
+      <div class="rail-shell">
+        <div class="rail-cracks"></div>
+        <div class="rail-cuts"></div>
+      </div>
+      <div class="symbols" id="left-rail-symbols"></div>
+    </div>
+    <div class="side-rail right" id="right-rail">
+      <div class="rail-base"></div>
+      <div class="rail-core"></div>
+      <div class="rail-shell">
+        <div class="rail-cracks"></div>
+        <div class="rail-cuts"></div>
+      </div>
+      <div class="symbols" id="right-rail-symbols"></div>
     </div>
 
     <div id="play-area">
       <div id="combo-milestone"></div>
       <div id="grace-indicator">GET READY...</div>
     </div>
-    
+
     <div id="rules-bar">
       <div class="portal-container left" id="left-portal-rules">
+        <div class="rules-label left" data-i18n="rulesLeft">Left</div>
         <span class="portal-arrow">◀</span>
         <div class="symbols" id="left-symbols"></div>
       </div>
+      <div class="portal-container ignore" id="ignore-portal-rules">
+        <div class="rules-label" data-i18n="rulesIgnore">Ignore</div>
+        <span class="portal-arrow">▼</span>
+        <div class="symbols" id="ignore-symbols"></div>
+      </div>
       <div class="portal-container right" id="right-portal-rules">
+        <div class="rules-label right" data-i18n="rulesRight">Right</div>
         <span class="portal-arrow">▶</span>
         <div class="symbols" id="right-symbols"></div>
       </div>
@@ -1376,6 +3160,8 @@
     <div id="stats-box">
       <div>Best Combo: <span id="final-combo">0</span></div>
       <div>Symbols Sorted: <span id="final-sorted">0</span></div>
+      <div>Tier Reached: <span id="final-tier">1</span></div>
+      <div>Level Reached: <span id="final-level">0/0</span></div>
     </div>
     <button class="play-btn" onclick="startGame()">PLAY AGAIN</button>
     <button class="menu-btn" onclick="showMenu()">Menu</button>
@@ -1387,6 +3173,14 @@
     // ==========================================
     let gameState = 'menu';
     let score = 0;
+
+    // Version-gated highscore reset (scoring system changed in v2)
+    const SCORE_VERSION = 2;
+    if (localStorage.getItem('sortex_score_version') !== String(SCORE_VERSION)) {
+      localStorage.removeItem('sortex_highscore');
+      localStorage.setItem('sortex_score_version', String(SCORE_VERSION));
+    }
+
     let highScore = parseInt(localStorage.getItem('sortex_highscore') || '0');
     let peakScore = 0; // Session-locked peak score for persistent unlocks
     let lives = 3;
@@ -1395,26 +3189,69 @@
     let symbolsSorted = 0;
     let lastUnlockedCount = 3;  // Track unlocked symbols for celebration
 
-    let activeSymbols = [];
-    let rules = { left: ['circle'], right: ['square'], ignore: ['triangle'] };
-    let nextSymbolId = 1;  // Integer IDs to avoid float precision issues
+    // RUN PROGRESSION - Fresh tiers per run
+    let runProgress = { tierIndex: 0, levelIndex: 0, swipesInLevel: 0 };
+    let crescendoHoldUntil = 0;
+    let artifactParticles = [];         // Particles inside artifact (max 30)
+    let isAnimatingArtifact = false;    // Lock during crescendo/CM animations
+    let queuedSwipe = null;             // Max 1 queued swipe during animation
+    let lastCMSaveTime = 0;             // Track auto-save timing
 
-    // FIXED RULES - Each symbol ALWAYS goes to the same category
-    // Like juggling: add more balls, don't change which hand catches which
-    // Reduced to 8 symbols (3-3-2): 3 LEFT, 3 RIGHT, 2 IGNORE
-    const FIXED_RULES = {
-      // LEFT (Purple Portal) - 3 symbols
-      circle: 'left',
-      droplet: 'left',
-      heart: 'left',
-      // RIGHT (Blue Portal) - 3 symbols
-      square: 'right',
-      crescent: 'right',
-      lightning: 'right',
-      // IGNORE (Let Fall) - 2 symbols
-      triangle: 'ignore',
-      star: 'ignore',
-    };
+    // Performance: Cached layout dimensions (invalidated on resize)
+    let cachedArtifactWidth = null;
+    let cachedArtifactHeight = null;
+    let lastFrameTime = 0;              // For graceful degradation
+
+    // Tier progression (fixed per tier, same difficulty)
+    const LEVELS_PER_TIER = [4, 4, 5, 5, 6, 6];
+    const SWIPES_PER_LEVEL = [30, 30, 30, 30, 30, 30];
+
+    function getLevelsForTier(tierIndex) {
+      return LEVELS_PER_TIER[Math.max(0, Math.min(LEVELS_PER_TIER.length - 1, tierIndex))];
+    }
+
+    function getSwipesForLevel(tierIndex, levelIndex) {
+      const base = SWIPES_PER_LEVEL[Math.max(0, Math.min(SWIPES_PER_LEVEL.length - 1, tierIndex))];
+      return base;
+    }
+
+    // Particle count formula: scales to fill artifact by end of each tier
+    // At tier completion, artifact should feel satisfyingly full
+    function getArtifactParticleCount() {
+      const tierIndex = Math.min(runProgress.tierIndex, 5);
+      const levelsNeeded = getLevelsForTier(tierIndex);
+      const levelProgress = Math.min(1, (runProgress.levelIndex + (runProgress.swipesInLevel / getSwipesForLevel(tierIndex, runProgress.levelIndex))) / levelsNeeded);
+
+      // Per-tier density targets (space between particles at tier end)
+      const minParticlesByTier = [4, 6, 8, 10, 12, 14];
+      const maxParticlesByTier = [28, 32, 36, 40, 44, 48];
+      const minParticles = minParticlesByTier[tierIndex];
+      const maxParticles = maxParticlesByTier[tierIndex];
+      const curve = Math.pow(levelProgress, 1.35); // Gentler ramp
+
+      return Math.floor(minParticles + (maxParticles - minParticles) * curve);
+    }
+
+    // Visual tier based on critical masses completed
+    function getArtifactTier() {
+      const cm = runProgress.tierIndex;
+      if (cm === 0) return { level: 1, name: 'bronze', glow: 1.0 };
+      if (cm === 1) return { level: 2, name: 'silver', glow: 1.3 };
+      if (cm === 2) return { level: 3, name: 'gold', glow: 1.6 };
+      if (cm === 3) return { level: 4, name: 'platinum', glow: 2.0 };
+      if (cm === 4) return { level: 5, name: 'diamond', glow: 2.5 };
+      return { level: 6, name: 'prismatic', glow: 3.0, rainbow: true };
+    }
+
+    // Symbols unlocked based on tier (per run)
+    function getSymbolCountForTier() {
+      return Math.min(8, 3 + runProgress.tierIndex);
+    }
+
+    let activeSymbols = [];
+    let runSymbolIds = [];
+    let rules = { left: [], right: [], ignore: [] };
+    let nextSymbolId = 1;  // Integer IDs to avoid float precision issues
     
     let spawnInterval = null;
     let gameLoopId = null;
@@ -1429,6 +3266,15 @@
     let tutorialShown = localStorage.getItem('sortex_tutorial') === 'done';
     let tutorialActive = false;
     let currentTheme = localStorage.getItem('sortex_theme') || 'spell-caster';
+    let playAreaEl = null;
+    let barrierIntegrity = 1;
+    let barrierCrackLevel = 0;
+    let lastCorrectSide = null;
+    let lastImpactY = null;
+    const railCrackThresholds = [0.85, 0.7, 0.55, 0.4, 0.25];
+    const railShardPool = [];
+    let activeRailShards = 0;
+    const maxRailShards = 32;
 
     // Load peak score for persistent unlocks (called once at game load)
     function loadPeakScore() {
@@ -1455,17 +3301,20 @@
       'spell-caster': {
         name: 'Spell Caster',
         subtitle: 'Channel the Runes',
-        symbolColors: ['#a855f7', '#3b82f6', '#c4b5fd', '#f472b6', '#818cf8', '#22d3ee', '#f59e0b', '#34d399', '#f87171', '#a78bfa', '#e879f9', '#67e8f9']
+        symbolColors: ['#a855f7', '#3b82f6', '#c4b5fd', '#f472b6', '#818cf8', '#22d3ee', '#f59e0b', '#34d399', '#f87171', '#a78bfa', '#e879f9', '#67e8f9'],
+        dropletColor: '#f472b6'
       },
       'data-stream': {
         name: 'Data Stream',
         subtitle: 'Filter the Signal',
-        symbolColors: ['#22c55e', '#06b6d4', '#4ade80', '#2dd4bf', '#a3e635', '#84cc16', '#14b8a6', '#10b981', '#34d399', '#6ee7b7', '#a7f3d0', '#d9f99d']
+        symbolColors: ['#22c55e', '#06b6d4', '#4ade80', '#2dd4bf', '#a3e635', '#84cc16', '#14b8a6', '#10b981', '#34d399', '#6ee7b7', '#a7f3d0', '#d9f99d'],
+        dropletColor: '#34d399'
       },
       'cosmic-gatekeeper': {
         name: 'Cosmic Gatekeeper',
         subtitle: 'Guard the Threshold',
-        symbolColors: ['#e11d48', '#a855f7', '#f472b6', '#ec4899', '#f43f5e', '#fb7185', '#c084fc', '#e879f9', '#f9a8d4', '#fda4af', '#f0abfc', '#d946ef']
+        symbolColors: ['#e11d48', '#a855f7', '#f472b6', '#ec4899', '#f43f5e', '#fb7185', '#c084fc', '#e879f9', '#f9a8d4', '#fda4af', '#f0abfc', '#d946ef'],
+        dropletColor: '#f472b6'
       }
     };
 
@@ -1480,15 +3329,29 @@
         // Settings
         settings: 'Settings',
         theme: 'Theme',
+        quickControls: 'Quick Controls',
+        appearance: 'Appearance',
+        dataSafety: 'Data & Safety',
+        accessibility: 'Accessibility',
         language: 'Language',
         audio: 'Audio',
         soundEffects: 'Sound Effects',
         soundOn: 'Sound: ON',
         soundOff: 'Sound: OFF',
+        lowFlash: 'Low Flash',
+        on: 'ON',
+        off: 'OFF',
         about: 'About',
         privacyPolicy: 'Privacy Policy',
         backToMenu: 'Back to Menu',
         backToGame: 'Back to Game',
+        tierReached: 'Tier Reached',
+        levelReached: 'Level Reached',
+        tier: 'Tier',
+        level: 'Level',
+        rulesLeft: 'Left',
+        rulesRight: 'Right',
+        rulesIgnore: 'Ignore',
         // Theme names
         spellCaster: 'Spell Caster',
         spellCasterDesc: 'Channel chaotic magical runes',
@@ -1545,15 +3408,29 @@
         best: 'Mejor',
         settings: 'Ajustes',
         theme: 'Tema',
+        quickControls: 'Controles Rápidos',
+        appearance: 'Apariencia',
+        dataSafety: 'Datos y Seguridad',
+        accessibility: 'Accesibilidad',
         language: 'Idioma',
         audio: 'Audio',
         soundEffects: 'Efectos de Sonido',
         soundOn: 'Sonido: ON',
         soundOff: 'Sonido: OFF',
+        lowFlash: 'Bajo Parpadeo',
+        on: 'ON',
+        off: 'OFF',
         about: 'Acerca de',
         privacyPolicy: 'Política de Privacidad',
         backToMenu: 'Volver al Menú',
         backToGame: 'Volver al Juego',
+        tierReached: 'Nivel Alcanzado',
+        levelReached: 'Etapa Alcanzada',
+        tier: 'Nivel',
+        level: 'Nivel',
+        rulesLeft: 'Izquierda',
+        rulesRight: 'Derecha',
+        rulesIgnore: 'Ignorar',
         spellCaster: 'Hechicero',
         spellCasterDesc: 'Canaliza runas mágicas caóticas',
         dataStream: 'Flujo de Datos',
@@ -1592,15 +3469,29 @@
         best: 'Meilleur',
         settings: 'Paramètres',
         theme: 'Thème',
+        quickControls: 'Commandes Rapides',
+        appearance: 'Apparence',
+        dataSafety: 'Données et Sécurité',
+        accessibility: 'Accessibilité',
         language: 'Langue',
         audio: 'Audio',
         soundEffects: 'Effets Sonores',
         soundOn: 'Son: ON',
         soundOff: 'Son: OFF',
+        lowFlash: 'Faibles Flashs',
+        on: 'ON',
+        off: 'OFF',
         about: 'À propos',
         privacyPolicy: 'Politique de Confidentialité',
         backToMenu: 'Retour au Menu',
         backToGame: 'Retour au Jeu',
+        tierReached: 'Palier Atteint',
+        levelReached: 'Niveau Atteint',
+        tier: 'Palier',
+        level: 'Niveau',
+        rulesLeft: 'Gauche',
+        rulesRight: 'Droite',
+        rulesIgnore: 'Ignorer',
         spellCaster: 'Lanceur de Sorts',
         spellCasterDesc: 'Canalisez des runes magiques chaotiques',
         dataStream: 'Flux de Données',
@@ -1639,15 +3530,29 @@
         best: 'Beste',
         settings: 'Einstellungen',
         theme: 'Thema',
+        quickControls: 'Schnellzugriffe',
+        appearance: 'Darstellung',
+        dataSafety: 'Daten und Sicherheit',
+        accessibility: 'Barrierefreiheit',
         language: 'Sprache',
         audio: 'Audio',
         soundEffects: 'Soundeffekte',
         soundOn: 'Ton: AN',
         soundOff: 'Ton: AUS',
+        lowFlash: 'Weniger Blitze',
+        on: 'AN',
+        off: 'AUS',
         about: 'Über',
         privacyPolicy: 'Datenschutz',
         backToMenu: 'Zurück zum Menü',
         backToGame: 'Zurück zum Spiel',
+        tierReached: 'Stufe Erreicht',
+        levelReached: 'Level Erreicht',
+        tier: 'Stufe',
+        level: 'Level',
+        rulesLeft: 'Links',
+        rulesRight: 'Rechts',
+        rulesIgnore: 'Ignorieren',
         spellCaster: 'Zauberwirker',
         spellCasterDesc: 'Kanalisiere chaotische magische Runen',
         dataStream: 'Datenstrom',
@@ -1686,15 +3591,29 @@
         best: 'ベスト',
         settings: '設定',
         theme: 'テーマ',
+        quickControls: 'クイック設定',
+        appearance: '外観',
+        dataSafety: 'データと安全',
+        accessibility: 'アクセシビリティ',
         language: '言語',
         audio: 'オーディオ',
         soundEffects: '効果音',
         soundOn: 'サウンド: ON',
         soundOff: 'サウンド: OFF',
+        lowFlash: 'フラッシュ軽減',
+        on: 'ON',
+        off: 'OFF',
         about: 'このアプリについて',
         privacyPolicy: 'プライバシーポリシー',
         backToMenu: 'メニューに戻る',
         backToGame: 'ゲームに戻る',
+        tierReached: '到達ティア',
+        levelReached: '到達レベル',
+        tier: 'ティア',
+        level: 'レベル',
+        rulesLeft: '左',
+        rulesRight: '右',
+        rulesIgnore: '無視',
         spellCaster: 'スペルキャスター',
         spellCasterDesc: '混沌の魔法ルーンを操る',
         dataStream: 'データストリーム',
@@ -1772,6 +3691,20 @@
     let audioEnabled = localStorage.getItem('sortex_sound') !== 'off'; // Default ON
     let hapticsEnabled = true;
     try { hapticsEnabled = localStorage.getItem('sortex_haptics') !== 'false'; } catch(e) {} // Default ON
+    const systemReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let lowFlashUserSet = false;
+    let lowFlashEnabled = false;
+    try {
+      const storedLowFlash = localStorage.getItem('sortex_low_flash');
+      if (storedLowFlash !== null) {
+        lowFlashUserSet = true;
+        lowFlashEnabled = storedLowFlash === 'true';
+      } else {
+        lowFlashEnabled = systemReducedMotion.matches;
+      }
+    } catch (e) {
+      lowFlashEnabled = systemReducedMotion.matches;
+    }
 
     function initAudio() {
       if (!audioCtx) {
@@ -1806,6 +3739,23 @@
       hapticsEnabled = !hapticsEnabled;
       try { localStorage.setItem('sortex_haptics', hapticsEnabled ? 'true' : 'false'); } catch(e) {}
       updateHapticsToggleUI();
+    }
+
+    function applyLowFlash() {
+      document.body.classList.toggle('low-flash', lowFlashEnabled);
+      updateLowFlashToggleUI();
+    }
+
+    function toggleLowFlash() {
+      lowFlashEnabled = !lowFlashEnabled;
+      lowFlashUserSet = true;
+      try { localStorage.setItem('sortex_low_flash', lowFlashEnabled ? 'true' : 'false'); } catch(e) {}
+      applyLowFlash();
+    }
+
+    function updateLowFlashToggleUI() {
+      const statusEl = document.getElementById('low-flash-status');
+      if (statusEl) statusEl.textContent = lowFlashEnabled ? t('on') : t('off');
     }
 
     function updateHapticsToggleUI() {
@@ -1867,18 +3817,18 @@
           osc.stop(now + 0.2);
 
         } else if (type === 'escape') {
-          // Soft descending fade tone (0.3s)
+          // Soft neutral/positive tone (0.2s) - slightly rising, gentle
           const osc = audioCtx.createOscillator();
           const gain = audioCtx.createGain();
           osc.connect(gain);
           gain.connect(audioCtx.destination);
           osc.type = 'sine';
-          osc.frequency.setValueAtTime(300, now);
-          osc.frequency.exponentialRampToValueAtTime(150, now + 0.25);
-          gain.gain.setValueAtTime(0.08, now);
-          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+          osc.frequency.setValueAtTime(400, now);
+          osc.frequency.exponentialRampToValueAtTime(480, now + 0.15); // Slight rise = positive
+          gain.gain.setValueAtTime(0.06, now); // Softer volume
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
           osc.start(now);
-          osc.stop(now + 0.3);
+          osc.stop(now + 0.2);
 
         } else if (type === 'combo') {
           // Sparkle arpeggio (0.4s) - for combo milestones
@@ -1961,24 +3911,27 @@
     // 8 symbols total (3-3-2 distribution) with 2x scaling unlock gaps
     // Start: 1 LEFT, 1 RIGHT, 1 IGNORE for immediate variety
     // Unlocks based on PEAK score (persists across deaths)
-    // Option D thresholds: 100, 300, 600, 1200, 2000 (clean doubling pattern)
+    // v9 thresholds: Expert math @ 1.5 swipes/sec, combo 25+ = ~2.5 pts/sec avg
+    // 3 mins = 450 pts, 5 mins = 750 pts, 10 mins = 1500 pts
+    // Symbol definitions - randomized per run
     const SYMBOL_DEFS = [
-      { id: 'circle', score: 0 },       // LEFT - start
-      { id: 'square', score: 0 },       // RIGHT - start
-      { id: 'triangle', score: 0 },     // IGNORE - start
-      { id: 'droplet', score: 100 },    // LEFT - first unlock
-      { id: 'crescent', score: 300 },   // RIGHT - 2x gap (200)
-      { id: 'star', score: 600 },       // IGNORE - 2x gap (300)
-      { id: 'heart', score: 1200 },     // LEFT - 2x gap (600)
-      { id: 'lightning', score: 2000 }, // RIGHT - final unlock (800 gap)
+      { id: 'circle' },
+      { id: 'square' },
+      { id: 'triangle' },
+      { id: 'droplet' },
+      { id: 'crescent' },
+      { id: 'star' },
+      { id: 'heart' },
+      { id: 'lightning' },
     ];
 
     // Get symbols with theme-appropriate colors
     function getSymbols() {
-      const colors = THEMES[currentTheme].symbolColors;
+      const theme = THEMES[currentTheme];
+      const colors = theme.symbolColors;
       return SYMBOL_DEFS.map((sym, i) => ({
         ...sym,
-        color: colors[i % colors.length]
+        color: sym.id === 'droplet' ? theme.dropletColor : colors[i % colors.length]
       }));
     }
 
@@ -2020,6 +3973,21 @@
 
       return maxSpeedMultiplier;
     }
+
+    function getComboScoreMultiplier(comboCount) {
+      if (comboCount < 5) return 1.0;
+      if (comboCount < 10) return 1.3;
+      if (comboCount < 20) return 1.6;
+      if (comboCount < 30) return 1.9;
+      if (comboCount < 40) return 2.2;
+      if (comboCount < 50) return 2.4;
+      return 2.6;
+    }
+
+    function getTierScoreMultiplier(tierIndex) {
+      const multipliers = [1.0, 1.2, 1.4, 1.6, 1.8, 2.0];
+      return multipliers[Math.max(0, Math.min(multipliers.length - 1, tierIndex))];
+    }
     
     // ==========================================
     // SVG SYMBOL PATHS
@@ -2030,7 +3998,7 @@
         square: `<rect x="10" y="10" width="40" height="40" fill="none" stroke="${color}" stroke-width="4"/>`,
         triangle: `<polygon points="30,8 54,52 6,52" fill="none" stroke="${color}" stroke-width="4" stroke-linejoin="round"/>`,
         star: `<polygon points="30,6 36,24 54,24 40,36 46,54 30,44 14,54 20,36 6,24 24,24" fill="none" stroke="${color}" stroke-width="3" stroke-linejoin="round"/>`,
-        droplet: `<path d="M30,6 C30,6 10,26 10,38 C10,49 19,54 30,54 C41,54 50,49 50,38 C50,26 30,6 30,6 Z" fill="none" stroke="${color}" stroke-width="4" stroke-linejoin="round"/>`,
+        droplet: `<path d="M30,6 C30,6 50,26 50,38 C50,49 41,54 30,54 C19,54 10,49 10,38 C10,26 30,6 30,6 Z" fill="none" stroke="${color}" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>`,
         crescent: `<path d="M38,8 A22,22 0 1,0 38,52 A16,16 0 1,1 38,8" fill="none" stroke="${color}" stroke-width="4"/>`,
         lightning: `<polygon points="35,4 15,28 27,28 22,56 45,28 32,28" fill="none" stroke="${color}" stroke-width="3" stroke-linejoin="round"/>`,
         cross: `<path d="M30,8 L30,52 M8,30 L52,30" fill="none" stroke="${color}" stroke-width="6" stroke-linecap="round"/>`,
@@ -2040,7 +4008,7 @@
         infinity: `<path d="M30,30 C24,22 14,22 12,30 C10,38 18,42 24,38 C28,35 30,30 30,30 C30,30 32,25 36,22 C42,18 50,22 48,30 C46,38 36,38 30,30" fill="none" stroke="${color}" stroke-width="4" stroke-linecap="round"/>`,
       };
       
-      return `<svg width="${size}" height="${size}" viewBox="0 0 60 60" style="overflow:visible;filter:drop-shadow(0 0 6px ${color});">
+      return `<svg width="${size}" height="${size}" viewBox="0 0 60 60" style="overflow:visible;filter:drop-shadow(0 0 6px ${color});color:${color};">
         ${paths[type]}
       </svg>`;
     }
@@ -2048,41 +4016,46 @@
     // ==========================================
     // GAME FUNCTIONS
     // ==========================================
-    let unlockedSymbolsCache = { score: -1, symbols: null };
-
-    function getUnlockedSymbols() {
-      // Use peak score for persistent unlocks (symbols stay unlocked across deaths)
-      const effectiveScore = Math.max(score, peakScore);
-      if (unlockedSymbolsCache.score !== effectiveScore) {
-        unlockedSymbolsCache.score = effectiveScore;
-        unlockedSymbolsCache.symbols = SYMBOLS.filter(s => s.score <= effectiveScore);
-      }
-      return unlockedSymbolsCache.symbols;
+    function getRunSymbols() {
+      return runSymbolIds
+        .map(id => SYMBOLS.find(s => s.id === id))
+        .filter(Boolean);
     }
     
     function getSpeedTier() {
-      const count = getUnlockedSymbols().length;
+      const count = runSymbolIds.length;
       return SPEED_TIERS.find(t => count <= t.maxSymbols) || SPEED_TIERS[SPEED_TIERS.length - 1];
     }
     
-    function generateRules() {
-      // FIXED RULES: Each symbol ALWAYS goes to the same category
-      // No more shuffling - players build muscle memory like juggling
-      const unlocked = getUnlockedSymbols();
-
-      rules = {
-        left: unlocked.filter(s => FIXED_RULES[s.id] === 'left').map(s => s.id),
-        right: unlocked.filter(s => FIXED_RULES[s.id] === 'right').map(s => s.id),
-        ignore: unlocked.filter(s => FIXED_RULES[s.id] === 'ignore').map(s => s.id),
-      };
-
+    function buildInitialRules() {
+      // Tier 1: Fixed rules (circle=left, square=right, triangle=ignore)
+      // Randomness only comes at Tier 2+ when new symbols are added
+      runSymbolIds = ['circle', 'square', 'triangle'];
+      rules = { left: ['circle'], right: ['square'], ignore: ['triangle'] };
       updateRulesDisplay();
     }
+
+    function addSymbolToRules(newSymbolId) {
+      if (runSymbolIds.includes(newSymbolId)) return;
+      runSymbolIds.push(newSymbolId);
+      const counts = {
+        left: rules.left.length,
+        right: rules.right.length,
+        ignore: rules.ignore.length
+      };
+      const minCount = Math.min(counts.left, counts.right, counts.ignore);
+      const candidates = ['left', 'right', 'ignore'].filter(side => counts[side] === minCount);
+      const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+      rules[chosen].push(newSymbolId);
+      updateRulesDisplay(newSymbolId);
+    }
     
-    function updateRulesDisplay() {
+    function updateRulesDisplay(newSymbolId) {
       const leftSymbols = document.getElementById('left-symbols');
+      const ignoreSymbols = document.getElementById('ignore-symbols');
       const rightSymbols = document.getElementById('right-symbols');
-      const newSymbol = window.newUnlockedSymbol;
+      const newSymbol = newSymbolId || window.newUnlockedSymbol;
+      if (!leftSymbols || !rightSymbols || !ignoreSymbols) return;
 
       // Show symbols in portal containers (ignore symbols not shown - "others fall")
       leftSymbols.innerHTML = rules.left.map(id => {
@@ -2104,6 +4077,463 @@
         }
         return svg;
       }).join('');
+
+      ignoreSymbols.innerHTML = rules.ignore.map(id => {
+        const sym = SYMBOLS.find(s => s.id === id);
+        const svg = getSymbolSVG(id, sym.color, 24);
+        if (id === newSymbol) {
+          return svg.replace('<svg ', '<svg class="new-symbol-highlight" ');
+        }
+        return svg;
+      }).join('');
+
+      // Also update side rails with same symbols
+      updateSideRails();
+
+      const rulesBar = document.getElementById('rules-bar');
+      if (rulesBar) {
+        const totalSymbols = runSymbolIds.length;
+        rulesBar.classList.toggle('compact', totalSymbols >= 7);
+      }
+    }
+
+    // ==========================================
+    // SIDE RAILS - Vertical swipe targets
+    // ==========================================
+
+    // Track animation state per rail to prevent overlap and timeout race conditions
+    const railAnimationState = {
+      left: { active: false, id: 0 },
+      right: { active: false, id: 0 }
+    };
+
+    // Update side rails with current symbols
+    function updateSideRails() {
+      const leftRail = document.getElementById('left-rail');
+      const rightRail = document.getElementById('right-rail');
+      const leftSymbols = document.getElementById('left-rail-symbols');
+      const rightSymbols = document.getElementById('right-rail-symbols');
+      if (!leftRail || !rightRail || !leftSymbols || !rightSymbols) return;
+
+      const newSymbol = window.newUnlockedSymbol;
+
+      // Populate left rail symbols (show LEFT rules - swipe left to match)
+      leftSymbols.innerHTML = rules.left.map(id => {
+        const svg = getSymbolSVG(id, 'rgba(255,255,255,0.9)', 32);
+        const highlightClass = id === newSymbol ? ' new-symbol-highlight' : '';
+        return `<div class="rail-symbol${highlightClass}">${svg}</div>`;
+      }).join('');
+
+      // Populate right rail symbols (show RIGHT rules - swipe right to match)
+      rightSymbols.innerHTML = rules.right.map(id => {
+        const svg = getSymbolSVG(id, 'rgba(255,255,255,0.9)', 32);
+        const highlightClass = id === newSymbol ? ' new-symbol-highlight' : '';
+        return `<div class="rail-symbol${highlightClass}">${svg}</div>`;
+      }).join('');
+
+      // Add dense class if 5+ symbols on either rail
+      const maxSymbols = Math.max(rules.left.length, rules.right.length);
+      leftRail.classList.toggle('dense', maxSymbols >= 5);
+      rightRail.classList.toggle('dense', maxSymbols >= 5);
+    }
+
+    function getRailBarrierElements() {
+      const leftRail = document.getElementById('left-rail');
+      const rightRail = document.getElementById('right-rail');
+      if (!leftRail || !rightRail) return null;
+      return {
+        leftRail,
+        rightRail,
+        leftCracks: leftRail.querySelector('.rail-cracks'),
+        rightCracks: rightRail.querySelector('.rail-cracks'),
+        leftCuts: leftRail.querySelector('.rail-cuts'),
+        rightCuts: rightRail.querySelector('.rail-cuts'),
+        leftShell: leftRail.querySelector('.rail-shell'),
+        rightShell: rightRail.querySelector('.rail-shell')
+      };
+    }
+
+    function resetRailBarrier(withReform) {
+      barrierIntegrity = 1;
+      barrierCrackLevel = 0;
+      const rails = getRailBarrierElements();
+      if (!rails) return;
+      rails.leftRail.style.setProperty('--barrier-integrity', barrierIntegrity);
+      rails.rightRail.style.setProperty('--barrier-integrity', barrierIntegrity);
+      rails.leftRail.classList.remove('fractured', 'critical', 'stressed');
+      rails.rightRail.classList.remove('fractured', 'critical', 'stressed');
+      if (rails.leftCracks) rails.leftCracks.innerHTML = '';
+      if (rails.rightCracks) rails.rightCracks.innerHTML = '';
+      if (rails.leftCuts) rails.leftCuts.innerHTML = '';
+      if (rails.rightCuts) rails.rightCuts.innerHTML = '';
+
+      if (withReform) {
+        if (rails.leftShell) {
+          rails.leftShell.classList.remove('reforming');
+          void rails.leftShell.offsetWidth;
+          rails.leftShell.classList.add('reforming');
+        }
+        if (rails.rightShell) {
+          rails.rightShell.classList.remove('reforming');
+          void rails.rightShell.offsetWidth;
+          rails.rightShell.classList.add('reforming');
+        }
+      }
+    }
+
+    function updateRailBarrierProgress() {
+      const threshold = getSwipesForLevel(runProgress.tierIndex, runProgress.levelIndex);
+      const progress = Math.min(1, runProgress.swipesInLevel / threshold);
+      barrierIntegrity = Math.max(0, 1 - progress);
+      const rails = getRailBarrierElements();
+      if (!rails) return;
+      rails.leftRail.style.setProperty('--barrier-integrity', barrierIntegrity);
+      rails.rightRail.style.setProperty('--barrier-integrity', barrierIntegrity);
+      rails.leftRail.classList.toggle('fractured', barrierIntegrity < 0.6);
+      rails.rightRail.classList.toggle('fractured', barrierIntegrity < 0.6);
+      rails.leftRail.classList.toggle('critical', barrierIntegrity < 0.35);
+      rails.rightRail.classList.toggle('critical', barrierIntegrity < 0.35);
+
+      // Rail crack system removed - was visual noise without clear feedback value
+      rails.leftRail.classList.toggle('stressed', barrierIntegrity < 0.4);
+      rails.rightRail.classList.toggle('stressed', barrierIntegrity < 0.4);
+    }
+
+    function addRailCut(container, rail, impactY, countIndex, railHeightOverride, railWidthOverride) {
+      if (!container || !rail) return;
+      const cut = document.createElement('div');
+      cut.className = 'rail-cut';
+      const sizeBase = countIndex < 4 ? 10 : 14;
+      const size = sizeBase + Math.random() * 10;
+      const railHeight = railHeightOverride || rail.offsetHeight || 200;
+      const railWidth = railWidthOverride || rail.offsetWidth || 48;
+      let y;
+      if (typeof impactY === 'number' && Math.random() < 0.6) {
+        y = impactY + (Math.random() - 0.5) * railHeight * 0.4;
+      } else {
+        y = 12 + Math.random() * (railHeight - 24);
+      }
+      y = Math.max(8, Math.min(railHeight - 8, y));
+      const x = 4 + Math.random() * Math.max(1, railWidth - 8 - size); // Keep cut within rail bounds
+      cut.style.width = size + 'px';
+      cut.style.height = (size * 0.7) + 'px';
+      cut.style.left = x + 'px';
+      cut.style.top = (y - size / 2) + 'px';
+      cut.style.opacity = 0.6 + Math.random() * 0.35;
+      cut.style.transform = `rotate(${Math.random() * 360}deg)`;
+      container.appendChild(cut);
+
+      if (container.children.length > 10) {
+        container.removeChild(container.firstChild);
+      }
+    }
+
+    function createRailRipple(rail, impactY, isCorrect) {
+      if (!rail || typeof impactY !== 'number') return;
+      const ripple = document.createElement('div');
+      ripple.className = 'rail-ripple';
+      ripple.style.color = isCorrect ? 'var(--rail-barrier-color)' : 'var(--rail-error)';
+      ripple.style.left = '50%';
+      ripple.style.top = impactY + 'px';
+      rail.appendChild(ripple);
+      setTimeout(() => ripple.remove(), 450);
+    }
+
+    function createRailFlash(rail, impactY, isCorrect) {
+      if (!rail || typeof impactY !== 'number' || !isCorrect) return;
+      const flash = document.createElement('div');
+      flash.className = 'rail-hit-flash';
+      flash.style.color = 'var(--rail-barrier-color)';
+      flash.style.top = impactY + 'px';
+      rail.appendChild(flash);
+      setTimeout(() => flash.remove(), 260);
+    }
+
+    // Containment Field: ripple waves travel up and down from impact point
+    function createRippleWaves(rail, impactY) {
+      if (!rail || typeof impactY !== 'number') return;
+
+      // Wave traveling UP
+      const waveUp = document.createElement('div');
+      waveUp.className = 'rail-ripple-wave up';
+      waveUp.style.top = impactY + 'px';
+      rail.appendChild(waveUp);
+
+      // Wave traveling DOWN
+      const waveDown = document.createElement('div');
+      waveDown.className = 'rail-ripple-wave down';
+      waveDown.style.top = impactY + 'px';
+      rail.appendChild(waveDown);
+
+      // Cleanup
+      setTimeout(() => {
+        waveUp.remove();
+        waveDown.remove();
+      }, 350);
+    }
+
+    // Shatter Rails: Crystal shards explode outward from impact point
+    let activeShards = 0;
+    const maxShards = 50;
+    const shardPool = [];
+
+    function createCrystalShatter(rail, impactY, side, combo) {
+      if (!rail || typeof impactY !== 'number') return;
+
+      const railRect = rail.getBoundingClientRect();
+      const impactX = side === 'left' ? railRect.right : railRect.left;
+      const impactYGlobal = railRect.top + impactY;
+
+      // Scale shard count with combo (min 8, max 20)
+      const baseCount = 8;
+      const comboBonus = Math.min(12, Math.floor(combo / 5) * 2);
+      const shardCount = baseCount + comboBonus;
+
+      // Get computed rail color (CSS variables don't work directly in setProperty)
+      const computedStyle = getComputedStyle(document.documentElement);
+      const color = side === 'left'
+        ? computedStyle.getPropertyValue('--portal-left').trim()
+        : computedStyle.getPropertyValue('--portal-right').trim();
+
+      for (let i = 0; i < shardCount; i++) {
+        if (activeShards >= maxShards) break;
+
+        const shard = shardPool.pop() || document.createElement('div');
+        const size = Math.random() < 0.3 ? 'large' : (Math.random() < 0.5 ? 'medium' : 'small');
+        shard.className = `crystal-shard ${size}`;
+        shard.style.setProperty('--shard-color', color);
+        shard.style.left = impactX + 'px';
+        shard.style.top = impactYGlobal + 'px';
+
+        document.body.appendChild(shard);
+        activeShards++;
+
+        // Explosion direction - mostly outward from rail
+        const outwardDir = side === 'left' ? 1 : -1;
+        const angle = (Math.random() - 0.5) * 1.2; // -0.6 to 0.6 radians spread
+        const velocity = 80 + Math.random() * 120;
+        const vx = Math.cos(angle) * velocity * outwardDir;
+        const vy = Math.sin(angle) * velocity - 40; // Slight upward bias
+        const rotation = (Math.random() - 0.5) * 720;
+        const duration = 200 + Math.random() * 150;
+
+        // Animate with Web Animations API
+        const animation = shard.animate([
+          {
+            transform: `translate(0, 0) rotate(0deg) scale(1.5)`,
+            opacity: 1
+          },
+          {
+            transform: `translate(${vx * 0.4}px, ${vy * 0.4}px) rotate(${rotation * 0.4}deg) scale(1.2)`,
+            opacity: 0.9,
+            offset: 0.3
+          },
+          {
+            transform: `translate(${vx}px, ${vy}px) rotate(${rotation}deg) scale(0.3)`,
+            opacity: 0
+          }
+        ], {
+          duration: duration,
+          easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+          fill: 'forwards'
+        });
+
+        animation.addEventListener('finish', () => {
+          if (shard.parentNode) shard.parentNode.removeChild(shard);
+          shardPool.push(shard);
+          activeShards = Math.max(0, activeShards - 1);
+        }, { once: true });
+      }
+    }
+
+    function spawnRailShed() {
+      const rails = getRailBarrierElements();
+      if (!rails) return;
+      [rails.leftRail, rails.rightRail].forEach(rail => {
+        if (!rail) return;
+        const shed = document.createElement('div');
+        shed.className = 'rail-shed';
+        rail.appendChild(shed);
+        shed.addEventListener('animationend', () => shed.remove(), { once: true });
+        shed.addEventListener('animationcancel', () => shed.remove(), { once: true });
+      });
+    }
+
+    // Removed per-hit rail sparks to reduce lag
+
+    function triggerCrescendoFlare() {
+      const rails = getRailBarrierElements();
+      if (!rails) return;
+      [rails.leftRail, rails.rightRail].forEach(rail => {
+        if (!rail) return;
+        rail.classList.add('flare');
+      });
+      setTimeout(() => {
+        [rails.leftRail, rails.rightRail].forEach(rail => {
+          if (!rail) return;
+          rail.classList.remove('flare');
+        });
+      }, 300);
+    }
+
+    function getRandomShardShape() {
+      const points = [];
+      const count = 4 + Math.floor(Math.random() * 3);
+      for (let i = 0; i < count; i++) {
+        const angle = (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.8;
+        const radius = 35 + Math.random() * 20;
+        const x = 50 + Math.cos(angle) * radius;
+        const y = 50 + Math.sin(angle) * radius;
+        points.push(`${x}% ${y}%`);
+      }
+      return `polygon(${points.join(', ')})`;
+    }
+
+    function spawnRailShards(count, sourceSides, impactY, options = {}) {
+      if (count <= 0) return;
+      const rails = getRailBarrierElements();
+      if (!rails) return;
+      const sides = Array.isArray(sourceSides) ? sourceSides : [sourceSides];
+      const crystal = document.getElementById('artifact-crystal');
+      if (!crystal) return;
+      const targetRect = crystal.getBoundingClientRect();
+      const targetX = targetRect.left + targetRect.width / 2;
+      const targetY = targetRect.top + targetRect.height / 2;
+      const isCrescendo = !!options.crescendo;
+
+      for (let i = 0; i < count; i++) {
+        if (activeRailShards >= maxRailShards) return;
+        const side = sides[i % sides.length];
+        const rail = side === 'right' ? rails.rightRail : rails.leftRail;
+        if (!rail) continue;
+        const railRect = rail.getBoundingClientRect();
+        const startX = side === 'right' ? railRect.left + 6 : railRect.right - 6;
+        const startY = typeof impactY === 'number' ? impactY : railRect.top + railRect.height / 2;
+
+        const shard = railShardPool.pop() || document.createElement('div');
+        shard.className = 'rail-shard' + (isCrescendo ? ' crescendo-burst' : '');
+        shard.style.color = side === 'right' ? 'var(--portal-right)' : 'var(--portal-left)';
+        shard.style.left = startX + 'px';
+        shard.style.top = startY + 'px';
+        shard.style.transform = `translate(-50%, -50%) rotate(${Math.random() * 360}deg)`;
+        shard.style.setProperty('--shard-shape', getRandomShardShape());
+        shard.style.setProperty('--trail-rotation', `${(Math.random() * 180 - 90).toFixed(0)}deg`);
+        document.body.appendChild(shard);
+        activeRailShards++;
+
+        const driftX = (Math.random() - 0.5) * 50;
+        const driftY = (Math.random() - 0.5) * 50;
+        const deltaX = targetX + driftX - startX;
+        const deltaY = targetY + driftY - startY;
+        // Tighter, faster shard motion to feel snappier
+        const duration = isCrescendo ? 520 + Math.random() * 120 : 280 + Math.random() * 120;
+        const burstX = (Math.random() - 0.5) * (isCrescendo ? 110 : 60);
+        const burstY = (Math.random() - 0.5) * (isCrescendo ? 110 : 60);
+        const rotation = 240 + Math.random() * (isCrescendo ? 520 : 360);
+
+        const anim = shard.animate([
+          { transform: `translate(-50%, -50%) translate3d(0px, 0px, 0) rotate(0deg) scale(${isCrescendo ? 2.3 : 1.9})`, opacity: 1 },
+          { transform: `translate(-50%, -50%) translate3d(${burstX.toFixed(1)}px, ${burstY.toFixed(1)}px, 0) rotate(${(rotation * 0.35).toFixed(0)}deg) scale(${isCrescendo ? 1.4 : 1.2})`, opacity: 1, offset: isCrescendo ? 0.35 : 0.4 },
+          { transform: `translate(-50%, -50%) translate3d(${deltaX.toFixed(1)}px, ${deltaY.toFixed(1)}px, 0) rotate(${rotation.toFixed(0)}deg) scale(0.5)`, opacity: 0 }
+        ], { duration, easing: 'cubic-bezier(0.15, 0, 0.5, 1)', fill: 'forwards' });
+
+        anim.addEventListener('finish', () => {
+          if (shard.parentNode) shard.parentNode.removeChild(shard);
+          railShardPool.push(shard);
+          activeRailShards = Math.max(0, activeRailShards - 1);
+        }, { once: true });
+      }
+    }
+
+    // Trigger rail hit animation on swipe
+    function triggerRailHit(side, isCorrect, impactY, playRect, railRect, railEl) {
+      const rail = railEl || document.querySelector(`.side-rail.${side}`);
+
+      // Safety check: ensure rail exists and is in DOM
+      if (!rail || !document.contains(rail)) {
+        return;
+      }
+
+      const railBounds = railRect || rail.getBoundingClientRect();
+      const railHeight = railBounds.height || rail.offsetHeight || 200;
+      const railWidth = railBounds.width || rail.offsetWidth || 48;
+      const localImpactY = typeof impactY === 'number'
+        ? impactY - railBounds.top
+        : railHeight / 2;
+      // createRailRipple removed for performance
+      createRailFlash(rail, localImpactY, isCorrect);
+
+      // MUTEX: Skip if animation already in progress
+      if (railAnimationState[side].active) {
+        return;
+      }
+
+      // Increment animation ID and mark active
+      const animationId = ++railAnimationState[side].id;
+      railAnimationState[side].active = true;
+
+      if (isCorrect) {
+        lastCorrectSide = side;
+        lastImpactY = typeof impactY === 'number' ? impactY : null;
+
+        // === WINNING FEEDBACK SYSTEM (Agent-approved) ===
+
+        // 1. GLOW PULSE - Primary visual feedback
+        rail.classList.add('glow-pulse');
+
+        // 2. ELASTIC PUNCH - Subtle squash/stretch
+        rail.classList.add('elastic-punch');
+
+        // 3. PARTICLE BURST at rail impact point (reuse existing particle system)
+        if (playRect && railRect && typeof createParticles === 'function') {
+          const impactX = side === 'left'
+            ? railRect.right - playRect.left
+            : railRect.left - playRect.left;
+          const impactYLocal = impactY - playRect.top;
+          const railColor = getComputedStyle(document.documentElement)
+            .getPropertyValue(side === 'left' ? '--portal-left' : '--portal-right').trim();
+          // Small burst at rail - scales slightly with combo
+          const particleCount = Math.min(8, 4 + Math.floor(combo / 10));
+          requestAnimationFrame(() => {
+            createParticles(impactX, impactYLocal, railColor, {
+              count: particleCount,
+              distanceMin: 20,
+              distanceMax: 45,
+              sizeMin: 4,
+              sizeMax: 8
+            });
+          });
+        }
+
+        // Cleanup classes
+        setTimeout(() => {
+          rail.classList.remove('glow-pulse', 'elastic-punch');
+          railAnimationState[side].active = false;
+        }, 320);
+
+      } else {
+        rail.classList.add('reject');
+
+        rail.addEventListener('animationend', function handler() {
+          rail.classList.remove('reject');
+          railAnimationState[side].active = false;
+        }, { once: true });
+
+        setTimeout(() => {
+          if (railAnimationState[side].active &&
+              railAnimationState[side].id === animationId &&
+              document.contains(rail)) {
+            rail.classList.remove('reject');
+            railAnimationState[side].active = false;
+          }
+        }, 450);
+      }
+    }
+
+    // Enable side rails mode (called at game start)
+    function enableSideRails() {
+      document.body.classList.add('side-rails-active');
+      updateSideRails();
     }
     
     function spawnSymbol() {
@@ -2111,7 +4541,7 @@
       if (gameState !== 'playing' || isPaused || isCelebrating) return;
       if (performance.now() < graceUntil) return; // Don't spawn during grace period
 
-      const unlocked = getUnlockedSymbols();
+      const unlocked = getRunSymbols();
 
       // Guaranteed spawns for new symbol after unlock
       let randomSymbol;
@@ -2153,9 +4583,10 @@
       const el = document.createElement('div');
       el.className = 'symbol above-zone';
       el.dataset.id = symbol.id;
-      el.innerHTML = getSymbolSVG(symbol.type, symbol.color, 72);
+      el.innerHTML = getSymbolSVG(symbol.type, symbol.color, 65);
       el.style.left = symbol.x + '%';
-      el.style.top = symbol.y + '%';
+      el.style.top = '0%';
+      symbol.el = el;
       
       // Touch events - all non-passive to prevent scroll interference
       el.addEventListener('touchstart', handleTouchStart, { passive: false });
@@ -2173,6 +4604,8 @@
       const comboMultiplier = getComboSpeedMultiplier();
       // Apply postUnlockSlowdown and warmupMultiplier AFTER combo multiplier
       const effectiveFallTime = tier.fallTime * comboMultiplier * postUnlockSlowdown * warmupMultiplier;
+      if (!playAreaEl) playAreaEl = document.getElementById('play-area');
+      const playAreaHeight = playAreaEl ? playAreaEl.offsetHeight : 0;
 
       // Grace period after unpause - freeze symbols in place
       if (now < graceUntil) {
@@ -2190,10 +4623,13 @@
         // Padding-bottom on play-area provides buffer for symbol's bottom half
         symbol.y = -5 + (elapsed / effectiveFallTime) * 105;
 
-        const el = document.querySelector(`[data-id="${symbol.id}"]`);
+        const el = symbol.el;
         if (!el) return false;
 
-        el.style.top = symbol.y + '%';
+        if (playAreaHeight > 0) {
+          const yPx = (symbol.y / 100) * playAreaHeight;
+          el.style.transform = `translate(-50%, -50%) translate3d(0, ${yPx.toFixed(2)}px, 0)`;
+        }
 
         // Visual fade in top 35% for hierarchy, but symbols ARE swipeable
         // Lower threshold = more preview time, symbols brighten closer to action zone
@@ -2221,10 +4657,23 @@
           if (gameState === 'playing' && (rules.left.includes(symbol.type) || rules.right.includes(symbol.type))) {
             loseLife();
           } else if (gameState === 'playing') {
-            // Ignore symbol escaped correctly - soft feedback sound
+            // Ignore symbol escaped correctly - no rewards, just visual cleanup
             playSound('escape');
+            const playRect = playAreaEl ? playAreaEl.getBoundingClientRect() : null;
+            if (el && playRect) {
+              const xPx = (symbol.x / 100) * playRect.width;
+              const rawYPx = (Math.min(symbol.y, 105) / 100) * playRect.height;
+              const yPx = Math.min(playRect.height - 8, Math.max(8, rawYPx));
+              el.style.setProperty('--swipe-start-y', ((symbol.y / 100) * playAreaHeight).toFixed(1) + 'px');
+              el.classList.add('disintegrating');
+              createDisintegration(xPx, yPx, symbol.color);
+              setTimeout(() => {
+                if (el.parentNode) el.parentNode.removeChild(el);
+              }, 200);
+              return false;
+            }
           }
-          el.remove();
+          if (el) el.remove();
           return false;
         }
 
@@ -2235,7 +4684,10 @@
     function loseLife() {
       lives--;
       combo = 0;
-      updatePortalGlow(0); // Reset portal glow
+      updatePortalGlow(0);
+
+      // Apply graduated miss penalty to artifact progress
+      applyMissPenalty();
 
       // Speed penalty: drop back ~10 combos worth of progress
       // Can't go slower than starting speed (1.0)
@@ -2263,6 +4715,7 @@
     }
     
     function handleSwipe(symbolId, direction) {
+      if (gameState !== 'playing' || isPaused || isCelebrating) return;
       // Use string comparison to avoid any type coercion issues
       const symbolIndex = activeSymbols.findIndex(s => String(s.id) === String(symbolId));
       if (symbolIndex === -1) {
@@ -2282,25 +4735,59 @@
       const isCorrect = (direction === 'left' && rules.left.includes(symbol.type)) ||
                         (direction === 'right' && rules.right.includes(symbol.type));
 
-      const el = document.querySelector(`[data-id="${symbolId}"]`);
+      const el = symbol.el || document.querySelector(`[data-id="${symbolId}"]`);
+      const symbolRect = el ? el.getBoundingClientRect() : null;
+      const playRect = playAreaEl ? playAreaEl.getBoundingClientRect() : null;
+      const rail = direction ? document.querySelector(`.side-rail.${direction}`) : null;
+      const railRect = rail ? rail.getBoundingClientRect() : null;
+      const swipeStartY = symbolRect && playRect ? (symbolRect.top - playRect.top + symbolRect.height / 2) : null;
 
       // Show visual feedback
       showFeedback(isCorrect);
+
+      // Trigger side rail animation (if rails are active)
+      if (symbolRect) {
+        triggerRailHit(direction, isCorrect, symbolRect.top + symbolRect.height / 2, playRect, railRect, rail);
+      }
 
       // Haptic feedback (mobile devices)
       if (hapticsEnabled && navigator.vibrate) {
         navigator.vibrate(isCorrect ? 10 : [30, 20, 30]);
       }
 
+      // Store symbol screen position for burst effects (before element removed)
+      let burstX = window.innerWidth / 2;
+      let burstY = window.innerHeight / 2;
+
       if (el) {
+        const cleanupSwipeEl = () => {
+          if (el && el.parentNode) el.parentNode.removeChild(el);
+        };
+        el.addEventListener('animationend', cleanupSwipeEl, { once: true });
+        el.addEventListener('animationcancel', cleanupSwipeEl, { once: true });
+        if (swipeStartY !== null) {
+          el.style.setProperty('--swipe-start-y', swipeStartY + 'px');
+        }
         if (isCorrect) {
           el.classList.add(direction === 'left' ? 'swiped-left' : 'swiped-right');
 
-          // Create particle burst at symbol location
-          const rect = el.getBoundingClientRect();
-          const playArea = document.getElementById('play-area');
-          const playRect = playArea.getBoundingClientRect();
-          createParticles(rect.left - playRect.left + rect.width/2, rect.top - playRect.top + rect.height/2, symbol.color);
+          // Create particle burst at symbol location (lighter at high combo to reduce hitching)
+          if (symbolRect && playRect) {
+            const px = symbolRect.left - playRect.left + symbolRect.width / 2;
+            const py = symbolRect.top - playRect.top + symbolRect.height / 2;
+            const burstOptions = combo >= 40
+              ? { count: 6, distanceMin: 50, distanceMax: 90, sizeMin: 6, sizeMax: 10 }
+              : combo >= 25
+                ? { count: 7, distanceMin: 55, distanceMax: 100, sizeMin: 6, sizeMax: 12 }
+                : undefined;
+            requestAnimationFrame(() => requestAnimationFrame(() => createParticles(px, py, symbol.color, burstOptions)));
+          }
+
+          // Store position for combo burst (viewport coords)
+          if (symbolRect) {
+            burstX = symbolRect.left + symbolRect.width / 2;
+            burstY = symbolRect.top + symbolRect.height / 2;
+          }
         } else {
           el.classList.add('swiped-wrong');
         }
@@ -2309,19 +4796,16 @@
       if (isCorrect) {
         combo++;
 
+        // Update artifact progress
+        updateArtifact();
+
         // Update portal glow intensity
         updatePortalGlow(combo);
 
-        // COMBO TIER SCORING - Skill rewards faster progression
-        // Combo 1-9:  1 point per swipe (learning)
-        // Combo 10-24: 2 points per swipe (building momentum)
-        // Combo 25+:   3 points per swipe (mastery)
-        const basePoints = combo < 10 ? 1 : combo < 25 ? 2 : 3;
-        // Symbol count multiplier: more symbols = higher reward for increased difficulty
-        // 3 syms=1.0x, 4-5=1.5x, 6-7=2.0x, 8=2.5x
-        const symbolCount = getUnlockedSymbols().length;
-        const symbolMultiplier = symbolCount <= 3 ? 1.0 : symbolCount <= 5 ? 1.5 : symbolCount <= 7 ? 2.0 : 2.5;
-        const pointsEarned = Math.floor(basePoints * symbolMultiplier);
+        // Score = base × combo multiplier × tier multiplier (base reduced from 10 to 1)
+        const comboMult = getComboScoreMultiplier(combo);
+        const tierMult = getTierScoreMultiplier(runProgress.tierIndex);
+        const pointsEarned = Math.round(1 * comboMult * tierMult);
         score += pointsEarned;
 
         bestCombo = Math.max(bestCombo, combo);
@@ -2330,10 +4814,13 @@
         // Play correct sound (pitch rises with combo)
         playSound('correct', combo);
 
-        // Play combo milestone sound and show visual
+        // Play combo milestone sound, show visual, and trigger effects
         if (combo === 10 || combo === 25 || combo === 50 || combo === 100) {
-          playSound('combo');
           showComboMilestone(combo);
+          triggerComboShake(); // Screen shake at milestones
+          // Trigger combo burst bonus (adds points, particles, screen effects)
+          checkComboBurst(burstX, burstY);
+          // Rail shards removed - using new Living Crystal system
         }
 
         // Gradually restore speed after unlock (10 correct swipes to normalize)
@@ -2344,9 +4831,6 @@
         if (warmupMultiplier > 1.0) {
           warmupMultiplier = Math.max(1.0, warmupMultiplier - 0.1);
         }
-
-        // Check for new symbol unlocks (grants bonus life)
-        checkSymbolUnlock();
 
         // Update spawn rate if needed
         updateSpawnRate();
@@ -2361,9 +4845,11 @@
 
       // Remove symbol after animation
       activeSymbols.splice(symbolIndex, 1);
+      // Bug 2 fix: Match swipeLeft/swipeRight animation duration (400ms) to ensure
+      // element is fully removed after animation completes, preventing ghost symbols
       setTimeout(() => {
-        if (el) el.remove();
-      }, 300);
+        if (el && el.parentNode) el.parentNode.removeChild(el);
+      }, 400);
 
       updateUI();
     }
@@ -2381,38 +4867,6 @@
         clearInterval(spawnInterval);
         currentSpawnRate = effectiveSpawnRate;
         spawnInterval = setInterval(spawnSymbol, effectiveSpawnRate);
-      }
-    }
-
-    // Check for new symbol unlocks and celebrate with 5-second pause
-    function checkSymbolUnlock() {
-      const currentUnlocked = getUnlockedSymbols().length;
-      if (currentUnlocked > lastUnlockedCount) {
-        // New symbol unlocked!
-        debugLog('SYMBOL UNLOCKED! ' + lastUnlockedCount + ' -> ' + currentUnlocked);
-
-        // Pause game for celebration
-        isPaused = true;
-        isCelebrating = true; // Block manual pause
-        celebrationStartTime = performance.now();
-
-        // Update rules FIRST so new symbol appears in rules bar
-        generateRules();
-
-        // Play unlock fanfare sound
-        playSound('unlock');
-
-        // Add celebration class to rules bar for enhanced animation
-        const rulesBar = document.getElementById('rules-bar');
-        rulesBar.classList.add('celebrating');
-
-        // Show "NEW SYMBOL UNLOCKED!" celebration overlay
-        showUnlockCelebration(currentUnlocked);
-
-        // NO auto-resume - player must tap to continue
-        // This respects the moment and prevents unfair deaths
-
-        lastUnlockedCount = currentUnlocked;
       }
     }
 
@@ -2436,6 +4890,10 @@
       // Hide celebration overlay
       hideUnlockCelebration();
 
+      // Ensure artifact particles include newly unlocked symbol
+      // Use requestAnimationFrame to ensure container has valid dimensions after overlay hides
+      requestAnimationFrame(() => initArtifactParticles());
+
       // ADAPTIVE GRACE SYSTEM: Scale based on player performance
       // Grace period after unlock - player already tapped to continue, so keep it short
       // 2 seconds is enough to see cleared area + new rules bar highlight
@@ -2451,16 +4909,20 @@
 
       // NOW resume the game
       isPaused = false;
+      document.body.classList.remove('paused');
+      cancelActiveSwipe();
     }
 
-    function showUnlockCelebration(symbolCount) {
+    function showUnlockCelebration(symbolId) {
       const milestone = document.getElementById('combo-milestone');
-      const newSymbol = SYMBOL_DEFS[symbolCount - 1]; // Get the newly unlocked symbol
-      const symbolId = newSymbol ? newSymbol.id : 'symbol';
       const symbolColor = SYMBOLS.find(s => s.id === symbolId)?.color || '#a855f7';
 
-      // Determine direction from FIXED_RULES (never changes!)
-      const fixedRule = FIXED_RULES[symbolId];
+      // Determine direction from current rules
+      const fixedRule = rules.left.includes(symbolId)
+        ? 'left'
+        : rules.right.includes(symbolId)
+          ? 'right'
+          : 'ignore';
       let direction = t('letFall');
       let directionIcon = '↓';
       let directionClass = 'ignore';
@@ -2520,38 +4982,31 @@
     }
     
     function updateUI() {
-      document.getElementById('score-display').textContent = score;
-      // Only show combo at 5+ to reduce clutter
-      // Combo display removed per UX feedback - score is sufficient
+      // Show tier only (progress bar handles crescendos)
+      const scoreValue = document.getElementById('score-value');
+      if (scoreValue) scoreValue.textContent = score;
+      document.getElementById('score-display').textContent = `${t('tier')} ${runProgress.tierIndex + 1}`;
 
       const hearts = document.querySelectorAll('#lives-display .heart');
       hearts.forEach((heart, i) => {
         heart.classList.toggle('lost', i >= lives);
       });
 
-      // Show next unlock progress after first unlock (Option B)
+      // Show level progress per tier
       const nextUnlockEl = document.getElementById('next-unlock');
-      if (lastUnlockedCount > 3) {
-        // Find next symbol to unlock (use peakScore for persistent unlocks)
-        const effectiveScoreForUnlock = Math.max(score, peakScore);
-        const nextSymbol = SYMBOL_DEFS.find(s => s.score > effectiveScoreForUnlock);
-        if (nextSymbol) {
-          const symbolName = t(nextSymbol.id);
-          const atWord = t('at');
-          nextUnlockEl.textContent = `${t('next')}: ${symbolName} ${atWord} ${nextSymbol.score}`;
-          nextUnlockEl.classList.add('show');
-        } else {
-          // All symbols unlocked
-          nextUnlockEl.textContent = t('allUnlocked');
-          nextUnlockEl.classList.add('show');
-        }
-      } else {
-        nextUnlockEl.classList.remove('show');
+      if (nextUnlockEl) {
+        const levelsNeeded = getLevelsForTier(runProgress.tierIndex);
+        nextUnlockEl.textContent = `${t('level')} ${runProgress.levelIndex + 1}/${levelsNeeded}`;
+        nextUnlockEl.classList.add('show');
       }
+
+      updateCrescendoProgress();
 
       // Update spawn rate based on combo (faster spawns at higher combos)
       updateSpawnRate();
     }
+
+    // Removed crescendo dots (progress bar replaces them)
 
     function showComboMilestone(comboValue) {
       // Don't show combo milestone during unlock celebration (they share same element)
@@ -2571,6 +5026,21 @@
           milestone.classList.remove('show');
         }
       }, 800);
+
+      // Add power-up border glow effect
+      const borderGlow = document.createElement('div');
+      borderGlow.className = 'power-up-border-glow';
+      document.body.appendChild(borderGlow);
+
+      // Proper cleanup: cancel timeout if animation completes first
+      const timeoutId = setTimeout(() => {
+        if (borderGlow.parentNode) borderGlow.remove();
+      }, 900);
+
+      borderGlow.addEventListener('animationend', () => {
+        clearTimeout(timeoutId); // Prevent timeout from running
+        if (borderGlow.parentNode) borderGlow.remove();
+      }, { once: true });
     }
     
     // Game loop using setInterval for consistent timing (immune to tab visibility)
@@ -2582,13 +5052,19 @@
       }
 
       const now = performance.now();
-      const delta = now - lastUpdate;
+      const rawDelta = now - lastUpdate;
+      const delta = Math.min(rawDelta, 50);
+      lastFrameTime = rawDelta; // Track for graceful degradation
       lastUpdate = now;
 
       // Always update symbols (time-based positioning handles large deltas gracefully)
       if (delta > 0) {
         updateSymbols(delta);
       }
+
+      // Animate artifact particles with physics
+      animateArtifactParticles();
+      checkAnimationTimeout(); // Failsafe for stuck animation flag
     }
 
     function startGameLoop() {
@@ -2614,6 +5090,10 @@
     // ==========================================
     // INPUT HANDLERS
     // ==========================================
+    function setRailsEngaged(isEngaged) {
+      document.body.classList.toggle('rails-engaged', !!isEngaged);
+    }
+
     let touchCurrentX = 0;
     let touchCurrentY = 0;
     let isSwiping = false;
@@ -2634,7 +5114,15 @@
       if (swipePendingTimeout) clearTimeout(swipePendingTimeout);
     }
 
+    function cancelActiveSwipe() {
+      clearSwipePending();
+      activeSymbolEl = null;
+      isSwiping = false;
+      setRailsEngaged(false);
+    }
+
     function handleTouchStart(e) {
+      if (gameState !== 'playing' || isPaused || isCelebrating) return;
       e.preventDefault();
       e.stopPropagation();
       const touch = e.touches[0];
@@ -2644,6 +5132,7 @@
       touchCurrentY = touch.clientY;
       activeSymbolEl = e.currentTarget;
       isSwiping = true;
+      setRailsEngaged(true);
       setSwipePending(activeSymbolEl ? activeSymbolEl.dataset.id : null);
       debugLog('TouchStart id=' + (activeSymbolEl ? activeSymbolEl.dataset.id : 'null'));
     }
@@ -2658,7 +5147,12 @@
     }
 
     function handleTouchEnd(e) {
+      if (gameState !== 'playing' || isPaused || isCelebrating) {
+        cancelActiveSwipe();
+        return;
+      }
       if (!activeSymbolEl || !isSwiping) {
+        setRailsEngaged(false);
         debugLog('TouchEnd IGNORED (no active symbol)');
         return;
       }
@@ -2691,6 +5185,7 @@
       clearSwipePending();
       activeSymbolEl = null;
       isSwiping = false;
+      setRailsEngaged(false);
     }
 
     function handleTouchCancel(e) {
@@ -2698,18 +5193,26 @@
       clearSwipePending();
       activeSymbolEl = null;
       isSwiping = false;
+      setRailsEngaged(false);
     }
 
     function handleMouseDown(e) {
+      if (gameState !== 'playing' || isPaused || isCelebrating) return;
       touchStartX = e.clientX;
       touchStartY = e.clientY;
       activeSymbolEl = e.currentTarget;
+      setRailsEngaged(true);
       setSwipePending(activeSymbolEl ? activeSymbolEl.dataset.id : null);
     }
 
     function handleMouseUp(e) {
+      if (gameState !== 'playing' || isPaused || isCelebrating) {
+        cancelActiveSwipe();
+        return;
+      }
       if (!activeSymbolEl) {
         clearSwipePending();
+        setRailsEngaged(false);
         return;
       }
 
@@ -2723,6 +5226,7 @@
 
       clearSwipePending();
       activeSymbolEl = null;
+      setRailsEngaged(false);
     }
     
     // ==========================================
@@ -2739,27 +5243,88 @@
       setTimeout(() => flash.remove(), 200);
     }
 
-    // Particle burst effect on correct swipe
-    function createParticles(x, y, color) {
-      const playArea = document.getElementById('play-area');
-      const particleCount = 6;
+    // Particle burst effect on correct swipe - reduced for performance
+    let activeBurstParticles = 0;
+    const maxBurstParticles = 40; // Reduced from 80
+    let activeDisintegrations = 0;
+    const maxDisintegrations = 3;
+
+    function createParticles(x, y, color, options = {}) {
+      // Graceful degradation: skip particles if frame took >20ms (performance pressure)
+      if (lastFrameTime > 20) return;
+      const playArea = playAreaEl || document.getElementById('play-area');
+      if (!playArea) return;
+      const particleCount = options.count || 1; // Single particle - Steve Jobs mandate: fluidity > flashiness
+      if (activeBurstParticles >= maxBurstParticles) return;
+      const fragment = document.createDocumentFragment();
+      const distanceMin = options.distanceMin ?? 50;
+      const distanceMax = options.distanceMax ?? 110;
+      const sizeMin = options.sizeMin ?? 6;
+      const sizeMax = options.sizeMax ?? 12;
 
       for (let i = 0; i < particleCount; i++) {
         const particle = document.createElement('div');
-        particle.className = 'particle';
+        particle.className = 'shatter-particle';
         particle.style.left = x + 'px';
         particle.style.top = y + 'px';
         particle.style.backgroundColor = color;
-        // Calculate radial burst direction
-        const angle = (i / particleCount) * Math.PI * 2;
-        const distance = 50;
-        particle.style.setProperty('--tx', Math.cos(angle) * distance + 'px');
-        particle.style.setProperty('--ty', Math.sin(angle) * distance + 'px');
-        playArea.appendChild(particle);
+        // Stronger glow with multiple layers
+        particle.style.boxShadow = `0 0 6px ${color}, 0 0 12px ${color}`;
 
-        // Clean up after animation
-        setTimeout(() => particle.remove(), 500);
+        // Random burst direction with varied distances - wider spread
+        const angle = (i / particleCount) * Math.PI * 2 + (Math.random() - 0.5) * 0.8;
+        const distance = distanceMin + Math.random() * (distanceMax - distanceMin); // wider spread
+        const tx = Math.cos(angle) * distance;
+        const ty = Math.sin(angle) * distance;
+
+        // Bigger sizes for more visible particles
+        const size = sizeMin + Math.random() * (sizeMax - sizeMin); // visible but tuned
+        particle.style.width = size + 'px';
+        particle.style.height = size + 'px';
+
+        particle.style.setProperty('--tx', tx + 'px');
+        particle.style.setProperty('--ty', ty + 'px');
+        particle.style.setProperty('--rotation', (Math.random() * 720) + 'deg'); // More rotation
+
+        fragment.appendChild(particle);
+        activeBurstParticles++;
+
+        // Clean up after animation (longer duration)
+        setTimeout(() => {
+          if (particle.parentNode) particle.parentNode.removeChild(particle);
+          activeBurstParticles = Math.max(0, activeBurstParticles - 1);
+        }, 850);
       }
+      playArea.appendChild(fragment);
+    }
+
+    function createDisintegration(x, y, color) {
+      if (lowFlashEnabled) return;
+      if (activeDisintegrations >= maxDisintegrations) return;
+      if (!playAreaEl) playAreaEl = document.getElementById('play-area');
+      if (!playAreaEl) return;
+      activeDisintegrations++;
+      const baseColor = color || '#ff6b6b';
+      const classes = ['p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8'];
+      let pending = classes.length;
+      classes.forEach((suffix) => {
+        const particle = document.createElement('div');
+        particle.className = `disintegration-particle ${suffix}`;
+        particle.style.left = x + 'px';
+        particle.style.top = y + 'px';
+        particle.style.setProperty('--particle-color', baseColor);
+        particle.style.filter = 'saturate(0.6)';
+        const cleanup = () => {
+          if (particle.parentNode) particle.parentNode.removeChild(particle);
+          pending -= 1;
+          if (pending <= 0) {
+            activeDisintegrations = Math.max(0, activeDisintegrations - 1);
+          }
+        };
+        particle.addEventListener('animationend', cleanup, { once: true });
+        particle.addEventListener('animationcancel', cleanup, { once: true });
+        playAreaEl.appendChild(particle);
+      });
     }
 
     // Update portal glow intensity based on combo
@@ -2775,6 +5340,719 @@
           portal.classList.add('combo-active');
         }
       });
+
+      // Update rail combo intensity (CSS variable + data attribute for tiers)
+      const rails = document.querySelectorAll('.side-rail');
+      // Combo intensity: 0 at combo 0, maxes at ~0.8 around combo 30+
+      const intensity = Math.min(0.8, currentCombo / 40);
+      // Combo tier: 0 (< 5), 1 (5-14), 2 (15-29), 3 (30+)
+      const tier = currentCombo >= 30 ? 3 : currentCombo >= 15 ? 2 : currentCombo >= 5 ? 1 : 0;
+
+      rails.forEach(rail => {
+        rail.style.setProperty('--combo-intensity', intensity.toFixed(2));
+        rail.dataset.comboTier = tier;
+      });
+    }
+
+    // Screen shake effect at combo milestones (10, 25, 50, 100)
+    function triggerComboShake() {
+      // Respect reduced motion preference
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        return;
+      }
+
+      const gameScreen = document.getElementById('game-screen');
+      if (!gameScreen) return;
+
+      // Remove class first to allow re-triggering
+      gameScreen.classList.remove('combo-shake');
+      void gameScreen.offsetWidth; // Force reflow
+
+      gameScreen.classList.add('combo-shake');
+
+      // Primary cleanup via animationend
+      const onAnimEnd = () => {
+        gameScreen.classList.remove('combo-shake');
+      };
+      gameScreen.addEventListener('animationend', onAnimEnd, { once: true });
+
+      // Safety timeout: ensure class is removed even if animationend fails
+      setTimeout(() => {
+        gameScreen.classList.remove('combo-shake');
+        gameScreen.removeEventListener('animationend', onAnimEnd);
+      }, 200); // 150ms animation + 50ms buffer
+    }
+
+    // ==========================================
+    // COMBO BURST SYSTEM (Simplified)
+    // ==========================================
+
+    // Burst tier configuration: combo threshold → {tier, points, particles}
+    // Points reduced 10x, particles reduced for performance
+    const BURST_TIERS = {
+      10: { tier: 'minor', points: 5, particles: 6, distance: 60 },
+      25: { tier: 'major', points: 10, particles: 10, distance: 100 },
+      50: { tier: 'mega', points: 20, particles: 15, distance: 150 },
+      100: { tier: 'ultra', points: 50, particles: 20, distance: 200 }
+    };
+
+    // Check and trigger combo burst at symbol position
+    function checkComboBurst(x, y) {
+      const config = BURST_TIERS[combo];
+      if (!config) return;
+
+      const { tier, points, particles, distance } = config;
+
+      // Award bonus points
+      score += points;
+
+      // Floating bonus text at top-center (z-index 1001, above combo text at 500)
+      const bonus = document.createElement('div');
+      bonus.className = 'burst-bonus' + (tier !== 'minor' ? ' ' + tier : '');
+      bonus.textContent = '+' + points;
+      document.body.appendChild(bonus);
+      setTimeout(() => bonus.remove(), tier === 'ultra' ? 1200 : 800);
+
+      // Burst particles from symbol position
+      const duration = tier === 'ultra' ? 1000 : 600;
+      for (let i = 0; i < particles; i++) {
+        const p = document.createElement('div');
+        p.className = 'burst-particle ' + tier;
+        const angle = Math.random() * Math.PI * 2;
+        const dist = distance * (0.5 + Math.random() * 0.5);
+        p.style.left = x + 'px';
+        p.style.top = y + 'px';
+        p.style.setProperty('--tx', Math.cos(angle) * dist + 'px');
+        p.style.setProperty('--ty', Math.sin(angle) * dist + 'px');
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), duration);
+      }
+
+      // Screen shake (major+)
+      if (tier !== 'minor') {
+        const container = document.getElementById('game-container') || document.body;
+        const shakeClass = (tier === 'mega' || tier === 'ultra') ? 'screen-shake-mega' : 'screen-shake';
+        container.classList.remove('screen-shake', 'screen-shake-mega');
+        void container.offsetWidth; // Force reflow
+        container.classList.add(shakeClass);
+        setTimeout(() => container.classList.remove(shakeClass), tier === 'mega' || tier === 'ultra' ? 300 : 200);
+      }
+
+      // Screen flash (mega+)
+      if (tier === 'mega' || tier === 'ultra') {
+        const flash = document.createElement('div');
+        flash.className = 'screen-flash ' + tier;
+        document.body.appendChild(flash);
+        setTimeout(() => flash.remove(), tier === 'ultra' ? 300 : 100);
+      }
+
+      // Play burst sound
+      playSound('combo');
+    }
+
+    // Clear burst effects on game restart
+    function clearAllBurstParticles() {
+      document.querySelectorAll('.burst-particle, .burst-bonus, .screen-flash').forEach(el => el.remove());
+    }
+
+    // ==========================================
+    // ARTIFACT REACTOR SYSTEM FUNCTIONS
+    // ==========================================
+
+    // Initialize run progress (fresh start every game)
+    function loadCMProgress() {
+      runProgress = { tierIndex: 0, levelIndex: 0, swipesInLevel: 0 };
+    }
+
+    function saveCMProgress() {
+      // No-op: run progress does not persist between games
+    }
+
+    function checkAutoSave() {
+      // No-op: run progress does not persist between games
+    }
+
+    // Update artifact on correct swipe (called from handleSwipe)
+    function updateArtifact() {
+      if (isPaused || isAnimatingArtifact || gameState !== 'playing') return;
+
+      runProgress.swipesInLevel++;
+      updateArtifactUI();
+      updateRailBarrierProgress();
+
+      const threshold = getSwipesForLevel(runProgress.tierIndex, runProgress.levelIndex);
+      if (runProgress.swipesInLevel >= threshold) {
+        triggerLevelUp();
+      }
+    }
+
+    function triggerLevelUp() {
+      if (isAnimatingArtifact) return;
+      isAnimatingArtifact = true;
+      animationStartTime = performance.now();
+
+      runProgress.levelIndex++;
+      runProgress.swipesInLevel = 0;
+      crescendoHoldUntil = performance.now() + 150;
+      setTimeout(updateCrescendoProgress, 170);
+
+      const crystal = document.getElementById('artifact-crystal');
+      if (crystal) crystal.classList.add('crescendo');
+
+      showCrescendoText();
+      playSound('correct', 15);
+
+      addParticlesToArtifact(2);
+      triggerCrescendoFlare();
+      spawnRailShed();
+
+      if (!lowFlashEnabled) {
+        const flash = document.createElement('div');
+        flash.className = 'crescendo-flash';
+        document.body.appendChild(flash);
+        setTimeout(() => flash.remove(), 550);
+      }
+
+      setTimeout(() => {
+        // Crescendo rail shards removed - using new Living Crystal system
+        resetRailBarrier(true);
+      }, 90);
+
+      const levelsNeeded = getLevelsForTier(runProgress.tierIndex);
+      if (runProgress.levelIndex >= levelsNeeded) {
+        setTimeout(() => {
+          if (crystal) crystal.classList.remove('crescendo');
+          triggerTierUp();
+        }, 300);
+      } else {
+        setTimeout(() => {
+          isAnimatingArtifact = false;
+          animationStartTime = 0;
+          if (crystal) crystal.classList.remove('crescendo');
+          updateArtifactUI();
+          updateArtifactParticles();
+        }, 300);
+      }
+    }
+
+    function triggerTierUp() {
+      isAnimatingArtifact = true;
+      animationStartTime = performance.now();
+
+      runProgress.tierIndex = Math.min(runProgress.tierIndex + 1, LEVELS_PER_TIER.length - 1);
+      runProgress.levelIndex = 0;
+      runProgress.swipesInLevel = 0;
+
+      const crystal = document.getElementById('artifact-crystal');
+      if (crystal) crystal.classList.add('unlocking');
+
+      showCriticalMassExplosion();
+      createArtifactBurst();
+      playSound('unlock');
+
+      const remaining = SYMBOL_DEFS.map(s => s.id).filter(id => !runSymbolIds.includes(id));
+      const nextSymbolId = remaining.length > 0
+        ? remaining[Math.floor(Math.random() * remaining.length)]
+        : null;
+
+      if (nextSymbolId) {
+        isPaused = true;
+        isCelebrating = true;
+        document.body.classList.add('paused');
+        celebrationStartTime = performance.now();
+
+        addSymbolToRules(nextSymbolId);
+        window.newUnlockedSymbol = nextSymbolId;
+        window.guaranteedSpawnsRemaining = 5;
+
+        initArtifactParticles();
+        const rulesBar = document.getElementById('rules-bar');
+        if (rulesBar) rulesBar.classList.add('celebrating');
+        showUnlockCelebration(nextSymbolId);
+        lastUnlockedCount = runSymbolIds.length;
+      }
+
+      setTimeout(() => {
+        isAnimatingArtifact = false;
+        animationStartTime = 0;
+        if (crystal) crystal.classList.remove('unlocking');
+
+        updateArtifactUI();
+        if (!isCelebrating) {
+          artifactParticles = [];
+          const container = document.getElementById('artifact-particles');
+          if (container) container.innerHTML = '';
+          requestAnimationFrame(() => initArtifactParticles());
+        }
+      }, 800);
+    }
+
+    // Show "POWER UP!" floating text
+    function showCrescendoText() {
+      const text = document.createElement('div');
+      text.className = 'crescendo-text';
+      text.textContent = '⚡ LEVEL UP!';
+      text.style.cssText = `
+        position: fixed;
+        top: 20%;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--accent-primary);
+        text-shadow: 0 0 20px var(--accent-primary), 2px 2px 0 #000;
+        pointer-events: none;
+        z-index: 1000;
+        animation: crescendoFloat 0.6s ease-out forwards;
+      `;
+      document.body.appendChild(text);
+      setTimeout(() => text.remove(), 600);
+
+      // Add screen border glow effect with proper cleanup
+      const borderGlow = document.createElement('div');
+      borderGlow.className = 'power-up-border-glow';
+      document.body.appendChild(borderGlow);
+
+      // Proper cleanup: cancel timeout if animation completes first
+      const glowTimeoutId = setTimeout(() => {
+        if (borderGlow.parentNode) borderGlow.remove();
+      }, 900);
+
+      borderGlow.addEventListener('animationend', () => {
+        clearTimeout(glowTimeoutId);
+        if (borderGlow.parentNode) borderGlow.remove();
+      }, { once: true });
+    }
+
+    // Critical Mass explosion effects
+    function showCriticalMassExplosion() {
+      // Screen flash
+      const flash = document.createElement('div');
+      flash.style.cssText = `
+        position: fixed;
+        inset: 0;
+        background: rgba(255, 255, 255, 0.6);
+        pointer-events: none;
+        z-index: 999;
+        animation: flashEffect 0.3s ease-out forwards;
+      `;
+      document.body.appendChild(flash);
+      setTimeout(() => flash.remove(), 300);
+
+      // Screen shake
+      document.body.classList.add('screen-shake-mega');
+      setTimeout(() => document.body.classList.remove('screen-shake-mega'), 300);
+
+      // Shockwaves from artifact
+      const crystal = document.getElementById('artifact-crystal');
+      if (crystal) {
+        const rect = crystal.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+
+        for (let i = 0; i < 3; i++) {
+          setTimeout(() => {
+            const ring = document.createElement('div');
+            ring.className = 'artifact-shockwave';
+            ring.style.left = (cx - 10) + 'px';
+            ring.style.top = (cy - 10) + 'px';
+            document.body.appendChild(ring);
+            setTimeout(() => ring.remove(), 600);
+          }, i * 100);
+        }
+      }
+    }
+
+    // Add particles to artifact (called on crescendo)
+    // Ensures equal distribution across all active symbols
+    function addParticlesToArtifact(count) {
+      const container = document.getElementById('artifact-particles');
+      if (!container) return;
+
+      // Get active symbol shapes (left/right only, not ignore)
+      const activeSymbolIds = Array.from(new Set([...rules.left, ...rules.right]));
+      const shapes = activeSymbolIds.length > 0 ? activeSymbolIds : ['circle', 'square'];
+
+      // Count current particles per shape
+      const shapeCounts = {};
+      shapes.forEach(s => shapeCounts[s] = 0);
+      artifactParticles.forEach(p => {
+        if (p.shape && shapeCounts[p.shape] !== undefined) {
+          shapeCounts[p.shape]++;
+        }
+      });
+
+      for (let i = 0; i < count; i++) {
+        // Remove oldest if at cap
+        if (artifactParticles.length >= 30) {
+          const oldest = artifactParticles.shift();
+          if (oldest && oldest.el) oldest.el.remove();
+          // Decrement count for removed shape
+          if (oldest.shape && shapeCounts[oldest.shape] !== undefined) {
+            shapeCounts[oldest.shape]--;
+          }
+        }
+
+        // Pick shape with lowest count (equal distribution)
+        // When tied, rotate through shapes to ensure fairness
+        let minCount = Infinity;
+        shapes.forEach(s => {
+          if (shapeCounts[s] < minCount) minCount = shapeCounts[s];
+        });
+        // Get all shapes with min count, pick based on iteration for fairness
+        const minShapes = shapes.filter(s => shapeCounts[s] === minCount);
+        const minShape = minShapes[i % minShapes.length];
+        shapeCounts[minShape]++;
+
+        const particle = document.createElement('div');
+        particle.className = 'inner-particle ' + minShape;
+
+        // Spawn from center with random velocity
+        const x = container.offsetWidth / 2;
+        const y = container.offsetHeight / 2;
+
+        particle.style.left = x + 'px';
+        particle.style.top = y + 'px';
+
+        container.appendChild(particle);
+        artifactParticles.push({
+          el: particle,
+          x: x,
+          y: y,
+          vx: (Math.random() - 0.5) * 3,
+          vy: (Math.random() - 0.5) * 3,
+          shape: minShape  // Track shape for rebalancing
+        });
+      }
+    }
+
+    // Apply penalty on wrong swipe (called from handleSwipe)
+    function applyCMPenalty() {
+      // No-op in fresh-run tier system
+    }
+
+    // Failsafe: Reset animation flag if stuck (called from game loop)
+    let animationStartTime = 0;
+    function checkAnimationTimeout() {
+      if (isAnimatingArtifact && animationStartTime > 0) {
+        const elapsed = performance.now() - animationStartTime;
+        if (elapsed > 2000) { // 2 second failsafe
+          isAnimatingArtifact = false;
+          animationStartTime = 0;
+          console.warn('Animation timeout - forced reset');
+        }
+      }
+    }
+
+    // Update artifact visual state based on crescendo progress
+    function updateArtifactUI() {
+      const crystal = document.getElementById('artifact-crystal');
+      const fill = document.getElementById('artifact-fill');
+
+      if (!crystal || !fill) return;
+
+      // Progress toward next crescendo (swipes / threshold)
+      const threshold = getSwipesForLevel(runProgress.tierIndex, runProgress.levelIndex);
+      const swipeProgress = Math.min(runProgress.swipesInLevel / threshold, 1);
+
+      const levelsNeeded = getLevelsForTier(runProgress.tierIndex);
+      const tierProgress = ((runProgress.levelIndex + swipeProgress) / levelsNeeded) * 100;
+      fill.style.height = tierProgress + '%';
+
+      // Update visual state based on swipe progress (excitement within current crescendo)
+      crystal.classList.remove('dormant', 'stirring', 'building', 'surging', 'crescendo');
+      if (swipeProgress < 0.2) {
+        crystal.classList.add('dormant');
+      } else if (swipeProgress < 0.4) {
+        crystal.classList.add('stirring');
+      } else if (swipeProgress < 0.7) {
+        crystal.classList.add('building');
+      } else if (swipeProgress < 0.9) {
+        crystal.classList.add('surging');
+      } else {
+        crystal.classList.add('crescendo');
+      }
+
+      // Apply tier-based visual evolution (colors, glow intensity)
+      const tier = getArtifactTier();
+      crystal.classList.remove('tier-bronze', 'tier-silver', 'tier-gold', 'tier-platinum', 'tier-diamond', 'tier-prismatic');
+      crystal.classList.add('tier-' + tier.name);
+
+      updateCrescendoProgress();
+    }
+
+    function updateCrescendoProgress() {
+      const fill = document.getElementById('crescendo-progress-fill');
+      if (!fill) return;
+      const now = performance.now();
+      if (now < crescendoHoldUntil) {
+        fill.style.width = '100%';
+        return;
+      }
+      const threshold = getSwipesForLevel(runProgress.tierIndex, runProgress.levelIndex);
+      const percent = Math.min((runProgress.swipesInLevel / threshold) * 100, 100);
+      fill.style.width = percent.toFixed(1) + '%';
+    }
+
+    // Initialize symbol-shaped particles inside artifact with physics properties
+    // Ensures equal distribution across all active symbols
+    function initArtifactParticles() {
+      const container = document.getElementById('artifact-particles');
+      if (!container) return;
+
+      container.innerHTML = '';
+      artifactParticles = [];
+
+      // Only use "active" symbols (left/right swipes) - not "ignore" symbols
+      const activeSymbolIds = Array.from(new Set([...rules.left, ...rules.right]));
+      const shapes = activeSymbolIds.length > 0 ? activeSymbolIds : ['circle', 'square'];
+
+      // Ensure minimum particle count covers all shapes (at least 1 per shape)
+      const minRequired = shapes.length;
+      const calculatedCount = getArtifactParticleCount();
+      const particleCount = Math.max(minRequired, calculatedCount);
+
+      // Create equal particles per shape - start each shape with 0
+      const shapeCounts = {};
+      shapes.forEach(s => shapeCounts[s] = 0);
+
+      // Bug 3 fix: Grid-based initial placement for better spacing
+      const particleSize = 14; // Match largest particle size (star)
+      const containerWidth = container.offsetWidth - particleSize;
+      const containerHeight = container.offsetHeight - particleSize;
+
+      // Safety net: If container has no valid dimensions (e.g., during overlay),
+      // defer initialization until next frame when layout is complete
+      if (containerWidth < particleSize || containerHeight < particleSize) {
+        requestAnimationFrame(() => initArtifactParticles());
+        return;
+      }
+
+      const cols = Math.ceil(Math.sqrt(particleCount * (containerWidth / containerHeight)));
+      const rows = Math.ceil(particleCount / cols);
+      const cellW = containerWidth / cols;
+      const cellH = containerHeight / rows;
+
+      for (let i = 0; i < particleCount; i++) {
+        // Pick shape with lowest count (equal distribution)
+        // When tied, rotate through shapes to ensure fairness
+        let minCount = Infinity;
+        shapes.forEach(s => {
+          if (shapeCounts[s] < minCount) minCount = shapeCounts[s];
+        });
+        const minShapes = shapes.filter(s => shapeCounts[s] === minCount);
+        const minShape = minShapes[i % minShapes.length];
+        shapeCounts[minShape]++;
+
+        const particle = document.createElement('div');
+        particle.className = 'inner-particle ' + minShape;
+
+        // Grid-based placement with jitter for natural look
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+        const x = col * cellW + cellW/2 + (Math.random() - 0.5) * cellW * 0.5;
+        const y = row * cellH + cellH/2 + (Math.random() - 0.5) * cellH * 0.5;
+
+        particle.style.left = x + 'px';
+        particle.style.top = y + 'px';
+
+        container.appendChild(particle);
+        artifactParticles.push({
+          el: particle,
+          x: x,
+          y: y,
+          vx: (Math.random() - 0.5) * 0.5,
+          vy: (Math.random() - 0.5) * 0.5,
+          shape: minShape
+        });
+      }
+    }
+
+    // Animate artifact particles with physics-based movement (called each frame)
+    function animateArtifactParticles() {
+      const container = document.getElementById('artifact-particles');
+      if (!container || artifactParticles.length === 0) return;
+
+      // Bug 1 fix: Account for particle size when calculating bounds
+      const particleSize = 14; // Match largest particle size (star)
+      // Performance: Use cached dimensions, only read DOM if invalidated
+      if (cachedArtifactWidth === null) {
+        cachedArtifactWidth = container.offsetWidth - particleSize;
+        cachedArtifactHeight = container.offsetHeight - particleSize;
+      }
+      const containerWidth = cachedArtifactWidth;
+      const containerHeight = cachedArtifactHeight;
+      const threshold = getSwipesForLevel(runProgress.tierIndex, runProgress.levelIndex);
+      const progress = runProgress.swipesInLevel / threshold;
+
+      // Speed and jitter based on combo progress
+      let speedMultiplier, jitter;
+      if (progress < 0.2) {
+        speedMultiplier = 0.3;
+        jitter = 0;
+      } else if (progress < 0.4) {
+        speedMultiplier = 0.8;
+        jitter = 0.5;
+      } else if (progress < 0.7) {
+        speedMultiplier = 1.5;
+        jitter = 1;
+      } else if (progress < 0.9) {
+        speedMultiplier = 3;
+        jitter = 2;
+      } else {
+        speedMultiplier = 5;
+        jitter = 4;
+      }
+
+      artifactParticles.forEach((p, i) => {
+        // Add jitter
+        p.vx += (Math.random() - 0.5) * jitter * 0.1;
+        p.vy += (Math.random() - 0.5) * jitter * 0.1;
+
+        // O(n²) particle collision removed for performance
+        // Particles may overlap but this is acceptable at game speed
+
+        // Apply velocity
+        p.x += p.vx * speedMultiplier;
+        p.y += p.vy * speedMultiplier;
+
+        // Bounce off walls
+        if (p.x < 0 || p.x > containerWidth) {
+          p.vx *= -1;
+          p.x = Math.max(0, Math.min(containerWidth, p.x));
+          // Bug 4 fix: Increased threshold from 0.4 to 0.5 to reduce red particle artifacts
+          if (progress >= 0.5) createArtifactSpark(p.x + 6, p.y + 6, progress);
+        }
+        if (p.y < 0 || p.y > containerHeight) {
+          p.vy *= -1;
+          p.y = Math.max(0, Math.min(containerHeight, p.y));
+          // Bug 4 fix: Increased threshold from 0.4 to 0.5 to reduce red particle artifacts
+          if (progress >= 0.5) createArtifactSpark(p.x + 6, p.y + 6, progress);
+        }
+
+        // Damping
+        p.vx *= 0.99;
+        p.vy *= 0.99;
+
+        // Re-add velocity to keep moving
+        if (Math.abs(p.vx) < 0.1) p.vx = (Math.random() - 0.5) * speedMultiplier;
+        if (Math.abs(p.vy) < 0.1) p.vy = (Math.random() - 0.5) * speedMultiplier;
+
+        p.el.style.left = p.x + 'px';
+        p.el.style.top = p.y + 'px';
+      });
+    }
+
+    // Create spark effect when particles hit walls
+    function createArtifactSpark(x, y, progress) {
+      const container = document.getElementById('artifact-particles');
+      if (!container || Math.random() > 0.05) return; // 5% chance to spawn - reduced for performance
+
+      const spark = document.createElement('div');
+      spark.className = 'artifact-spark';
+      spark.style.left = x + 'px';
+      spark.style.top = y + 'px';
+      spark.style.setProperty('--dx', (Math.random() - 0.5) * 30 + 'px');
+      spark.style.setProperty('--dy', (Math.random() - 0.5) * 30 + 'px');
+
+      if (progress >= 0.9) {
+        spark.style.background = '#fff';
+        spark.style.width = '6px';
+        spark.style.height = '6px';
+        spark.style.boxShadow = '0 0 8px #fff';
+      } else if (progress >= 0.7) {
+        spark.style.background = 'var(--danger-line)';
+        spark.style.width = '5px';
+        spark.style.height = '5px';
+      }
+
+      container.appendChild(spark);
+      setTimeout(() => spark.remove(), 400);
+    }
+
+    // Reinitialize particles when count changes or empty (e.g., game start or new artifact)
+    function updateArtifactParticles() {
+      const targetCount = getArtifactParticleCount();
+      if (artifactParticles.length === 0 || artifactParticles.length !== targetCount) {
+        initArtifactParticles();
+      }
+    }
+
+    // Create burst effect when artifact unlocks
+    function createArtifactBurst() {
+      const crystal = document.getElementById('artifact-crystal');
+      if (!crystal) return;
+
+      const rect = crystal.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+
+      // Create 20 burst particles
+      for (let i = 0; i < 20; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'burst-particle mega';
+
+        const angle = (i / 20) * Math.PI * 2 + Math.random() * 0.3;
+        const dist = 60 + Math.random() * 80;
+        const tx = Math.cos(angle) * dist;
+        const ty = Math.sin(angle) * dist;
+
+        particle.style.left = cx + 'px';
+        particle.style.top = cy + 'px';
+        particle.style.setProperty('--tx', tx + 'px');
+        particle.style.setProperty('--ty', ty + 'px');
+
+        document.body.appendChild(particle);
+        setTimeout(() => particle.remove(), 800);
+      }
+    }
+
+    // Create visual explosion effect (no text - pure feel)
+    function showArtifactUnlocked() {
+      const crystal = document.getElementById('artifact-crystal');
+      if (!crystal) return;
+
+      const rect = crystal.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+
+      // Create screen flash centered on artifact
+      const flash = document.createElement('div');
+      flash.className = 'artifact-flash';
+      flash.style.setProperty('--flash-x', cx + 'px');
+      flash.style.setProperty('--flash-y', cy + 'px');
+      document.body.appendChild(flash);
+      setTimeout(() => flash.remove(), 400);
+
+      // Create multiple expanding shockwave rings
+      for (let i = 0; i < 3; i++) {
+        setTimeout(() => {
+          const ring = document.createElement('div');
+          ring.className = 'artifact-shockwave';
+          ring.style.left = (cx - 10) + 'px';
+          ring.style.top = (cy - 10) + 'px';
+          document.body.appendChild(ring);
+          setTimeout(() => ring.remove(), 600);
+        }, i * 100);
+      }
+    }
+
+      // Reset artifact UI on game start
+    function resetArtifactUI() {
+      loadCMProgress();
+      runProgress = { tierIndex: 0, levelIndex: 0, swipesInLevel: 0 };
+      isAnimatingArtifact = false;
+      queuedSwipe = null;
+      lastCMSaveTime = performance.now();
+      updateArtifactUI();
+      // Initialize particles based on current crescendo count
+      initArtifactParticles();
+      resetRailBarrier();
+    }
+
+    // Apply miss penalty to crescendo progress (10% of threshold)
+    function applyMissPenalty() {
+      applyCMPenalty();
     }
 
     // Store tutorial timeout so it can be cancelled if player pauses first
@@ -2792,6 +6070,8 @@
       }
 
       isPaused = true;
+      document.body.classList.add('paused');
+      cancelActiveSwipe();
       pauseStartTime = performance.now();
       if (spawnInterval) clearInterval(spawnInterval);
       document.getElementById('tutorial-overlay').style.display = 'flex';
@@ -2812,6 +6092,7 @@
 
       // Resume game
       isPaused = false;
+      document.body.classList.remove('paused');
       const pauseDuration = performance.now() - pauseStartTime;
       activeSymbols.forEach(s => s.spawnTime += pauseDuration);
       // Use effective spawn rate (preserves postUnlockSlowdown)
@@ -2837,6 +6118,8 @@
       if (isPaused) {
         // Pause the game
         pauseStartTime = performance.now();
+        document.body.classList.add('paused');
+        cancelActiveSwipe();
         if (spawnInterval) clearInterval(spawnInterval);
         // Cancel pending tutorial timeout (prevents race condition)
         if (tutorialTimeoutId !== null) {
@@ -2849,6 +6132,7 @@
         pauseBtn.setAttribute('aria-label', 'Resume game');
       } else {
         // Resume the game
+        document.body.classList.remove('paused');
         // SVG pause icon (two bars)
         pauseBtn.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>';
         pauseBtn.setAttribute('aria-label', 'Pause game');
@@ -2891,23 +6175,28 @@
       stopGameLoop();
       if (spawnInterval) clearInterval(spawnInterval);
       isPaused = false;
+      document.body.classList.remove('paused');
+      cancelActiveSwipe();
       document.getElementById('pause-overlay').style.display = 'none';
       showMenu();
     }
 
-    function pauseToTheme() {
-      // Go to theme settings (game stays paused in background)
+    function pauseToSettings() {
+      // Go to settings (game stays paused in background)
       document.getElementById('pause-overlay').style.display = 'none';
       document.getElementById('game-screen').style.display = 'none';
       document.getElementById('settings-screen').style.display = 'flex';
       // Mark that we came from pause so we can return
       window.returnToPause = true;
+      document.body.classList.add('paused');
+      cancelActiveSwipe();
       // Update button text to reflect destination
-      document.getElementById('settings-back-btn').textContent = 'Back to Game';
+      setSettingsBackButtonLabel('backToGame');
     }
 
     function showMenu() {
       gameState = 'menu';
+      document.body.classList.remove('side-rails-active'); // Hide side rails
       document.getElementById('menu-screen').style.display = 'flex';
       document.getElementById('game-screen').style.display = 'none';
       document.getElementById('gameover-screen').style.display = 'none';
@@ -2935,11 +6224,14 @@
       bestCombo = 0;
       symbolsSorted = 0;
       updatePortalGlow(0); // Reset portal glow
-      lastUnlockedCount = getUnlockedSymbols().length;  // Match actual unlocked count (prevents false popup)
+      lastUnlockedCount = 3;
       activeSymbols = [];
       isPaused = false;
+      document.body.classList.remove('paused');
       isCelebrating = false;  // Reset celebration state
       hideUnlockCelebration();  // Clean up any celebration overlay
+      clearAllBurstParticles();  // Clean up any burst particles/effects
+      // Reset artifact reactor UI (after rules are set)
       const rulesBar = document.getElementById('rules-bar');
       if (rulesBar) rulesBar.classList.remove('celebrating');  // Remove celebration glow
 
@@ -2957,15 +6249,18 @@
       window.guaranteedSpawnsRemaining = 0;
       maxSpeedMultiplier = 1.0;  // Reset speed progression
       postUnlockSlowdown = 1.0;  // Reset post-unlock slowdown
-      // Warmup: Start 30% slower if player has earned symbols (more than base 3)
-      warmupMultiplier = getUnlockedSymbols().length > 3 ? 1.3 : 1.0;
-      generateRules();  // Use earned symbols based on peakScore (not hardcoded)
+      warmupMultiplier = 1.0;
+      buildInitialRules();
+      lastUnlockedCount = runSymbolIds.length;
+      resetArtifactUI();
+      enableSideRails(); // Enable vertical side rails for swipe targets
 
       // Hide next unlock indicator (shows after first unlock)
       document.getElementById('next-unlock').classList.remove('show');
 
       // Clear play area
       const playArea = document.getElementById('play-area');
+      playAreaEl = playArea;
       playArea.querySelectorAll('.symbol').forEach(el => el.remove());
 
       // Show game screen
@@ -2976,6 +6271,9 @@
 
       updateUI();
       updateRulesDisplay();
+
+      // Reinitialize artifact particles now that container is visible
+      requestAnimationFrame(() => initArtifactParticles());
 
       // Start game loop
       startGameLoop();
@@ -2997,6 +6295,9 @@
     
     function endGame() {
       gameState = 'gameover';
+
+      // Hide side rails
+      document.body.classList.remove('side-rails-active');
 
       // Play game over sound
       playSound('gameover');
@@ -3030,6 +6331,8 @@
       document.getElementById('final-score').textContent = score;
       document.getElementById('final-combo').textContent = bestCombo;
       document.getElementById('final-sorted').textContent = symbolsSorted;
+      document.getElementById('final-tier').textContent = runProgress.tierIndex + 1;
+      document.getElementById('final-level').textContent = (runProgress.levelIndex + 1) + '/' + getLevelsForTier(runProgress.tierIndex);
       
       document.getElementById('game-screen').style.display = 'none';
       document.getElementById('gameover-screen').style.display = 'flex';
@@ -3042,7 +6345,7 @@
       document.getElementById('menu-screen').style.display = 'none';
       document.getElementById('settings-screen').style.display = 'flex';
       // Ensure button text is correct when coming from menu
-      document.getElementById('settings-back-btn').textContent = 'Back to Menu';
+      setSettingsBackButtonLabel('backToMenu');
       updateThemeOptions();
     }
 
@@ -3052,9 +6355,18 @@
         window.returnToPause = false;
         document.getElementById('game-screen').style.display = 'flex';
         document.getElementById('pause-overlay').style.display = 'flex';
+        document.body.classList.add('paused');
       } else {
+        document.body.classList.remove('paused');
         document.getElementById('menu-screen').style.display = 'flex';
       }
+    }
+
+    function setSettingsBackButtonLabel(key) {
+      const label = document.getElementById('settings-back-label');
+      if (!label) return;
+      label.setAttribute('data-i18n', key);
+      label.textContent = t(key);
     }
 
     function resetProgress() {
@@ -3066,7 +6378,7 @@
         } catch(e) {}
         highScore = 0;
         peakScore = 0;
-        unlockedSymbolsCache = { score: -1, symbols: null }; // Force recalculation
+        runProgress = { tierIndex: 0, levelIndex: 0, swipesInLevel: 0 };
         document.getElementById('high-score-display').textContent = 'High Score: 0';
       }
     }
@@ -3085,11 +6397,26 @@
       // Update SYMBOLS with new theme colors
       SYMBOLS = getSymbols();
 
+      updateActiveSymbolColors();
+      updateRulesDisplay();
+
       // Update subtitle text
       const subtitle = document.getElementById('theme-subtitle');
       if (subtitle) {
         subtitle.textContent = THEMES[currentTheme].subtitle;
       }
+    }
+
+    function updateActiveSymbolColors() {
+      if (!activeSymbols || activeSymbols.length === 0) return;
+      activeSymbols.forEach(symbol => {
+        const updated = SYMBOLS.find(s => s.id === symbol.type);
+        if (!updated) return;
+        symbol.color = updated.color;
+        const el = document.querySelector(`[data-id="${symbol.id}"]`);
+        if (!el) return;
+        el.innerHTML = getSymbolSVG(symbol.type, symbol.color, 72);
+      });
     }
 
     function updateThemeOptions() {
@@ -3133,10 +6460,6 @@
       // Settings title
       const settingsTitle = document.querySelector('#settings-screen h2');
       if (settingsTitle) settingsTitle.textContent = t('settings');
-
-      // Theme section title and descriptions
-      const themeSection = document.querySelector('#settings-screen .settings-section:first-of-type h3');
-      if (themeSection) themeSection.textContent = t('theme');
 
       // Update theme names/descriptions
       const themeOptions = document.querySelectorAll('.theme-option');
@@ -3188,7 +6511,12 @@
         const divs = statsBox.querySelectorAll('div');
         if (divs[0]) divs[0].innerHTML = t('bestCombo') + ': <span id="final-combo">' + (bestCombo || 0) + '</span>';
         if (divs[1]) divs[1].innerHTML = t('symbolsSorted') + ': <span id="final-sorted">' + (symbolsSorted || 0) + '</span>';
+        if (divs[2]) divs[2].innerHTML = t('tierReached') + ': <span id="final-tier">' + (runProgress.tierIndex + 1) + '</span>';
+        if (divs[3]) divs[3].innerHTML = t('levelReached') + ': <span id="final-level">' + (runProgress.levelIndex + 1) + '/' + getLevelsForTier(runProgress.tierIndex) + '</span>';
       }
+
+      const scoreDisplay = document.getElementById('score-display');
+      if (scoreDisplay) scoreDisplay.textContent = `${t('tier')} ${runProgress.tierIndex + 1}`;
 
       const menuBtn = document.querySelector('#gameover-screen .menu-btn');
       if (menuBtn) menuBtn.textContent = t('menu');
@@ -3201,6 +6529,8 @@
       updateSoundToggleUI();
       // Haptics toggle
       updateHapticsToggleUI();
+      // Low-flash toggle
+      updateLowFlashToggleUI();
     }
 
     // ==========================================
@@ -3208,6 +6538,45 @@
     // ==========================================
     document.addEventListener('touchend', handleTouchEnd);
     document.addEventListener('mouseup', handleMouseUp);
+
+    if (systemReducedMotion && systemReducedMotion.addEventListener) {
+      systemReducedMotion.addEventListener('change', (e) => {
+        if (!lowFlashUserSet) {
+          lowFlashEnabled = e.matches;
+          applyLowFlash();
+        }
+      });
+    }
+
+    applyLowFlash();
+
+    // KEYBOARD CONTROLS (for desktop testing)
+    // Arrow keys swipe the lowest falling symbol
+    document.addEventListener('keydown', (e) => {
+      if (gameState !== 'playing' || isPaused) return;
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+
+      // Find the lowest (highest y value) active symbol
+      if (activeSymbols.length === 0) return;
+      const lowestSymbol = activeSymbols.reduce((lowest, s) =>
+        s.y > lowest.y ? s : lowest, activeSymbols[0]);
+
+      const direction = e.key === 'ArrowLeft' ? 'left' : 'right';
+      handleSwipe(lowestSymbol.id, direction);
+      e.preventDefault();
+    });
+
+    // DEBUG: Expose artifact state for testing
+    window.getArtifactState = () => ({
+      tierIndex: runProgress.tierIndex,
+      levelIndex: runProgress.levelIndex,
+      swipesInLevel: runProgress.swipesInLevel,
+      swipesNeeded: getSwipesForLevel(runProgress.tierIndex, runProgress.levelIndex),
+      levelsNeeded: getLevelsForTier(runProgress.tierIndex),
+      isAnimating: isAnimatingArtifact,
+      gameState: gameState,
+      isPaused: isPaused
+    });
 
     // Auto-pause when app loses focus (spec 8.4)
     let autoPausePending = false;
@@ -3227,7 +6596,11 @@
     }
 
     document.addEventListener('visibilitychange', () => {
-      if (document.hidden) handleVisibilityLoss();
+      if (document.hidden) {
+        handleVisibilityLoss();
+      } else if (gameState === 'playing') {
+        lastUpdate = performance.now();
+      }
     });
 
     window.addEventListener('blur', handleVisibilityLoss);
@@ -3237,6 +6610,9 @@
 
     // Load peak score for persistent unlocks
     loadPeakScore();
+
+    // Load Critical Mass progress
+    loadCMProgress();
 
     // Apply saved language on load
     updateLanguageOptions();
@@ -3253,10 +6629,19 @@
     // ==========================================
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
+        navigator.serviceWorker.register('./sw.js')
           .then(reg => console.log('[PWA] Service Worker registered:', reg.scope))
           .catch(err => console.log('[PWA] Service Worker registration failed:', err));
       });
+    }
+
+    // Performance: Invalidate cached dimensions on resize
+    const artifactContainer = document.getElementById('artifact-particles');
+    if (artifactContainer && typeof ResizeObserver !== 'undefined') {
+      new ResizeObserver(() => {
+        cachedArtifactWidth = null;
+        cachedArtifactHeight = null;
+      }).observe(artifactContainer);
     }
 
     showMenu();

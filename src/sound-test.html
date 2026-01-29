@@ -1,0 +1,1504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SORTEX — Sound Audition v4 (Deep Bass)</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #0a0a12; color: #e0e0e0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  padding: 20px; max-width: 600px; margin: 0 auto; padding-bottom: 80px;
+}
+h1 { font-size: 1.3rem; color: #b388ff; margin-bottom: 6px; }
+p.desc { font-size: 0.8rem; color: #888; margin-bottom: 16px; }
+.card {
+  background: #16162a; border: 1px solid #2a2a4a; border-radius: 10px;
+  padding: 14px; margin-bottom: 10px; display: flex; align-items: center;
+  gap: 14px; transition: border-color 0.2s;
+}
+.card:active, .card.playing { border-color: #b388ff; }
+.card .num {
+  width: 36px; height: 36px; background: #b388ff22; color: #b388ff;
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 0.85rem; flex-shrink: 0;
+}
+.card .info { flex: 1; }
+.card .name { font-weight: 600; font-size: 0.95rem; }
+.card .detail { font-size: 0.75rem; color: #999; margin-top: 3px; }
+.play-btn {
+  width: 44px; height: 44px; background: #b388ff; color: #0a0a12;
+  border: none; border-radius: 50%; font-size: 1.2rem; cursor: pointer;
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+}
+.play-btn:active { transform: scale(0.92); }
+.section-label {
+  display: inline-block; background: #b388ff22; color: #b388ff;
+  padding: 3px 10px; border-radius: 20px; font-size: 0.7rem;
+  text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;
+}
+.divider { height: 1px; background: #2a2a4a; margin: 28px 0; }
+.current-tag {
+  display: inline-block; background: #ff572222; color: #ff5722;
+  font-size: 0.6rem; padding: 1px 6px; border-radius: 8px;
+  margin-left: 6px; text-transform: uppercase;
+}
+</style>
+</head>
+<body>
+<h1>SORTEX Sound Audition v4</h1>
+<p class="desc">Block Blast style — deep bass thuds, muted impacts, sub-bass rumble. No frequency above 1650Hz. Sub-bass is king.</p>
+
+<!-- ===== GRAB ===== -->
+<div class="section-label">Grab</div>
+
+<div class="card" id="card-g0">
+  <div class="num">G0</div>
+  <div class="info">
+    <div class="name">Quick Swoosh</div>
+    <div class="detail">Noise sweep 300&rarr;1200Hz upward. Light, airy lift-off. 60ms.</div>
+  </div>
+  <button class="play-btn" onclick="playGrab(0)">&#9654;</button>
+</div>
+
+<div class="card" id="card-g1">
+  <div class="num">G1</div>
+  <div class="info">
+    <div class="name">Breathy Swipe</div>
+    <div class="detail">Noise sweep 800&rarr;200Hz downward. Soft exhale feel. 80ms.</div>
+  </div>
+  <button class="play-btn" onclick="playGrab(1)">&#9654;</button>
+</div>
+
+<div class="card" id="card-g2">
+  <div class="num">G2</div>
+  <div class="info">
+    <div class="name">Wind Lift</div>
+    <div class="detail">Noise sweep 200&rarr;600Hz + faint sine trail. Gentle rising whoosh. 70ms.</div>
+  </div>
+  <button class="play-btn" onclick="playGrab(2)">&#9654;</button>
+</div>
+
+<div class="card" id="card-g3">
+  <div class="num">G3</div>
+  <div class="info">
+    <div class="name">Swish</div>
+    <div class="detail">Noise sweep 500&rarr;1500Hz fast. Sharp but quiet. 45ms.</div>
+  </div>
+  <button class="play-btn" onclick="playGrab(3)">&#9654;</button>
+</div>
+
+<div class="card" id="card-g4">
+  <div class="num">G4</div>
+  <div class="info">
+    <div class="name">Flutter</div>
+    <div class="detail">Two staggered noise sweeps (up then down). Fluttery pick-up. 90ms.</div>
+  </div>
+  <button class="play-btn" onclick="playGrab(4)">&#9654;</button>
+</div>
+
+<div class="divider"></div>
+
+<!-- ===== PLACEMENT ===== -->
+<div class="section-label">Placement</div>
+
+<div class="card" id="card-p0">
+  <div class="num">P0</div>
+  <div class="info">
+    <div class="name">Deep Drop</div>
+    <div class="detail">Sine 180&rarr;100Hz sweep + triangle 350&rarr;250Hz + noise rumble 250Hz. Satisfying lock. 80ms.</div>
+  </div>
+  <button class="play-btn" onclick="playPlacement(0)">&#9654;</button>
+</div>
+
+<div class="card" id="card-p1">
+  <div class="num">P1</div>
+  <div class="info">
+    <div class="name">Stone Lock</div>
+    <div class="detail">Sine 100Hz + 220Hz body + noise texture 400Hz. Solid placement. 70ms.</div>
+  </div>
+  <button class="play-btn" onclick="playPlacement(1)">&#9654;</button>
+</div>
+
+<div class="card" id="card-p2">
+  <div class="num">P2</div>
+  <div class="info">
+    <div class="name">Thunk</div>
+    <div class="detail">Sine 70Hz deep sub + square 150Hz lowpassed. Short punchy impact. 60ms.</div>
+  </div>
+  <button class="play-btn" onclick="playPlacement(2)">&#9654;</button>
+</div>
+
+<div class="card" id="card-p3">
+  <div class="num">P3</div>
+  <div class="info">
+    <div class="name">Resonant Pebble</div>
+    <div class="detail">Low sine impact &rarr; harmonic series bloom (fundamental&rarr;5th). Warm.</div>
+  </div>
+  <button class="play-btn" onclick="playPlacement(3)">&#9654;</button>
+</div>
+
+<div class="card" id="card-p4">
+  <div class="num">P4</div>
+  <div class="info">
+    <div class="name">Hollow Knock</div>
+    <div class="detail">Triangle 160&rarr;120Hz + sine 320Hz body + noise rumble 200Hz. Woody. 70ms.</div>
+  </div>
+  <button class="play-btn" onclick="playPlacement(4)">&#9654;</button>
+</div>
+
+<div class="divider"></div>
+
+<!-- ===== LINE CLEAR ===== -->
+<div class="section-label">Line Clear</div>
+
+<div class="card" id="card-l0">
+  <div class="num">L0</div>
+  <div class="info">
+    <div class="name">Bass Crush</div>
+    <div class="detail">3-phase: sub 80&rarr;40Hz impact + noise crush 300Hz + deep ring decay. 400ms.</div>
+  </div>
+  <button class="play-btn" onclick="playLineClear(0)">&#9654;</button>
+</div>
+
+<div class="card" id="card-l1">
+  <div class="num">L1</div>
+  <div class="info">
+    <div class="name">Rumble Break</div>
+    <div class="detail">Sub 60&rarr;30Hz hit + square growl LP 250Hz + low rumble decay. 450ms.</div>
+  </div>
+  <button class="play-btn" onclick="playLineClear(1)">&#9654;</button>
+</div>
+
+<div class="card" id="card-l2">
+  <div class="num">L2</div>
+  <div class="info">
+    <div class="name">Hammer Drop</div>
+    <div class="detail">Impact 90&rarr;45Hz + harmonic ring 110/220/330Hz + sub tail. 350ms.</div>
+  </div>
+  <button class="play-btn" onclick="playLineClear(2)">&#9654;</button>
+</div>
+
+<div class="card" id="card-l3">
+  <div class="num">L3</div>
+  <div class="info">
+    <div class="name">Tectonic</div>
+    <div class="detail">Massive sub 50Hz + noise crunch 250Hz + ultra-low 30Hz tail. 500ms.</div>
+  </div>
+  <button class="play-btn" onclick="playLineClear(3)">&#9654;</button>
+</div>
+
+<div class="card" id="card-l4">
+  <div class="num">L4</div>
+  <div class="info">
+    <div class="name">Muted Cascade</div>
+    <div class="detail">Impact + 4 descending bass tones 440&rarr;260Hz + sub tail. 400ms.</div>
+  </div>
+  <button class="play-btn" onclick="playLineClear(4)">&#9654;</button>
+</div>
+
+<div class="divider"></div>
+
+<!-- ===== RESONANCE DETECT ===== -->
+<div class="section-label">Resonance Detect</div>
+
+<div class="card" id="card-r0">
+  <div class="num">R0</div>
+  <div class="info">
+    <div class="name">Deep Pulse</div>
+    <div class="detail">Sine 80Hz + triangle 200Hz. Clean deep pulse. 150ms.</div>
+  </div>
+  <button class="play-btn" onclick="playResonanceDetect(0)">&#9654;</button>
+</div>
+
+<div class="card" id="card-r1">
+  <div class="num">R1</div>
+  <div class="info">
+    <div class="name">Low Beacon</div>
+    <div class="detail">Sine 60Hz + square 100Hz LP 200Hz + sine 300Hz detail. 120ms.</div>
+  </div>
+  <button class="play-btn" onclick="playResonanceDetect(1)">&#9654;</button>
+</div>
+
+<div class="card" id="card-r2">
+  <div class="num">R2</div>
+  <div class="info">
+    <div class="name">Sub Alert</div>
+    <div class="detail">Sine 50&rarr;80Hz upward sweep + 160Hz body + noise texture. 200ms.</div>
+  </div>
+  <button class="play-btn" onclick="playResonanceDetect(2)">&#9654;</button>
+</div>
+
+<div class="card" id="card-r3">
+  <div class="num">R3</div>
+  <div class="info">
+    <div class="name">Warm Ping</div>
+    <div class="detail">Harmonic series 110/220/330Hz. Warm resonant tone. 200ms.</div>
+  </div>
+  <button class="play-btn" onclick="playResonanceDetect(3)">&#9654;</button>
+</div>
+
+<div class="card" id="card-r4">
+  <div class="num">R4</div>
+  <div class="info">
+    <div class="name">Bass Chirp</div>
+    <div class="detail">Sine 150&rarr;80Hz downward sweep + triangle 250&rarr;180Hz. 180ms.</div>
+  </div>
+  <button class="play-btn" onclick="playResonanceDetect(4)">&#9654;</button>
+</div>
+
+<div class="divider"></div>
+
+<!-- ===== RESONANCE DETONATE ===== -->
+<div class="section-label">Resonance Detonate</div>
+
+<div class="card" id="card-d0">
+  <div class="num">D0</div>
+  <div class="info">
+    <div class="name">Mega Thud</div>
+    <div class="detail">4-phase: sub 70&rarr;30Hz impact + square growl + noise rumble + 30Hz sub tail. 1000ms.</div>
+  </div>
+  <button class="play-btn" onclick="playResonanceDetonate(0)">&#9654;</button>
+</div>
+
+<div class="card" id="card-d1">
+  <div class="num">D1</div>
+  <div class="info">
+    <div class="name">Triple Bomb</div>
+    <div class="detail">3 staggered impacts getting deeper (80&rarr;60&rarr;50Hz) + sub tail. 1100ms.</div>
+  </div>
+  <button class="play-btn" onclick="playResonanceDetonate(1)">&#9654;</button>
+</div>
+
+<div class="card" id="card-d2">
+  <div class="num">D2</div>
+  <div class="info">
+    <div class="name">Depth Charge</div>
+    <div class="detail">Build ramp + massive blast 50&rarr;25Hz + settle + sub void. 1100ms.</div>
+  </div>
+  <button class="play-btn" onclick="playResonanceDetonate(2)">&#9654;</button>
+</div>
+
+<div class="card" id="card-d3">
+  <div class="num">D3</div>
+  <div class="info">
+    <div class="name">Earthquake</div>
+    <div class="detail">Rumble build + massive 35&rarr;20Hz quake + long low rumble tail. 1200ms.</div>
+  </div>
+  <button class="play-btn" onclick="playResonanceDetonate(3)">&#9654;</button>
+</div>
+
+<div class="card" id="card-d4">
+  <div class="num">D4</div>
+  <div class="info">
+    <div class="name">Implosion</div>
+    <div class="detail">Upward suck + fast collapse 100&rarr;25Hz + aftermath rumble + void tail. 1000ms.</div>
+  </div>
+  <button class="play-btn" onclick="playResonanceDetonate(4)">&#9654;</button>
+</div>
+
+<script>
+let audioCtx = null;
+let reverbSend = null;
+
+function ensureAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+}
+
+function getReverbSend() {
+  if (reverbSend && audioCtx) return reverbSend;
+  if (!audioCtx) return null;
+  const input = audioCtx.createGain();
+  const wet = audioCtx.createGain();
+  wet.gain.value = 0.50;
+  const tapConfigs = [
+    { time: 0.067, fb: 0.45 }, { time: 0.113, fb: 0.40 },
+    { time: 0.179, fb: 0.35 }, { time: 0.271, fb: 0.30 }
+  ];
+  for (const cfg of tapConfigs) {
+    const delay = audioCtx.createDelay(1.0);
+    delay.delayTime.value = cfg.time;
+    const hs = audioCtx.createBiquadFilter();
+    hs.type = 'highshelf'; hs.frequency.value = 3000; hs.gain.value = -3;
+    const fbGain = audioCtx.createGain();
+    fbGain.gain.value = cfg.fb;
+    input.connect(delay); delay.connect(hs); hs.connect(fbGain);
+    fbGain.connect(delay); delay.connect(wet);
+  }
+  wet.connect(audioCtx.destination);
+  reverbSend = input;
+  return input;
+}
+
+function connectWithReverb(node, wetLevel) {
+  if (!audioCtx) return;
+  node.connect(audioCtx.destination);
+  const reverb = getReverbSend();
+  if (reverb) {
+    const wetGain = audioCtx.createGain();
+    wetGain.gain.value = wetLevel;
+    node.connect(wetGain); wetGain.connect(reverb);
+  }
+}
+
+function makeNoise(duration) {
+  const buf = audioCtx.createBuffer(1, audioCtx.sampleRate * duration, audioCtx.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  const src = audioCtx.createBufferSource();
+  src.buffer = buf;
+  return src;
+}
+
+function flash(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.add('playing');
+  setTimeout(() => el.classList.remove('playing'), 400);
+}
+
+// =========================================================
+// GRAB — whoosh / swoosh sounds (noise with sweeping bandpass filter)
+// No sines, no thuds. Pure filtered noise sweeps.
+// =========================================================
+function playGrab(variant) {
+  ensureAudio();
+  const t = audioCtx.currentTime;
+  flash('card-g' + variant);
+
+  if (variant === 0) {
+    // G0: Quick Swoosh — Noise BP sweep 300->1200Hz upward. 60ms.
+    const n = makeNoise(0.060);
+    const bp = audioCtx.createBiquadFilter();
+    bp.type = 'bandpass'; bp.Q.value = 4;
+    bp.frequency.setValueAtTime(300, t);
+    bp.frequency.exponentialRampToValueAtTime(1200, t + 0.060);
+    const g = audioCtx.createGain();
+    g.gain.setValueAtTime(0.10, t);
+    g.gain.setValueAtTime(0.10, t + 0.020);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.060);
+    n.connect(bp); bp.connect(g); connectWithReverb(g, 0.15);
+    n.start(t); n.stop(t + 0.060);
+
+  } else if (variant === 1) {
+    // G1: Breathy Swipe — Noise BP sweep 800->200Hz downward. 80ms.
+    const n = makeNoise(0.080);
+    const bp = audioCtx.createBiquadFilter();
+    bp.type = 'bandpass'; bp.Q.value = 3;
+    bp.frequency.setValueAtTime(800, t);
+    bp.frequency.exponentialRampToValueAtTime(200, t + 0.080);
+    const g = audioCtx.createGain();
+    g.gain.setValueAtTime(0.08, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.080);
+    n.connect(bp); bp.connect(g); connectWithReverb(g, 0.20);
+    n.start(t); n.stop(t + 0.080);
+
+  } else if (variant === 2) {
+    // G2: Wind Lift — Noise BP sweep 200->600Hz + faint sine 180Hz trail. 70ms.
+    const n = makeNoise(0.070);
+    const bp = audioCtx.createBiquadFilter();
+    bp.type = 'bandpass'; bp.Q.value = 3;
+    bp.frequency.setValueAtTime(200, t);
+    bp.frequency.exponentialRampToValueAtTime(600, t + 0.050);
+    const g = audioCtx.createGain();
+    g.gain.setValueAtTime(0.09, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.070);
+    n.connect(bp); bp.connect(g); connectWithReverb(g, 0.18);
+    n.start(t); n.stop(t + 0.070);
+
+    // Faint sine trail for warmth
+    const s = audioCtx.createOscillator();
+    s.type = 'sine'; s.frequency.value = 180;
+    const sg = audioCtx.createGain();
+    sg.gain.setValueAtTime(0.03, t + 0.020);
+    sg.gain.exponentialRampToValueAtTime(0.001, t + 0.070);
+    s.connect(sg); connectWithReverb(sg, 0.18);
+    s.start(t + 0.020); s.stop(t + 0.070);
+
+  } else if (variant === 3) {
+    // G3: Swish — Noise BP sweep 500->1500Hz fast. Sharp, quiet. 45ms.
+    const n = makeNoise(0.045);
+    const bp = audioCtx.createBiquadFilter();
+    bp.type = 'bandpass'; bp.Q.value = 5;
+    bp.frequency.setValueAtTime(500, t);
+    bp.frequency.exponentialRampToValueAtTime(1500, t + 0.045);
+    const g = audioCtx.createGain();
+    g.gain.setValueAtTime(0.07, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.045);
+    n.connect(bp); bp.connect(g); connectWithReverb(g, 0.12);
+    n.start(t); n.stop(t + 0.045);
+
+  } else if (variant === 4) {
+    // G4: Flutter — Two staggered noise sweeps (up then down). 90ms.
+    // Sweep 1: up 300->900Hz
+    const n1 = makeNoise(0.045);
+    const bp1 = audioCtx.createBiquadFilter();
+    bp1.type = 'bandpass'; bp1.Q.value = 4;
+    bp1.frequency.setValueAtTime(300, t);
+    bp1.frequency.exponentialRampToValueAtTime(900, t + 0.045);
+    const g1 = audioCtx.createGain();
+    g1.gain.setValueAtTime(0.07, t);
+    g1.gain.exponentialRampToValueAtTime(0.001, t + 0.045);
+    n1.connect(bp1); bp1.connect(g1); connectWithReverb(g1, 0.15);
+    n1.start(t); n1.stop(t + 0.045);
+
+    // Sweep 2: down 900->300Hz
+    const n2 = makeNoise(0.045);
+    const bp2 = audioCtx.createBiquadFilter();
+    bp2.type = 'bandpass'; bp2.Q.value = 4;
+    bp2.frequency.setValueAtTime(900, t + 0.045);
+    bp2.frequency.exponentialRampToValueAtTime(300, t + 0.090);
+    const g2 = audioCtx.createGain();
+    g2.gain.setValueAtTime(0.07, t + 0.045);
+    g2.gain.exponentialRampToValueAtTime(0.001, t + 0.090);
+    n2.connect(bp2); bp2.connect(g2); connectWithReverb(g2, 0.15);
+    n2.start(t + 0.045); n2.stop(t + 0.090);
+  }
+}
+
+// =========================================================
+// PLACEMENT — 50-120ms, satisfying "lock into place"
+// =========================================================
+function playPlacement(variant) {
+  ensureAudio();
+  const t = audioCtx.currentTime;
+  flash('card-p' + variant);
+
+  if (variant === 0) {
+    // P0: Deep Drop — Sine 180->100Hz + triangle 350->250Hz + noise BP 250Hz
+    const s1 = audioCtx.createOscillator();
+    s1.type = 'sine';
+    s1.frequency.setValueAtTime(180, t);
+    s1.frequency.linearRampToValueAtTime(100, t + 0.080);
+    const g1 = audioCtx.createGain();
+    g1.gain.setValueAtTime(0.16, t);
+    g1.gain.exponentialRampToValueAtTime(0.001, t + 0.080);
+    s1.connect(g1); connectWithReverb(g1, 0.25);
+    s1.start(t); s1.stop(t + 0.080);
+
+    const s2 = audioCtx.createOscillator();
+    s2.type = 'triangle';
+    s2.frequency.setValueAtTime(350, t);
+    s2.frequency.linearRampToValueAtTime(250, t + 0.060);
+    const g2 = audioCtx.createGain();
+    g2.gain.setValueAtTime(0.10, t);
+    g2.gain.exponentialRampToValueAtTime(0.001, t + 0.060);
+    s2.connect(g2); connectWithReverb(g2, 0.25);
+    s2.start(t); s2.stop(t + 0.060);
+
+    const n = makeNoise(0.030);
+    const bp = audioCtx.createBiquadFilter();
+    bp.type = 'bandpass'; bp.frequency.value = 250; bp.Q.value = 4;
+    const ng = audioCtx.createGain();
+    ng.gain.setValueAtTime(0.06, t);
+    ng.gain.exponentialRampToValueAtTime(0.001, t + 0.030);
+    n.connect(bp); bp.connect(ng); connectWithReverb(ng, 0.25);
+    n.start(t); n.stop(t + 0.030);
+
+  } else if (variant === 1) {
+    // P1: Stone Lock — Sine 100Hz + sine 220Hz + noise BP 400Hz
+    const s1 = audioCtx.createOscillator();
+    s1.type = 'sine'; s1.frequency.value = 100;
+    const g1 = audioCtx.createGain();
+    g1.gain.setValueAtTime(0.18, t);
+    g1.gain.exponentialRampToValueAtTime(0.001, t + 0.070);
+    s1.connect(g1); connectWithReverb(g1, 0.20);
+    s1.start(t); s1.stop(t + 0.070);
+
+    const s2 = audioCtx.createOscillator();
+    s2.type = 'sine'; s2.frequency.value = 220;
+    const g2 = audioCtx.createGain();
+    g2.gain.setValueAtTime(0.10, t);
+    g2.gain.exponentialRampToValueAtTime(0.001, t + 0.050);
+    s2.connect(g2); connectWithReverb(g2, 0.20);
+    s2.start(t); s2.stop(t + 0.050);
+
+    const n = makeNoise(0.020);
+    const bp = audioCtx.createBiquadFilter();
+    bp.type = 'bandpass'; bp.frequency.value = 400; bp.Q.value = 5;
+    const ng = audioCtx.createGain();
+    ng.gain.setValueAtTime(0.05, t);
+    ng.gain.exponentialRampToValueAtTime(0.001, t + 0.020);
+    n.connect(bp); bp.connect(ng); connectWithReverb(ng, 0.20);
+    n.start(t); n.stop(t + 0.020);
+
+  } else if (variant === 2) {
+    // P2: Thunk — Sine 70Hz + square 150Hz LP 300Hz
+    const s1 = audioCtx.createOscillator();
+    s1.type = 'sine'; s1.frequency.value = 70;
+    const g1 = audioCtx.createGain();
+    g1.gain.setValueAtTime(0.20, t);
+    g1.gain.exponentialRampToValueAtTime(0.001, t + 0.060);
+    s1.connect(g1); connectWithReverb(g1, 0.15);
+    s1.start(t); s1.stop(t + 0.060);
+
+    const s2 = audioCtx.createOscillator();
+    s2.type = 'square'; s2.frequency.value = 150;
+    const lp = audioCtx.createBiquadFilter();
+    lp.type = 'lowpass'; lp.frequency.value = 300;
+    const g2 = audioCtx.createGain();
+    g2.gain.setValueAtTime(0.10, t);
+    g2.gain.exponentialRampToValueAtTime(0.001, t + 0.040);
+    s2.connect(lp); lp.connect(g2); connectWithReverb(g2, 0.15);
+    s2.start(t); s2.stop(t + 0.040);
+
+  } else if (variant === 3) {
+    // P3: Resonant Pebble — KEPT EXACTLY AS-IS
+    // Sine 330->260Hz 60ms gain 0.14
+    const fund = audioCtx.createOscillator();
+    fund.type = 'sine';
+    fund.frequency.setValueAtTime(330, t);
+    fund.frequency.linearRampToValueAtTime(260, t + 0.060);
+    const fg = audioCtx.createGain();
+    fg.gain.setValueAtTime(0.14, t);
+    fg.gain.exponentialRampToValueAtTime(0.001, t + 0.070);
+    fund.connect(fg);
+    connectWithReverb(fg, 0.25);
+    fund.start(t); fund.stop(t + 0.070);
+
+    // 5 harmonics (330 x [1,2,3,4,5])
+    const harmGains = [0.08, 0.07, 0.05, 0.04, 0.03];
+    for (let i = 0; i < 5; i++) {
+      const offset = 0.020 + i * 0.025;
+      const freq = 330 * (i + 1);
+      const wet = 0.30 + i * 0.06;
+
+      const osc = audioCtx.createOscillator();
+      osc.type = 'sine'; osc.frequency.value = freq;
+      const g = audioCtx.createGain();
+      g.gain.setValueAtTime(harmGains[i], t + offset);
+      g.gain.exponentialRampToValueAtTime(0.001, t + offset + 0.060);
+      osc.connect(g);
+      connectWithReverb(g, wet);
+      osc.start(t + offset); osc.stop(t + offset + 0.060);
+    }
+
+  } else if (variant === 4) {
+    // P4: Hollow Knock — Triangle 160->120Hz + sine 320Hz + noise BP 200Hz
+    const s1 = audioCtx.createOscillator();
+    s1.type = 'triangle';
+    s1.frequency.setValueAtTime(160, t);
+    s1.frequency.linearRampToValueAtTime(120, t + 0.070);
+    const g1 = audioCtx.createGain();
+    g1.gain.setValueAtTime(0.14, t);
+    g1.gain.exponentialRampToValueAtTime(0.001, t + 0.070);
+    s1.connect(g1); connectWithReverb(g1, 0.30);
+    s1.start(t); s1.stop(t + 0.070);
+
+    const s2 = audioCtx.createOscillator();
+    s2.type = 'sine'; s2.frequency.value = 320;
+    const g2 = audioCtx.createGain();
+    g2.gain.setValueAtTime(0.08, t);
+    g2.gain.exponentialRampToValueAtTime(0.001, t + 0.050);
+    s2.connect(g2); connectWithReverb(g2, 0.30);
+    s2.start(t); s2.stop(t + 0.050);
+
+    const n = makeNoise(0.040);
+    const bp = audioCtx.createBiquadFilter();
+    bp.type = 'bandpass'; bp.frequency.value = 200; bp.Q.value = 2;
+    const ng = audioCtx.createGain();
+    ng.gain.setValueAtTime(0.05, t);
+    ng.gain.exponentialRampToValueAtTime(0.001, t + 0.040);
+    n.connect(bp); bp.connect(ng); connectWithReverb(ng, 0.30);
+    n.start(t); n.stop(t + 0.040);
+  }
+}
+
+// =========================================================
+// LINE CLEAR — 200-500ms, powerful breaking but LOW
+// =========================================================
+function playLineClear(variant) {
+  ensureAudio();
+  const t = audioCtx.currentTime;
+  flash('card-l' + variant);
+
+  if (variant === 0) {
+    // L0: Bass Crush — 3-phase 400ms
+    // Phase 1 (0-50ms): sine 80->40Hz + noise BP 300Hz
+    const s1 = audioCtx.createOscillator();
+    s1.type = 'sine';
+    s1.frequency.setValueAtTime(80, t);
+    s1.frequency.linearRampToValueAtTime(40, t + 0.050);
+    const g1 = audioCtx.createGain();
+    g1.gain.setValueAtTime(0.22, t);
+    g1.gain.exponentialRampToValueAtTime(0.001, t + 0.050);
+    s1.connect(g1); connectWithReverb(g1, 0.40);
+    s1.start(t); s1.stop(t + 0.050);
+
+    const n1 = makeNoise(0.050);
+    const bp1 = audioCtx.createBiquadFilter();
+    bp1.type = 'bandpass'; bp1.frequency.value = 300; bp1.Q.value = 2;
+    const ng1 = audioCtx.createGain();
+    ng1.gain.setValueAtTime(0.18, t);
+    ng1.gain.exponentialRampToValueAtTime(0.001, t + 0.050);
+    n1.connect(bp1); bp1.connect(ng1); connectWithReverb(ng1, 0.40);
+    n1.start(t); n1.stop(t + 0.050);
+
+    // Phase 2 (50-200ms): sine 50Hz decay + triangle 200->100Hz + noise BP 500Hz
+    const s2 = audioCtx.createOscillator();
+    s2.type = 'sine'; s2.frequency.value = 50;
+    const g2 = audioCtx.createGain();
+    g2.gain.setValueAtTime(0.15, t + 0.050);
+    g2.gain.exponentialRampToValueAtTime(0.001, t + 0.200);
+    s2.connect(g2); connectWithReverb(g2, 0.40);
+    s2.start(t + 0.050); s2.stop(t + 0.200);
+
+    const s3 = audioCtx.createOscillator();
+    s3.type = 'triangle';
+    s3.frequency.setValueAtTime(200, t + 0.050);
+    s3.frequency.linearRampToValueAtTime(100, t + 0.200);
+    const g3 = audioCtx.createGain();
+    g3.gain.setValueAtTime(0.12, t + 0.050);
+    g3.gain.exponentialRampToValueAtTime(0.001, t + 0.200);
+    s3.connect(g3); connectWithReverb(g3, 0.40);
+    s3.start(t + 0.050); s3.stop(t + 0.200);
+
+    const n2 = makeNoise(0.150);
+    const bp2 = audioCtx.createBiquadFilter();
+    bp2.type = 'bandpass'; bp2.frequency.value = 500; bp2.Q.value = 2;
+    const ng2 = audioCtx.createGain();
+    ng2.gain.setValueAtTime(0.10, t + 0.050);
+    ng2.gain.exponentialRampToValueAtTime(0.001, t + 0.200);
+    n2.connect(bp2); bp2.connect(ng2); connectWithReverb(ng2, 0.40);
+    n2.start(t + 0.050); n2.stop(t + 0.200);
+
+    // Phase 3 tail (200-400ms): sine 40Hz + sine 220Hz
+    const s4 = audioCtx.createOscillator();
+    s4.type = 'sine'; s4.frequency.value = 40;
+    const g4 = audioCtx.createGain();
+    g4.gain.setValueAtTime(0.08, t + 0.200);
+    g4.gain.exponentialRampToValueAtTime(0.001, t + 0.400);
+    s4.connect(g4); connectWithReverb(g4, 0.40);
+    s4.start(t + 0.200); s4.stop(t + 0.400);
+
+    const s5 = audioCtx.createOscillator();
+    s5.type = 'sine'; s5.frequency.value = 220;
+    const g5 = audioCtx.createGain();
+    g5.gain.setValueAtTime(0.04, t + 0.200);
+    g5.gain.exponentialRampToValueAtTime(0.001, t + 0.400);
+    s5.connect(g5); connectWithReverb(g5, 0.40);
+    s5.start(t + 0.200); s5.stop(t + 0.400);
+
+  } else if (variant === 1) {
+    // L1: Rumble Break — 3-phase 450ms
+    // Phase 1 (0-60ms): sine 60->30Hz + square 120Hz LP 250Hz
+    const s1 = audioCtx.createOscillator();
+    s1.type = 'sine';
+    s1.frequency.setValueAtTime(60, t);
+    s1.frequency.linearRampToValueAtTime(30, t + 0.060);
+    const g1 = audioCtx.createGain();
+    g1.gain.setValueAtTime(0.25, t);
+    g1.gain.exponentialRampToValueAtTime(0.001, t + 0.060);
+    s1.connect(g1); connectWithReverb(g1, 0.45);
+    s1.start(t); s1.stop(t + 0.060);
+
+    const s2 = audioCtx.createOscillator();
+    s2.type = 'square'; s2.frequency.value = 120;
+    const lp1 = audioCtx.createBiquadFilter();
+    lp1.type = 'lowpass'; lp1.frequency.value = 250;
+    const g2 = audioCtx.createGain();
+    g2.gain.setValueAtTime(0.15, t);
+    g2.gain.exponentialRampToValueAtTime(0.001, t + 0.060);
+    s2.connect(lp1); lp1.connect(g2); connectWithReverb(g2, 0.45);
+    s2.start(t); s2.stop(t + 0.060);
+
+    // Phase 2 (60-250ms): noise BP 200Hz rumble + triangle 150->80Hz
+    const n1 = makeNoise(0.190);
+    const bp1 = audioCtx.createBiquadFilter();
+    bp1.type = 'bandpass'; bp1.frequency.value = 200; bp1.Q.value = 1;
+    const ng1 = audioCtx.createGain();
+    ng1.gain.setValueAtTime(0.12, t + 0.060);
+    ng1.gain.exponentialRampToValueAtTime(0.001, t + 0.250);
+    n1.connect(bp1); bp1.connect(ng1); connectWithReverb(ng1, 0.45);
+    n1.start(t + 0.060); n1.stop(t + 0.250);
+
+    const s3 = audioCtx.createOscillator();
+    s3.type = 'triangle';
+    s3.frequency.setValueAtTime(150, t + 0.060);
+    s3.frequency.linearRampToValueAtTime(80, t + 0.250);
+    const g3 = audioCtx.createGain();
+    g3.gain.setValueAtTime(0.10, t + 0.060);
+    g3.gain.exponentialRampToValueAtTime(0.001, t + 0.250);
+    s3.connect(g3); connectWithReverb(g3, 0.45);
+    s3.start(t + 0.060); s3.stop(t + 0.250);
+
+    // Phase 3 (250-450ms): sine 35Hz sub tail
+    const s4 = audioCtx.createOscillator();
+    s4.type = 'sine'; s4.frequency.value = 35;
+    const g4 = audioCtx.createGain();
+    g4.gain.setValueAtTime(0.06, t + 0.250);
+    g4.gain.exponentialRampToValueAtTime(0.001, t + 0.450);
+    s4.connect(g4); connectWithReverb(g4, 0.45);
+    s4.start(t + 0.250); s4.stop(t + 0.450);
+
+  } else if (variant === 2) {
+    // L2: Hammer Drop — 3-phase 350ms
+    // Phase 1 impact (0-40ms): sine 90->45Hz + noise BP 400Hz
+    const s1 = audioCtx.createOscillator();
+    s1.type = 'sine';
+    s1.frequency.setValueAtTime(90, t);
+    s1.frequency.linearRampToValueAtTime(45, t + 0.040);
+    const g1 = audioCtx.createGain();
+    g1.gain.setValueAtTime(0.24, t);
+    g1.gain.exponentialRampToValueAtTime(0.001, t + 0.040);
+    s1.connect(g1); connectWithReverb(g1, 0.35);
+    s1.start(t); s1.stop(t + 0.040);
+
+    const n1 = makeNoise(0.040);
+    const bp1 = audioCtx.createBiquadFilter();
+    bp1.type = 'bandpass'; bp1.frequency.value = 400; bp1.Q.value = 2;
+    const ng1 = audioCtx.createGain();
+    ng1.gain.setValueAtTime(0.16, t);
+    ng1.gain.exponentialRampToValueAtTime(0.001, t + 0.040);
+    n1.connect(bp1); bp1.connect(ng1); connectWithReverb(ng1, 0.35);
+    n1.start(t); n1.stop(t + 0.040);
+
+    // Phase 2 ring (40-150ms): sine 110Hz + sine 220Hz + sine 330Hz
+    const ringFreqs = [110, 220, 330];
+    const ringGains = [0.12, 0.08, 0.05];
+    for (let i = 0; i < 3; i++) {
+      const osc = audioCtx.createOscillator();
+      osc.type = 'sine'; osc.frequency.value = ringFreqs[i];
+      const g = audioCtx.createGain();
+      g.gain.setValueAtTime(ringGains[i], t + 0.040);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.150);
+      osc.connect(g); connectWithReverb(g, 0.35);
+      osc.start(t + 0.040); osc.stop(t + 0.150);
+    }
+
+    // Phase 3 decay (150-350ms): sine 55Hz
+    const s4 = audioCtx.createOscillator();
+    s4.type = 'sine'; s4.frequency.value = 55;
+    const g4 = audioCtx.createGain();
+    g4.gain.setValueAtTime(0.06, t + 0.150);
+    g4.gain.exponentialRampToValueAtTime(0.001, t + 0.350);
+    s4.connect(g4); connectWithReverb(g4, 0.35);
+    s4.start(t + 0.150); s4.stop(t + 0.350);
+
+  } else if (variant === 3) {
+    // L3: Tectonic — 3-phase 500ms
+    // Phase 1 (0-80ms): sine 50Hz + noise BP 250Hz
+    const s1 = audioCtx.createOscillator();
+    s1.type = 'sine'; s1.frequency.value = 50;
+    const g1 = audioCtx.createGain();
+    g1.gain.setValueAtTime(0.28, t);
+    g1.gain.exponentialRampToValueAtTime(0.001, t + 0.080);
+    s1.connect(g1); connectWithReverb(g1, 0.50);
+    s1.start(t); s1.stop(t + 0.080);
+
+    const n1 = makeNoise(0.080);
+    const bp1 = audioCtx.createBiquadFilter();
+    bp1.type = 'bandpass'; bp1.frequency.value = 250; bp1.Q.value = 2;
+    const ng1 = audioCtx.createGain();
+    ng1.gain.setValueAtTime(0.20, t);
+    ng1.gain.exponentialRampToValueAtTime(0.001, t + 0.080);
+    n1.connect(bp1); bp1.connect(ng1); connectWithReverb(ng1, 0.50);
+    n1.start(t); n1.stop(t + 0.080);
+
+    // Phase 2 (80-300ms): sine 40->25Hz + triangle 100->60Hz + noise BP 350Hz
+    const s2 = audioCtx.createOscillator();
+    s2.type = 'sine';
+    s2.frequency.setValueAtTime(40, t + 0.080);
+    s2.frequency.linearRampToValueAtTime(25, t + 0.300);
+    const g2 = audioCtx.createGain();
+    g2.gain.setValueAtTime(0.15, t + 0.080);
+    g2.gain.exponentialRampToValueAtTime(0.001, t + 0.300);
+    s2.connect(g2); connectWithReverb(g2, 0.50);
+    s2.start(t + 0.080); s2.stop(t + 0.300);
+
+    const s3 = audioCtx.createOscillator();
+    s3.type = 'triangle';
+    s3.frequency.setValueAtTime(100, t + 0.080);
+    s3.frequency.linearRampToValueAtTime(60, t + 0.300);
+    const g3 = audioCtx.createGain();
+    g3.gain.setValueAtTime(0.10, t + 0.080);
+    g3.gain.exponentialRampToValueAtTime(0.001, t + 0.300);
+    s3.connect(g3); connectWithReverb(g3, 0.50);
+    s3.start(t + 0.080); s3.stop(t + 0.300);
+
+    const n2 = makeNoise(0.220);
+    const bp2 = audioCtx.createBiquadFilter();
+    bp2.type = 'bandpass'; bp2.frequency.value = 350; bp2.Q.value = 2;
+    const ng2 = audioCtx.createGain();
+    ng2.gain.setValueAtTime(0.08, t + 0.080);
+    ng2.gain.exponentialRampToValueAtTime(0.001, t + 0.300);
+    n2.connect(bp2); bp2.connect(ng2); connectWithReverb(ng2, 0.50);
+    n2.start(t + 0.080); n2.stop(t + 0.300);
+
+    // Phase 3 (300-500ms): sine 30Hz sub tail
+    const s4 = audioCtx.createOscillator();
+    s4.type = 'sine'; s4.frequency.value = 30;
+    const g4 = audioCtx.createGain();
+    g4.gain.setValueAtTime(0.05, t + 0.300);
+    g4.gain.exponentialRampToValueAtTime(0.001, t + 0.500);
+    s4.connect(g4); connectWithReverb(g4, 0.50);
+    s4.start(t + 0.300); s4.stop(t + 0.500);
+
+  } else if (variant === 4) {
+    // L4: Muted Cascade — 3-phase 400ms
+    // Phase 1 (0-50ms): sine 100->60Hz + noise BP 350Hz
+    const s1 = audioCtx.createOscillator();
+    s1.type = 'sine';
+    s1.frequency.setValueAtTime(100, t);
+    s1.frequency.linearRampToValueAtTime(60, t + 0.050);
+    const g1 = audioCtx.createGain();
+    g1.gain.setValueAtTime(0.20, t);
+    g1.gain.exponentialRampToValueAtTime(0.001, t + 0.050);
+    s1.connect(g1); connectWithReverb(g1, 0.40);
+    s1.start(t); s1.stop(t + 0.050);
+
+    const n1 = makeNoise(0.050);
+    const bp1 = audioCtx.createBiquadFilter();
+    bp1.type = 'bandpass'; bp1.frequency.value = 350; bp1.Q.value = 2;
+    const ng1 = audioCtx.createGain();
+    ng1.gain.setValueAtTime(0.14, t);
+    ng1.gain.exponentialRampToValueAtTime(0.001, t + 0.050);
+    n1.connect(bp1); bp1.connect(ng1); connectWithReverb(ng1, 0.40);
+    n1.start(t); n1.stop(t + 0.050);
+
+    // Phase 2 (50-200ms): 4 descending sines staggered 30ms each
+    const descFreqs = [440, 380, 320, 260];
+    const descGains = [0.08, 0.07, 0.06, 0.04];
+    for (let i = 0; i < 4; i++) {
+      const offset = 0.050 + i * 0.030;
+      const osc = audioCtx.createOscillator();
+      osc.type = 'sine'; osc.frequency.value = descFreqs[i];
+      const g = audioCtx.createGain();
+      g.gain.setValueAtTime(descGains[i], t + offset);
+      g.gain.exponentialRampToValueAtTime(0.001, t + offset + 0.060);
+      osc.connect(g); connectWithReverb(g, 0.40);
+      osc.start(t + offset); osc.stop(t + offset + 0.060);
+    }
+
+    // Phase 3 (200-400ms): sine 50Hz + sine 165Hz
+    const s2 = audioCtx.createOscillator();
+    s2.type = 'sine'; s2.frequency.value = 50;
+    const g2 = audioCtx.createGain();
+    g2.gain.setValueAtTime(0.06, t + 0.200);
+    g2.gain.exponentialRampToValueAtTime(0.001, t + 0.400);
+    s2.connect(g2); connectWithReverb(g2, 0.40);
+    s2.start(t + 0.200); s2.stop(t + 0.400);
+
+    const s3 = audioCtx.createOscillator();
+    s3.type = 'sine'; s3.frequency.value = 165;
+    const g3 = audioCtx.createGain();
+    g3.gain.setValueAtTime(0.03, t + 0.200);
+    g3.gain.exponentialRampToValueAtTime(0.001, t + 0.400);
+    s3.connect(g3); connectWithReverb(g3, 0.40);
+    s3.start(t + 0.200); s3.stop(t + 0.400);
+  }
+}
+
+// =========================================================
+// RESONANCE DETECT — 100-250ms, alert/warning, still deep
+// =========================================================
+function playResonanceDetect(variant) {
+  ensureAudio();
+  const t = audioCtx.currentTime;
+  flash('card-r' + variant);
+
+  if (variant === 0) {
+    // R0: Deep Pulse — Sine 80Hz + triangle 200Hz
+    const s1 = audioCtx.createOscillator();
+    s1.type = 'sine'; s1.frequency.value = 80;
+    const g1 = audioCtx.createGain();
+    g1.gain.setValueAtTime(0.12, t);
+    g1.gain.exponentialRampToValueAtTime(0.001, t + 0.150);
+    s1.connect(g1); connectWithReverb(g1, 0.25);
+    s1.start(t); s1.stop(t + 0.150);
+
+    const s2 = audioCtx.createOscillator();
+    s2.type = 'triangle'; s2.frequency.value = 200;
+    const g2 = audioCtx.createGain();
+    g2.gain.setValueAtTime(0.08, t);
+    g2.gain.exponentialRampToValueAtTime(0.001, t + 0.100);
+    s2.connect(g2); connectWithReverb(g2, 0.25);
+    s2.start(t); s2.stop(t + 0.100);
+
+  } else if (variant === 1) {
+    // R1: Low Beacon — Sine 60Hz + square 100Hz LP 200Hz + sine 300Hz
+    const s1 = audioCtx.createOscillator();
+    s1.type = 'sine'; s1.frequency.value = 60;
+    const g1 = audioCtx.createGain();
+    g1.gain.setValueAtTime(0.14, t);
+    g1.gain.exponentialRampToValueAtTime(0.001, t + 0.120);
+    s1.connect(g1); connectWithReverb(g1, 0.20);
+    s1.start(t); s1.stop(t + 0.120);
+
+    const s2 = audioCtx.createOscillator();
+    s2.type = 'square'; s2.frequency.value = 100;
+    const lp = audioCtx.createBiquadFilter();
+    lp.type = 'lowpass'; lp.frequency.value = 200;
+    const g2 = audioCtx.createGain();
+    g2.gain.setValueAtTime(0.08, t);
+    g2.gain.exponentialRampToValueAtTime(0.001, t + 0.080);
+    s2.connect(lp); lp.connect(g2); connectWithReverb(g2, 0.20);
+    s2.start(t); s2.stop(t + 0.080);
+
+    const s3 = audioCtx.createOscillator();
+    s3.type = 'sine'; s3.frequency.value = 300;
+    const g3 = audioCtx.createGain();
+    g3.gain.setValueAtTime(0.04, t);
+    g3.gain.exponentialRampToValueAtTime(0.001, t + 0.060);
+    s3.connect(g3); connectWithReverb(g3, 0.20);
+    s3.start(t); s3.stop(t + 0.060);
+
+  } else if (variant === 2) {
+    // R2: Sub Alert — Sine 50->80Hz upward sweep + sine 160Hz + noise BP 300Hz
+    const s1 = audioCtx.createOscillator();
+    s1.type = 'sine';
+    s1.frequency.setValueAtTime(50, t);
+    s1.frequency.linearRampToValueAtTime(80, t + 0.200);
+    const g1 = audioCtx.createGain();
+    g1.gain.setValueAtTime(0.10, t);
+    g1.gain.exponentialRampToValueAtTime(0.001, t + 0.200);
+    s1.connect(g1); connectWithReverb(g1, 0.30);
+    s1.start(t); s1.stop(t + 0.200);
+
+    const s2 = audioCtx.createOscillator();
+    s2.type = 'sine'; s2.frequency.value = 160;
+    const g2 = audioCtx.createGain();
+    g2.gain.setValueAtTime(0.06, t);
+    g2.gain.exponentialRampToValueAtTime(0.001, t + 0.150);
+    s2.connect(g2); connectWithReverb(g2, 0.30);
+    s2.start(t); s2.stop(t + 0.150);
+
+    const n = makeNoise(0.050);
+    const bp = audioCtx.createBiquadFilter();
+    bp.type = 'bandpass'; bp.frequency.value = 300; bp.Q.value = 3;
+    const ng = audioCtx.createGain();
+    ng.gain.setValueAtTime(0.04, t);
+    ng.gain.exponentialRampToValueAtTime(0.001, t + 0.050);
+    n.connect(bp); bp.connect(ng); connectWithReverb(ng, 0.30);
+    n.start(t); n.stop(t + 0.050);
+
+  } else if (variant === 3) {
+    // R3: Warm Ping — Harmonic series 110/220/330Hz
+    const freqs = [110, 220, 330];
+    const gains = [0.10, 0.07, 0.04];
+    const durs = [0.200, 0.150, 0.100];
+    for (let i = 0; i < 3; i++) {
+      const osc = audioCtx.createOscillator();
+      osc.type = 'sine'; osc.frequency.value = freqs[i];
+      const g = audioCtx.createGain();
+      g.gain.setValueAtTime(gains[i], t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + durs[i]);
+      osc.connect(g); connectWithReverb(g, 0.35);
+      osc.start(t); osc.stop(t + durs[i]);
+    }
+
+  } else if (variant === 4) {
+    // R4: Bass Chirp — Sine 150->80Hz downward + triangle 250->180Hz
+    const s1 = audioCtx.createOscillator();
+    s1.type = 'sine';
+    s1.frequency.setValueAtTime(150, t);
+    s1.frequency.linearRampToValueAtTime(80, t + 0.180);
+    const g1 = audioCtx.createGain();
+    g1.gain.setValueAtTime(0.12, t);
+    g1.gain.exponentialRampToValueAtTime(0.001, t + 0.180);
+    s1.connect(g1); connectWithReverb(g1, 0.25);
+    s1.start(t); s1.stop(t + 0.180);
+
+    const s2 = audioCtx.createOscillator();
+    s2.type = 'triangle';
+    s2.frequency.setValueAtTime(250, t);
+    s2.frequency.linearRampToValueAtTime(180, t + 0.120);
+    const g2 = audioCtx.createGain();
+    g2.gain.setValueAtTime(0.06, t);
+    g2.gain.exponentialRampToValueAtTime(0.001, t + 0.120);
+    s2.connect(g2); connectWithReverb(g2, 0.25);
+    s2.start(t); s2.stop(t + 0.120);
+  }
+}
+
+// =========================================================
+// RESONANCE DETONATE — 500-1200ms, MASSIVE but deep
+// =========================================================
+function playResonanceDetonate(variant) {
+  ensureAudio();
+  const t = audioCtx.currentTime;
+  flash('card-d' + variant);
+
+  if (variant === 0) {
+    // D0: Mega Thud — 4-phase 1000ms
+    // Phase 1 (0-60ms): sine 70->30Hz + noise BP 300Hz
+    const s1 = audioCtx.createOscillator();
+    s1.type = 'sine';
+    s1.frequency.setValueAtTime(70, t);
+    s1.frequency.linearRampToValueAtTime(30, t + 0.060);
+    const g1 = audioCtx.createGain();
+    g1.gain.setValueAtTime(0.30, t);
+    g1.gain.exponentialRampToValueAtTime(0.001, t + 0.060);
+    s1.connect(g1); connectWithReverb(g1, 0.60);
+    s1.start(t); s1.stop(t + 0.060);
+
+    const n1 = makeNoise(0.060);
+    const bp1 = audioCtx.createBiquadFilter();
+    bp1.type = 'bandpass'; bp1.frequency.value = 300; bp1.Q.value = 2;
+    const ng1 = audioCtx.createGain();
+    ng1.gain.setValueAtTime(0.25, t);
+    ng1.gain.exponentialRampToValueAtTime(0.001, t + 0.060);
+    n1.connect(bp1); bp1.connect(ng1); connectWithReverb(ng1, 0.60);
+    n1.start(t); n1.stop(t + 0.060);
+
+    // Phase 2 (60-250ms): sine 40Hz + square 80Hz LP 200Hz + noise BP 200Hz + triangle 120->60Hz
+    const s2 = audioCtx.createOscillator();
+    s2.type = 'sine'; s2.frequency.value = 40;
+    const g2 = audioCtx.createGain();
+    g2.gain.setValueAtTime(0.20, t + 0.060);
+    g2.gain.exponentialRampToValueAtTime(0.001, t + 0.250);
+    s2.connect(g2); connectWithReverb(g2, 0.60);
+    s2.start(t + 0.060); s2.stop(t + 0.250);
+
+    const s3 = audioCtx.createOscillator();
+    s3.type = 'square'; s3.frequency.value = 80;
+    const lp1 = audioCtx.createBiquadFilter();
+    lp1.type = 'lowpass'; lp1.frequency.value = 200;
+    const g3 = audioCtx.createGain();
+    g3.gain.setValueAtTime(0.15, t + 0.060);
+    g3.gain.exponentialRampToValueAtTime(0.001, t + 0.250);
+    s3.connect(lp1); lp1.connect(g3); connectWithReverb(g3, 0.60);
+    s3.start(t + 0.060); s3.stop(t + 0.250);
+
+    const n2 = makeNoise(0.190);
+    const bp2 = audioCtx.createBiquadFilter();
+    bp2.type = 'bandpass'; bp2.frequency.value = 200; bp2.Q.value = 1;
+    const ng2 = audioCtx.createGain();
+    ng2.gain.setValueAtTime(0.12, t + 0.060);
+    ng2.gain.exponentialRampToValueAtTime(0.001, t + 0.250);
+    n2.connect(bp2); bp2.connect(ng2); connectWithReverb(ng2, 0.60);
+    n2.start(t + 0.060); n2.stop(t + 0.250);
+
+    const s4 = audioCtx.createOscillator();
+    s4.type = 'triangle';
+    s4.frequency.setValueAtTime(120, t + 0.060);
+    s4.frequency.linearRampToValueAtTime(60, t + 0.250);
+    const g4 = audioCtx.createGain();
+    g4.gain.setValueAtTime(0.10, t + 0.060);
+    g4.gain.exponentialRampToValueAtTime(0.001, t + 0.250);
+    s4.connect(g4); connectWithReverb(g4, 0.60);
+    s4.start(t + 0.060); s4.stop(t + 0.250);
+
+    // Phase 3 (250-600ms): sine 35Hz + sine 110Hz + noise BP 250Hz rumble
+    const s5 = audioCtx.createOscillator();
+    s5.type = 'sine'; s5.frequency.value = 35;
+    const g5 = audioCtx.createGain();
+    g5.gain.setValueAtTime(0.10, t + 0.250);
+    g5.gain.exponentialRampToValueAtTime(0.001, t + 0.600);
+    s5.connect(g5); connectWithReverb(g5, 0.60);
+    s5.start(t + 0.250); s5.stop(t + 0.600);
+
+    const s6 = audioCtx.createOscillator();
+    s6.type = 'sine'; s6.frequency.value = 110;
+    const g6 = audioCtx.createGain();
+    g6.gain.setValueAtTime(0.05, t + 0.250);
+    g6.gain.exponentialRampToValueAtTime(0.001, t + 0.600);
+    s6.connect(g6); connectWithReverb(g6, 0.60);
+    s6.start(t + 0.250); s6.stop(t + 0.600);
+
+    const n3 = makeNoise(0.350);
+    const bp3 = audioCtx.createBiquadFilter();
+    bp3.type = 'bandpass'; bp3.frequency.value = 250; bp3.Q.value = 1;
+    const ng3 = audioCtx.createGain();
+    ng3.gain.setValueAtTime(0.04, t + 0.250);
+    ng3.gain.exponentialRampToValueAtTime(0.001, t + 0.600);
+    n3.connect(bp3); bp3.connect(ng3); connectWithReverb(ng3, 0.60);
+    n3.start(t + 0.250); n3.stop(t + 0.600);
+
+    // Phase 4 (600-1000ms): sine 30Hz sub tail
+    const s7 = audioCtx.createOscillator();
+    s7.type = 'sine'; s7.frequency.value = 30;
+    const g7 = audioCtx.createGain();
+    g7.gain.setValueAtTime(0.05, t + 0.600);
+    g7.gain.exponentialRampToValueAtTime(0.001, t + 1.000);
+    s7.connect(g7); connectWithReverb(g7, 0.60);
+    s7.start(t + 0.600); s7.stop(t + 1.000);
+
+  } else if (variant === 1) {
+    // D1: Triple Bomb — 3 staggered impacts + tail 1100ms
+    // Impact 1 at t+0: sine 80->50Hz + noise BP 350Hz
+    const i1s = audioCtx.createOscillator();
+    i1s.type = 'sine';
+    i1s.frequency.setValueAtTime(80, t);
+    i1s.frequency.linearRampToValueAtTime(50, t + 0.060);
+    const i1g = audioCtx.createGain();
+    i1g.gain.setValueAtTime(0.18, t);
+    i1g.gain.exponentialRampToValueAtTime(0.001, t + 0.120);
+    i1s.connect(i1g); connectWithReverb(i1g, 0.55);
+    i1s.start(t); i1s.stop(t + 0.120);
+
+    const i1n = makeNoise(0.060);
+    const i1bp = audioCtx.createBiquadFilter();
+    i1bp.type = 'bandpass'; i1bp.frequency.value = 350; i1bp.Q.value = 2;
+    const i1ng = audioCtx.createGain();
+    i1ng.gain.setValueAtTime(0.14, t);
+    i1ng.gain.exponentialRampToValueAtTime(0.001, t + 0.060);
+    i1n.connect(i1bp); i1bp.connect(i1ng); connectWithReverb(i1ng, 0.55);
+    i1n.start(t); i1n.stop(t + 0.060);
+
+    // Impact 2 at t+0.18: sine 60->35Hz + noise BP 250Hz + square 100Hz LP 200Hz
+    const i2s = audioCtx.createOscillator();
+    i2s.type = 'sine';
+    i2s.frequency.setValueAtTime(60, t + 0.180);
+    i2s.frequency.linearRampToValueAtTime(35, t + 0.240);
+    const i2g = audioCtx.createGain();
+    i2g.gain.setValueAtTime(0.24, t + 0.180);
+    i2g.gain.exponentialRampToValueAtTime(0.001, t + 0.350);
+    i2s.connect(i2g); connectWithReverb(i2g, 0.55);
+    i2s.start(t + 0.180); i2s.stop(t + 0.350);
+
+    const i2n = makeNoise(0.080);
+    const i2bp = audioCtx.createBiquadFilter();
+    i2bp.type = 'bandpass'; i2bp.frequency.value = 250; i2bp.Q.value = 2;
+    const i2ng = audioCtx.createGain();
+    i2ng.gain.setValueAtTime(0.18, t + 0.180);
+    i2ng.gain.exponentialRampToValueAtTime(0.001, t + 0.260);
+    i2n.connect(i2bp); i2bp.connect(i2ng); connectWithReverb(i2ng, 0.55);
+    i2n.start(t + 0.180); i2n.stop(t + 0.260);
+
+    const i2sq = audioCtx.createOscillator();
+    i2sq.type = 'square'; i2sq.frequency.value = 100;
+    const i2lp = audioCtx.createBiquadFilter();
+    i2lp.type = 'lowpass'; i2lp.frequency.value = 200;
+    const i2sg = audioCtx.createGain();
+    i2sg.gain.setValueAtTime(0.10, t + 0.180);
+    i2sg.gain.exponentialRampToValueAtTime(0.001, t + 0.280);
+    i2sq.connect(i2lp); i2lp.connect(i2sg); connectWithReverb(i2sg, 0.55);
+    i2sq.start(t + 0.180); i2sq.stop(t + 0.280);
+
+    // Impact 3 at t+0.40: sine 50->20Hz + noise BP 200Hz + triangle 80->40Hz
+    const i3s = audioCtx.createOscillator();
+    i3s.type = 'sine';
+    i3s.frequency.setValueAtTime(50, t + 0.400);
+    i3s.frequency.linearRampToValueAtTime(20, t + 0.500);
+    const i3g = audioCtx.createGain();
+    i3g.gain.setValueAtTime(0.30, t + 0.400);
+    i3g.gain.exponentialRampToValueAtTime(0.001, t + 0.600);
+    i3s.connect(i3g); connectWithReverb(i3g, 0.55);
+    i3s.start(t + 0.400); i3s.stop(t + 0.600);
+
+    const i3n = makeNoise(0.120);
+    const i3bp = audioCtx.createBiquadFilter();
+    i3bp.type = 'bandpass'; i3bp.frequency.value = 200; i3bp.Q.value = 2;
+    const i3ng = audioCtx.createGain();
+    i3ng.gain.setValueAtTime(0.22, t + 0.400);
+    i3ng.gain.exponentialRampToValueAtTime(0.001, t + 0.520);
+    i3n.connect(i3bp); i3bp.connect(i3ng); connectWithReverb(i3ng, 0.55);
+    i3n.start(t + 0.400); i3n.stop(t + 0.520);
+
+    const i3t = audioCtx.createOscillator();
+    i3t.type = 'triangle';
+    i3t.frequency.setValueAtTime(80, t + 0.400);
+    i3t.frequency.linearRampToValueAtTime(40, t + 0.550);
+    const i3tg = audioCtx.createGain();
+    i3tg.gain.setValueAtTime(0.12, t + 0.400);
+    i3tg.gain.exponentialRampToValueAtTime(0.001, t + 0.550);
+    i3t.connect(i3tg); connectWithReverb(i3tg, 0.55);
+    i3t.start(t + 0.400); i3t.stop(t + 0.550);
+
+    // Tail (700-1100ms): sine 30Hz + sine 80Hz
+    const ts1 = audioCtx.createOscillator();
+    ts1.type = 'sine'; ts1.frequency.value = 30;
+    const tg1 = audioCtx.createGain();
+    tg1.gain.setValueAtTime(0.06, t + 0.700);
+    tg1.gain.exponentialRampToValueAtTime(0.001, t + 1.100);
+    ts1.connect(tg1); connectWithReverb(tg1, 0.55);
+    ts1.start(t + 0.700); ts1.stop(t + 1.100);
+
+    const ts2 = audioCtx.createOscillator();
+    ts2.type = 'sine'; ts2.frequency.value = 80;
+    const tg2 = audioCtx.createGain();
+    tg2.gain.setValueAtTime(0.03, t + 0.700);
+    tg2.gain.exponentialRampToValueAtTime(0.001, t + 1.100);
+    ts2.connect(tg2); connectWithReverb(tg2, 0.55);
+    ts2.start(t + 0.700); ts2.stop(t + 1.100);
+
+  } else if (variant === 2) {
+    // D2: Depth Charge — 4-phase 1100ms
+    // Phase 1 build (0-100ms): sine 100->50Hz ramp gain + noise BP 400->200Hz ramp gain
+    const s1 = audioCtx.createOscillator();
+    s1.type = 'sine';
+    s1.frequency.setValueAtTime(100, t);
+    s1.frequency.linearRampToValueAtTime(50, t + 0.100);
+    const g1 = audioCtx.createGain();
+    g1.gain.setValueAtTime(0.05, t);
+    g1.gain.linearRampToValueAtTime(0.20, t + 0.100);
+    s1.connect(g1); connectWithReverb(g1, 0.65);
+    s1.start(t); s1.stop(t + 0.100);
+
+    const n1 = makeNoise(0.100);
+    const bp1 = audioCtx.createBiquadFilter();
+    bp1.type = 'bandpass'; bp1.Q.value = 2;
+    bp1.frequency.setValueAtTime(400, t);
+    bp1.frequency.linearRampToValueAtTime(200, t + 0.100);
+    const ng1 = audioCtx.createGain();
+    ng1.gain.setValueAtTime(0.03, t);
+    ng1.gain.linearRampToValueAtTime(0.15, t + 0.100);
+    n1.connect(bp1); bp1.connect(ng1); connectWithReverb(ng1, 0.65);
+    n1.start(t); n1.stop(t + 0.100);
+
+    // Phase 2 blast (100-300ms): sine 50->25Hz + noise BP 250Hz + square 60Hz LP 150Hz + triangle 150->70Hz
+    const s2 = audioCtx.createOscillator();
+    s2.type = 'sine';
+    s2.frequency.setValueAtTime(50, t + 0.100);
+    s2.frequency.linearRampToValueAtTime(25, t + 0.300);
+    const g2 = audioCtx.createGain();
+    g2.gain.setValueAtTime(0.28, t + 0.100);
+    g2.gain.exponentialRampToValueAtTime(0.001, t + 0.300);
+    s2.connect(g2); connectWithReverb(g2, 0.65);
+    s2.start(t + 0.100); s2.stop(t + 0.300);
+
+    const n2 = makeNoise(0.200);
+    const bp2 = audioCtx.createBiquadFilter();
+    bp2.type = 'bandpass'; bp2.frequency.value = 250; bp2.Q.value = 2;
+    const ng2 = audioCtx.createGain();
+    ng2.gain.setValueAtTime(0.22, t + 0.100);
+    ng2.gain.exponentialRampToValueAtTime(0.001, t + 0.300);
+    n2.connect(bp2); bp2.connect(ng2); connectWithReverb(ng2, 0.65);
+    n2.start(t + 0.100); n2.stop(t + 0.300);
+
+    const s3 = audioCtx.createOscillator();
+    s3.type = 'square'; s3.frequency.value = 60;
+    const lp1 = audioCtx.createBiquadFilter();
+    lp1.type = 'lowpass'; lp1.frequency.value = 150;
+    const g3 = audioCtx.createGain();
+    g3.gain.setValueAtTime(0.16, t + 0.100);
+    g3.gain.exponentialRampToValueAtTime(0.001, t + 0.300);
+    s3.connect(lp1); lp1.connect(g3); connectWithReverb(g3, 0.65);
+    s3.start(t + 0.100); s3.stop(t + 0.300);
+
+    const s4 = audioCtx.createOscillator();
+    s4.type = 'triangle';
+    s4.frequency.setValueAtTime(150, t + 0.100);
+    s4.frequency.linearRampToValueAtTime(70, t + 0.300);
+    const g4 = audioCtx.createGain();
+    g4.gain.setValueAtTime(0.10, t + 0.100);
+    g4.gain.exponentialRampToValueAtTime(0.001, t + 0.300);
+    s4.connect(g4); connectWithReverb(g4, 0.65);
+    s4.start(t + 0.100); s4.stop(t + 0.300);
+
+    // Phase 3 settle (300-700ms): sine 35Hz + noise BP 200Hz + sine 100Hz
+    const s5 = audioCtx.createOscillator();
+    s5.type = 'sine'; s5.frequency.value = 35;
+    const g5 = audioCtx.createGain();
+    g5.gain.setValueAtTime(0.10, t + 0.300);
+    g5.gain.exponentialRampToValueAtTime(0.001, t + 0.700);
+    s5.connect(g5); connectWithReverb(g5, 0.65);
+    s5.start(t + 0.300); s5.stop(t + 0.700);
+
+    const n3 = makeNoise(0.400);
+    const bp3 = audioCtx.createBiquadFilter();
+    bp3.type = 'bandpass'; bp3.frequency.value = 200; bp3.Q.value = 1;
+    const ng3 = audioCtx.createGain();
+    ng3.gain.setValueAtTime(0.06, t + 0.300);
+    ng3.gain.exponentialRampToValueAtTime(0.001, t + 0.700);
+    n3.connect(bp3); bp3.connect(ng3); connectWithReverb(ng3, 0.65);
+    n3.start(t + 0.300); n3.stop(t + 0.700);
+
+    const s6 = audioCtx.createOscillator();
+    s6.type = 'sine'; s6.frequency.value = 100;
+    const g6 = audioCtx.createGain();
+    g6.gain.setValueAtTime(0.04, t + 0.300);
+    g6.gain.exponentialRampToValueAtTime(0.001, t + 0.700);
+    s6.connect(g6); connectWithReverb(g6, 0.65);
+    s6.start(t + 0.300); s6.stop(t + 0.700);
+
+    // Phase 4 (700-1100ms): sine 30Hz
+    const s7 = audioCtx.createOscillator();
+    s7.type = 'sine'; s7.frequency.value = 30;
+    const g7 = audioCtx.createGain();
+    g7.gain.setValueAtTime(0.04, t + 0.700);
+    g7.gain.exponentialRampToValueAtTime(0.001, t + 1.100);
+    s7.connect(g7); connectWithReverb(g7, 0.65);
+    s7.start(t + 0.700); s7.stop(t + 1.100);
+
+  } else if (variant === 3) {
+    // D3: Earthquake — 4-phase 1200ms
+    // Phase 1 (0-150ms): sine 40Hz ramp gain + noise BP 200Hz ramp gain
+    const s1 = audioCtx.createOscillator();
+    s1.type = 'sine'; s1.frequency.value = 40;
+    const g1 = audioCtx.createGain();
+    g1.gain.setValueAtTime(0.03, t);
+    g1.gain.linearRampToValueAtTime(0.25, t + 0.150);
+    s1.connect(g1); connectWithReverb(g1, 0.70);
+    s1.start(t); s1.stop(t + 0.150);
+
+    const n1 = makeNoise(0.150);
+    const bp1 = audioCtx.createBiquadFilter();
+    bp1.type = 'bandpass'; bp1.frequency.value = 200; bp1.Q.value = 2;
+    const ng1 = audioCtx.createGain();
+    ng1.gain.setValueAtTime(0.02, t);
+    ng1.gain.linearRampToValueAtTime(0.18, t + 0.150);
+    n1.connect(bp1); bp1.connect(ng1); connectWithReverb(ng1, 0.70);
+    n1.start(t); n1.stop(t + 0.150);
+
+    // Phase 2 (150-400ms): sine 35->20Hz + noise BP 250Hz + square 70Hz LP 150Hz + sine 50Hz
+    const s2 = audioCtx.createOscillator();
+    s2.type = 'sine';
+    s2.frequency.setValueAtTime(35, t + 0.150);
+    s2.frequency.linearRampToValueAtTime(20, t + 0.400);
+    const g2 = audioCtx.createGain();
+    g2.gain.setValueAtTime(0.28, t + 0.150);
+    g2.gain.exponentialRampToValueAtTime(0.001, t + 0.400);
+    s2.connect(g2); connectWithReverb(g2, 0.70);
+    s2.start(t + 0.150); s2.stop(t + 0.400);
+
+    const n2 = makeNoise(0.250);
+    const bp2 = audioCtx.createBiquadFilter();
+    bp2.type = 'bandpass'; bp2.frequency.value = 250; bp2.Q.value = 2;
+    const ng2 = audioCtx.createGain();
+    ng2.gain.setValueAtTime(0.20, t + 0.150);
+    ng2.gain.exponentialRampToValueAtTime(0.001, t + 0.400);
+    n2.connect(bp2); bp2.connect(ng2); connectWithReverb(ng2, 0.70);
+    n2.start(t + 0.150); n2.stop(t + 0.400);
+
+    const s3 = audioCtx.createOscillator();
+    s3.type = 'square'; s3.frequency.value = 70;
+    const lp1 = audioCtx.createBiquadFilter();
+    lp1.type = 'lowpass'; lp1.frequency.value = 150;
+    const g3 = audioCtx.createGain();
+    g3.gain.setValueAtTime(0.14, t + 0.150);
+    g3.gain.exponentialRampToValueAtTime(0.001, t + 0.400);
+    s3.connect(lp1); lp1.connect(g3); connectWithReverb(g3, 0.70);
+    s3.start(t + 0.150); s3.stop(t + 0.400);
+
+    const s4 = audioCtx.createOscillator();
+    s4.type = 'sine'; s4.frequency.value = 50;
+    const g4 = audioCtx.createGain();
+    g4.gain.setValueAtTime(0.12, t + 0.150);
+    g4.gain.exponentialRampToValueAtTime(0.001, t + 0.400);
+    s4.connect(g4); connectWithReverb(g4, 0.70);
+    s4.start(t + 0.150); s4.stop(t + 0.400);
+
+    // Phase 3 rumble (400-900ms): sine 25Hz + noise BP 150Hz + triangle 60->30Hz
+    const s5 = audioCtx.createOscillator();
+    s5.type = 'sine'; s5.frequency.value = 25;
+    const g5 = audioCtx.createGain();
+    g5.gain.setValueAtTime(0.12, t + 0.400);
+    g5.gain.exponentialRampToValueAtTime(0.001, t + 0.900);
+    s5.connect(g5); connectWithReverb(g5, 0.70);
+    s5.start(t + 0.400); s5.stop(t + 0.900);
+
+    const n3 = makeNoise(0.500);
+    const bp3 = audioCtx.createBiquadFilter();
+    bp3.type = 'bandpass'; bp3.frequency.value = 150; bp3.Q.value = 1;
+    const ng3 = audioCtx.createGain();
+    ng3.gain.setValueAtTime(0.08, t + 0.400);
+    ng3.gain.exponentialRampToValueAtTime(0.001, t + 0.900);
+    n3.connect(bp3); bp3.connect(ng3); connectWithReverb(ng3, 0.70);
+    n3.start(t + 0.400); n3.stop(t + 0.900);
+
+    const s6 = audioCtx.createOscillator();
+    s6.type = 'triangle';
+    s6.frequency.setValueAtTime(60, t + 0.400);
+    s6.frequency.linearRampToValueAtTime(30, t + 0.900);
+    const g6 = audioCtx.createGain();
+    g6.gain.setValueAtTime(0.06, t + 0.400);
+    g6.gain.exponentialRampToValueAtTime(0.001, t + 0.900);
+    s6.connect(g6); connectWithReverb(g6, 0.70);
+    s6.start(t + 0.400); s6.stop(t + 0.900);
+
+    // Phase 4 (900-1200ms): sine 25Hz sub tail
+    const s7 = audioCtx.createOscillator();
+    s7.type = 'sine'; s7.frequency.value = 25;
+    const g7 = audioCtx.createGain();
+    g7.gain.setValueAtTime(0.04, t + 0.900);
+    g7.gain.exponentialRampToValueAtTime(0.001, t + 1.200);
+    s7.connect(g7); connectWithReverb(g7, 0.70);
+    s7.start(t + 0.900); s7.stop(t + 1.200);
+
+  } else if (variant === 4) {
+    // D4: Implosion — 4-phase 1000ms
+    // Phase 1 suck (0-80ms): sine 60->120Hz UPWARD + noise BP 200->600Hz UPWARD
+    const s1 = audioCtx.createOscillator();
+    s1.type = 'sine';
+    s1.frequency.setValueAtTime(60, t);
+    s1.frequency.linearRampToValueAtTime(120, t + 0.080);
+    const g1 = audioCtx.createGain();
+    g1.gain.setValueAtTime(0.12, t);
+    g1.gain.exponentialRampToValueAtTime(0.001, t + 0.080);
+    s1.connect(g1); connectWithReverb(g1, 0.60);
+    s1.start(t); s1.stop(t + 0.080);
+
+    const n1 = makeNoise(0.080);
+    const bp1 = audioCtx.createBiquadFilter();
+    bp1.type = 'bandpass'; bp1.Q.value = 2;
+    bp1.frequency.setValueAtTime(200, t);
+    bp1.frequency.linearRampToValueAtTime(600, t + 0.080);
+    const ng1 = audioCtx.createGain();
+    ng1.gain.setValueAtTime(0.10, t);
+    ng1.gain.exponentialRampToValueAtTime(0.001, t + 0.080);
+    n1.connect(bp1); bp1.connect(ng1); connectWithReverb(ng1, 0.60);
+    n1.start(t); n1.stop(t + 0.080);
+
+    // Phase 2 collapse (80-120ms): sine 100->25Hz FAST + noise BP 300Hz (short, loud)
+    const s2 = audioCtx.createOscillator();
+    s2.type = 'sine';
+    s2.frequency.setValueAtTime(100, t + 0.080);
+    s2.frequency.linearRampToValueAtTime(25, t + 0.120);
+    const g2 = audioCtx.createGain();
+    g2.gain.setValueAtTime(0.30, t + 0.080);
+    g2.gain.exponentialRampToValueAtTime(0.001, t + 0.120);
+    s2.connect(g2); connectWithReverb(g2, 0.60);
+    s2.start(t + 0.080); s2.stop(t + 0.120);
+
+    const n2 = makeNoise(0.040);
+    const bp2 = audioCtx.createBiquadFilter();
+    bp2.type = 'bandpass'; bp2.frequency.value = 300; bp2.Q.value = 2;
+    const ng2 = audioCtx.createGain();
+    ng2.gain.setValueAtTime(0.25, t + 0.080);
+    ng2.gain.exponentialRampToValueAtTime(0.001, t + 0.120);
+    n2.connect(bp2); bp2.connect(ng2); connectWithReverb(ng2, 0.60);
+    n2.start(t + 0.080); n2.stop(t + 0.120);
+
+    // Phase 3 aftermath (120-500ms): sine 30Hz + square 60Hz LP 130Hz + noise BP 200Hz
+    const s3 = audioCtx.createOscillator();
+    s3.type = 'sine'; s3.frequency.value = 30;
+    const g3 = audioCtx.createGain();
+    g3.gain.setValueAtTime(0.15, t + 0.120);
+    g3.gain.exponentialRampToValueAtTime(0.001, t + 0.500);
+    s3.connect(g3); connectWithReverb(g3, 0.60);
+    s3.start(t + 0.120); s3.stop(t + 0.500);
+
+    const s4 = audioCtx.createOscillator();
+    s4.type = 'square'; s4.frequency.value = 60;
+    const lp1 = audioCtx.createBiquadFilter();
+    lp1.type = 'lowpass'; lp1.frequency.value = 130;
+    const g4 = audioCtx.createGain();
+    g4.gain.setValueAtTime(0.08, t + 0.120);
+    g4.gain.exponentialRampToValueAtTime(0.001, t + 0.500);
+    s4.connect(lp1); lp1.connect(g4); connectWithReverb(g4, 0.60);
+    s4.start(t + 0.120); s4.stop(t + 0.500);
+
+    const n3 = makeNoise(0.380);
+    const bp3 = audioCtx.createBiquadFilter();
+    bp3.type = 'bandpass'; bp3.frequency.value = 200; bp3.Q.value = 1;
+    const ng3 = audioCtx.createGain();
+    ng3.gain.setValueAtTime(0.06, t + 0.120);
+    ng3.gain.exponentialRampToValueAtTime(0.001, t + 0.500);
+    n3.connect(bp3); bp3.connect(ng3); connectWithReverb(ng3, 0.60);
+    n3.start(t + 0.120); n3.stop(t + 0.500);
+
+    // Phase 4 void (500-1000ms): sine 28Hz + sine 55Hz
+    const s5 = audioCtx.createOscillator();
+    s5.type = 'sine'; s5.frequency.value = 28;
+    const g5 = audioCtx.createGain();
+    g5.gain.setValueAtTime(0.05, t + 0.500);
+    g5.gain.exponentialRampToValueAtTime(0.001, t + 1.000);
+    s5.connect(g5); connectWithReverb(g5, 0.60);
+    s5.start(t + 0.500); s5.stop(t + 1.000);
+
+    const s6 = audioCtx.createOscillator();
+    s6.type = 'sine'; s6.frequency.value = 55;
+    const g6 = audioCtx.createGain();
+    g6.gain.setValueAtTime(0.02, t + 0.500);
+    g6.gain.exponentialRampToValueAtTime(0.001, t + 1.000);
+    s6.connect(g6); connectWithReverb(g6, 0.60);
+    s6.start(t + 0.500); s6.stop(t + 1.000);
+  }
+}
+</script>
+</body>
+</html>

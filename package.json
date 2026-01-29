@@ -10,7 +10,10 @@
     "test": "npx playwright test",
     "test:mobile": "npx playwright test --project='iPhone 12' --project='Pixel 5'",
     "test:desktop": "npx playwright test --project=chromium --project=webkit",
-    "serve": "npx serve src -p 3003 -s"
+    "serve": "npx serve src -p 3003",
+    "cap:sync": "npx cap sync",
+    "cap:ios": "npx cap open ios",
+    "cap:android": "npx cap open android"
   },
   "keywords": [],
   "author": "",
@@ -18,6 +21,10 @@
   "type": "commonjs",
   "devDependencies": {
     "@playwright/test": "^1.57.0",
-    "localtunnel": "^2.0.2"
+    "localtunnel": "^2.0.2",
+    "@capacitor/android": "^6.1.1",
+    "@capacitor/cli": "^6.1.1",
+    "@capacitor/core": "^6.1.1",
+    "@capacitor/ios": "^6.1.1"
   }
 }

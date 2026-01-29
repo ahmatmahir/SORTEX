@@ -1,0 +1,3287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Crystal Surge</title>
+
+  <!-- PWA Meta Tags -->
+  <meta name="description" content="Swipe symbols to charge crystals. Place crystals to clear lines.">
+  <meta name="theme-color" content="#a855f7">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Crystal Surge">
+  <link rel="manifest" href="manifest-reactor.json">
+
+  <!-- Favicon & Icons -->
+  <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* ==========================================
+       THEME SYSTEM - CSS Custom Properties
+       ========================================== */
+
+    /* Theme 1: Spell Caster (Default) - Purple, indigo, mystical blues */
+    :root, [data-theme="spell-caster"] {
+      --bg-gradient: linear-gradient(180deg, #1e1b4b 0%, #3b0764 50%, #0f172a 100%);
+      --text-primary: #e9d5ff;
+      --text-secondary: #c4b5fd;
+      --accent-primary: #a855f7;
+      --accent-secondary: #3b82f6;
+      --rail-left: #a855f7;
+      --rail-left-bg: rgba(168, 85, 247, 0.2);
+      --rail-right: #3b82f6;
+      --rail-right-bg: rgba(59, 130, 246, 0.2);
+      --rail-fill: linear-gradient(to top, rgba(168, 85, 247, 0.8), rgba(59, 130, 246, 0.8));
+      --rail-error: #ef4444;
+      --danger-line: #ef4444;
+      --btn-gradient: linear-gradient(135deg, #a855f7, #3b82f6);
+      --btn-glow: rgba(168, 85, 247, 0.5);
+      --overlay-bg: rgba(15, 23, 42, 0.95);
+      --correct-flash: rgba(34, 197, 94, 0.4);
+      --wrong-flash: rgba(239, 68, 68, 0.4);
+      --grid-bg: rgba(30, 27, 75, 0.8);
+      --grid-line: rgba(168, 85, 247, 0.3);
+      --grid-cell-empty: rgba(168, 85, 247, 0.1);
+      --grid-cell-filled: rgba(168, 85, 247, 0.6);
+      --crystal-glow: rgba(168, 85, 247, 0.8);
+    }
+
+    /* Theme 2: Data Stream - Green, cyan, matrix-style */
+    [data-theme="data-stream"] {
+      --bg-gradient: linear-gradient(180deg, #021a0d 0%, #0a2818 50%, #010d05 100%);
+      --text-primary: #4ade80;
+      --text-secondary: #22d3ee;
+      --accent-primary: #22c55e;
+      --accent-secondary: #06b6d4;
+      --rail-left: #22c55e;
+      --rail-left-bg: rgba(34, 197, 94, 0.2);
+      --rail-right: #06b6d4;
+      --rail-right-bg: rgba(6, 182, 212, 0.2);
+      --rail-fill: linear-gradient(to top, rgba(34, 197, 94, 0.8), rgba(6, 182, 212, 0.8));
+      --rail-error: #f97316;
+      --danger-line: #f97316;
+      --btn-gradient: linear-gradient(135deg, #22c55e, #06b6d4);
+      --btn-glow: rgba(34, 197, 94, 0.5);
+      --overlay-bg: rgba(2, 26, 13, 0.95);
+      --correct-flash: rgba(34, 197, 94, 0.5);
+      --wrong-flash: rgba(249, 115, 22, 0.4);
+      --grid-bg: rgba(2, 26, 13, 0.8);
+      --grid-line: rgba(34, 197, 94, 0.3);
+      --grid-cell-empty: rgba(34, 197, 94, 0.1);
+      --grid-cell-filled: rgba(34, 197, 94, 0.6);
+      --crystal-glow: rgba(34, 197, 94, 0.8);
+    }
+
+    /* Theme 3: Cosmic Gatekeeper - Rose, deep red, cosmic purple */
+    [data-theme="cosmic-gatekeeper"] {
+      --bg-gradient: linear-gradient(180deg, #1a0a1e 0%, #3d0f24 50%, #0f0518 100%);
+      --text-primary: #fda4af;
+      --text-secondary: #f472b6;
+      --accent-primary: #e11d48;
+      --accent-secondary: #a855f7;
+      --rail-left: #e11d48;
+      --rail-left-bg: rgba(225, 29, 72, 0.2);
+      --rail-right: #a855f7;
+      --rail-right-bg: rgba(168, 85, 247, 0.2);
+      --rail-fill: linear-gradient(to top, rgba(225, 29, 72, 0.8), rgba(168, 85, 247, 0.8));
+      --rail-error: #fbbf24;
+      --danger-line: #fbbf24;
+      --btn-gradient: linear-gradient(135deg, #e11d48, #a855f7);
+      --btn-glow: rgba(225, 29, 72, 0.5);
+      --overlay-bg: rgba(26, 10, 30, 0.95);
+      --correct-flash: rgba(74, 222, 128, 0.4);
+      --wrong-flash: rgba(251, 191, 36, 0.4);
+      --grid-bg: rgba(26, 10, 30, 0.8);
+      --grid-line: rgba(225, 29, 72, 0.3);
+      --grid-cell-empty: rgba(225, 29, 72, 0.1);
+      --grid-cell-filled: rgba(225, 29, 72, 0.6);
+      --crystal-glow: rgba(225, 29, 72, 0.8);
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background-color: #000;
+      background-image: var(--bg-gradient);
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      min-height: 100vh;
+      overflow: hidden;
+      touch-action: none;
+      user-select: none;
+    }
+
+    /* ==========================================
+       MENU SCREEN
+       ========================================== */
+    #menu-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      padding: 20px;
+    }
+
+    #menu-screen h1 {
+      font-size: 2.8rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      text-shadow: 0 0 40px var(--text-secondary);
+      margin-bottom: 0.5rem;
+      letter-spacing: -1px;
+    }
+
+    #menu-screen .subtitle {
+      color: var(--text-secondary);
+      font-size: 1rem;
+      margin-bottom: 2rem;
+      opacity: 0.8;
+      text-align: center;
+    }
+
+    #high-score-display {
+      color: var(--text-primary);
+      font-size: 1.1rem;
+      margin-bottom: 2rem;
+      opacity: 0.7;
+    }
+
+    .play-btn {
+      background: var(--btn-gradient);
+      border: none;
+      border-radius: 16px;
+      padding: 20px 60px;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 0 30px var(--btn-glow);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .settings-btn {
+      margin-top: 1rem;
+      background: transparent;
+      border: 2px solid var(--text-secondary);
+      border-radius: 12px;
+      padding: 10px 30px;
+      font-size: 1rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+
+    .settings-btn:hover {
+      opacity: 1;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    /* ==========================================
+       GAME SCREEN - CHARGE PHASE
+       ========================================== */
+    #game-screen {
+      display: none;
+      flex-direction: column;
+      height: 100vh;
+      height: 100dvh;
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      box-sizing: border-box;
+    }
+
+    #game-header {
+      padding: 8px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .header-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .header-label {
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .header-value {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    #timer-display {
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ==========================================
+       PLAY AREA WITH RAILS
+       ========================================== */
+    #play-area {
+      flex: 1;
+      position: relative;
+      margin: 0 10px;
+      padding-bottom: 50px;
+      overflow: hidden;
+      display: flex;
+    }
+
+    /* Side Rails - Charge Meters */
+    .charge-rail {
+      position: absolute;
+      top: 0;
+      bottom: 50px;
+      width: 60px;
+      display: flex;
+      flex-direction: column;
+      z-index: 10;
+    }
+
+    .charge-rail.left {
+      left: 0;
+    }
+
+    .charge-rail.right {
+      right: 0;
+    }
+
+    .rail-symbols {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 5px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 0 0 8px 8px;
+    }
+
+    .rail-symbol {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0.9;
+    }
+
+    .rail-meter {
+      flex: 1;
+      position: relative;
+      margin: 4px;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .rail-meter-bg {
+      position: absolute;
+      inset: 0;
+      border-radius: 8px;
+    }
+
+    .charge-rail.left .rail-meter-bg {
+      background: var(--rail-left-bg);
+      border: 2px solid var(--rail-left);
+    }
+
+    .charge-rail.right .rail-meter-bg {
+      background: var(--rail-right-bg);
+      border: 2px solid var(--rail-right);
+    }
+
+    .rail-meter-fill {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 0%;
+      border-radius: 6px;
+      transition: height 0.15s ease-out;
+    }
+
+    .charge-rail.left .rail-meter-fill {
+      background: linear-gradient(to top, var(--rail-left), rgba(168, 85, 247, 0.4));
+      box-shadow: 0 0 20px var(--rail-left);
+    }
+
+    .charge-rail.right .rail-meter-fill {
+      background: linear-gradient(to top, var(--rail-right), rgba(59, 130, 246, 0.4));
+      box-shadow: 0 0 20px var(--rail-right);
+    }
+
+    /* Rail animations */
+    .charge-rail.pulse .rail-meter-fill {
+      animation: railPulse 0.15s ease-out;
+    }
+
+    .charge-rail.shake {
+      animation: railShake 0.2s ease-out;
+    }
+
+    @keyframes railPulse {
+      0% { filter: brightness(1); }
+      50% { filter: brightness(1.5); }
+      100% { filter: brightness(1); }
+    }
+
+    @keyframes railShake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-4px); }
+      75% { transform: translateX(4px); }
+    }
+
+    /* Symbol spawn area (between rails) */
+    #symbol-area {
+      flex: 1;
+      position: relative;
+      margin: 0 70px;
+    }
+
+    /* Falling symbols */
+    .symbol {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      cursor: grab;
+      touch-action: none;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+      will-change: transform;
+      transition: opacity 0.2s;
+    }
+
+    .symbol::before {
+      content: '';
+      position: absolute;
+      inset: -30px;
+    }
+
+    .symbol svg {
+      pointer-events: none;
+    }
+
+    .symbol.above-zone {
+      opacity: 0.6;
+    }
+
+    .symbol.swiped-left {
+      animation: swipeLeft 0.4s ease-in forwards;
+    }
+
+    .symbol.swiped-right {
+      animation: swipeRight 0.4s ease-in forwards;
+    }
+
+    .symbol.swiped-wrong {
+      animation: swipeWrong 0.3s ease-out forwards;
+    }
+
+    .symbol.missed {
+      animation: missedSymbol 0.2s ease-out forwards;
+    }
+
+    @keyframes missedSymbol {
+      0% { transform: translate(-50%, -50%) scale(1); opacity: 1; filter: none; }
+      100% { transform: translate(-50%, 50%) scale(0.5); opacity: 0; filter: brightness(0.5) saturate(0) hue-rotate(0deg); }
+    }
+
+    @keyframes swipeLeft {
+      0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+      50% { transform: translate(-120%, -50%) scale(0.7); opacity: 1; }
+      100% { transform: translate(-220%, -50%) scale(0.1); opacity: 0; }
+    }
+
+    @keyframes swipeRight {
+      0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+      50% { transform: translate(20%, -50%) scale(0.7); opacity: 1; }
+      100% { transform: translate(120%, -50%) scale(0.1); opacity: 0; }
+    }
+
+    @keyframes swipeWrong {
+      0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+      50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.5; }
+      100% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+    }
+
+    /* Decision zone - no visual indicator needed (gauge shows progress) */
+    #decision-zone {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 45%;
+      pointer-events: none;
+      /* No border - gauge at top provides feedback */
+    }
+
+    /* ==========================================
+       BUILD PHASE - 8x8 GRID
+       ========================================== */
+    #build-screen {
+      display: none;
+      flex-direction: column;
+      height: 100vh;
+      height: 100dvh;
+      padding: env(safe-area-inset-top, 0px) 16px env(safe-area-inset-bottom, 0px);
+      box-sizing: border-box;
+    }
+
+    #build-header {
+      padding: 8px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    #grid-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      overflow: hidden;
+    }
+
+    #build-grid {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      grid-template-rows: repeat(8, 1fr);
+      gap: 2px;
+      background: var(--grid-bg);
+      border: 3px solid var(--accent-primary);
+      border-radius: 12px;
+      padding: 8px;
+      box-shadow: 0 0 30px var(--crystal-glow);
+      width: min(92vw, 92vh - 180px);
+      height: min(92vw, 92vh - 180px);
+      max-width: 450px;
+      max-height: 450px;
+      box-sizing: border-box;
+    }
+
+    .grid-cell {
+      background: rgba(100, 80, 160, 0.3);
+      border-radius: 3px;
+      transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+      border: 1px solid rgba(168, 85, 247, 0.5);
+      min-width: 0;
+      min-height: 0;
+    }
+
+    .grid-cell.filled {
+      background: var(--grid-cell-filled);
+      box-shadow: inset 0 0 10px var(--crystal-glow), 0 0 5px var(--crystal-glow);
+      border-color: var(--accent-primary);
+    }
+
+    .grid-cell.preview {
+      background: rgba(168, 85, 247, 0.5);
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 8px var(--crystal-glow);
+    }
+
+    .grid-cell.invalid-preview {
+      background: rgba(239, 68, 68, 0.5);
+      border-color: #ef4444;
+    }
+
+    .grid-cell.clearing {
+      animation: cellClear 0.5s ease-out forwards;
+    }
+
+    @keyframes cellClear {
+      0% {
+        transform: scale(1);
+        opacity: 1;
+        background: var(--grid-cell-filled);
+      }
+      30% {
+        transform: scale(1.3);
+        background: white;
+        box-shadow: 0 0 20px white, 0 0 40px var(--accent-primary);
+      }
+      100% {
+        transform: scale(0);
+        opacity: 0;
+      }
+    }
+
+    /* Line clear flash effect */
+    .grid-cell.flash-clear {
+      animation: flashClear 0.6s ease-out;
+    }
+
+    @keyframes flashClear {
+      0% { background: white; box-shadow: 0 0 30px white; }
+      100% { background: rgba(100, 80, 160, 0.3); box-shadow: none; }
+    }
+
+    /* Crystal preview at bottom */
+    #crystal-area {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    #crystal-preview {
+      display: grid;
+      gap: 2px;
+      padding: 8px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 2px solid var(--accent-primary);
+      border-radius: 8px;
+    }
+
+    .crystal-cell {
+      width: 24px;
+      height: 24px;
+      background: var(--grid-cell-filled);
+      border-radius: 3px;
+      box-shadow: 0 0 8px var(--crystal-glow);
+    }
+
+    .crystal-cell.empty {
+      background: transparent;
+      box-shadow: none;
+    }
+
+    #charge-btn {
+      background: var(--btn-gradient);
+      border: none;
+      border-radius: 12px;
+      padding: 14px 40px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 0 20px var(--btn-glow);
+    }
+
+    /* ==========================================
+       CRYSTAL CHOICE SCREEN (91%+ gauge)
+       Shows at BOTTOM so grid is visible behind
+       ========================================== */
+    #choice-overlay {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(to top, rgba(15, 23, 42, 0.98) 0%, rgba(15, 23, 42, 0.9) 80%, transparent 100%);
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      z-index: 100;
+      padding: 20px;
+      padding-bottom: max(20px, env(safe-area-inset-bottom));
+    }
+
+    #choice-overlay h2 {
+      color: var(--text-primary);
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      text-shadow: 0 0 20px var(--accent-primary);
+    }
+
+    #choice-options {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .choice-option {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 12px;
+      background: rgba(168, 85, 247, 0.2);
+      border: 2px solid var(--accent-primary);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .choice-option:hover, .choice-option:active {
+      transform: scale(1.05);
+      box-shadow: 0 0 30px var(--crystal-glow);
+    }
+
+    .choice-preview {
+      display: grid;
+      gap: 2px;
+    }
+
+    /* ==========================================
+       GAME OVER SCREEN
+       ========================================== */
+    #gameover-screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      padding: 20px;
+    }
+
+    #gameover-title {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      text-shadow: 0 0 30px var(--text-secondary);
+      margin-bottom: 1rem;
+    }
+
+    #final-score-display {
+      font-size: 3rem;
+      font-weight: 800;
+      color: var(--accent-primary);
+      text-shadow: 0 0 20px var(--accent-primary);
+      margin-bottom: 2rem;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px 32px;
+      margin-bottom: 2rem;
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+    }
+
+    .stat-value {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .gameover-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* ==========================================
+       PAUSE BUTTON & OVERLAY
+       ========================================== */
+    #game-settings-btn,
+    #build-settings-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    #game-settings-btn:active,
+    #build-settings-btn:active {
+      transform: scale(0.95);
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    #pause-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: var(--overlay-bg);
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 150;
+      padding: 20px;
+      text-align: center;
+    }
+
+    #pause-overlay h2 {
+      color: var(--text-primary);
+      font-size: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    #pause-overlay .resume-btn {
+      background: var(--btn-gradient);
+      border: none;
+      border-radius: 12px;
+      padding: 16px 50px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: white;
+      cursor: pointer;
+      margin-bottom: 1.5rem;
+    }
+
+    .pause-options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .pause-option-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--text-secondary);
+      border-radius: 8px;
+      padding: 12px 30px;
+      font-size: 1rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+
+    .pause-option-btn.exit-btn {
+      color: #ef4444;
+      border-color: #ef4444;
+    }
+
+    /* Paused state - freeze animations */
+    body.paused #play-area,
+    body.paused .symbol {
+      animation-play-state: paused !important;
+    }
+
+    /* ==========================================
+       TUTORIAL OVERLAY
+       ========================================== */
+    #tutorial-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: var(--overlay-bg);
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      padding: 20px;
+      text-align: center;
+    }
+
+    #tutorial-overlay h2 {
+      color: var(--text-primary);
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .tutorial-phase {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 12px;
+      width: 100%;
+      max-width: 320px;
+    }
+
+    .tutorial-phase-title {
+      color: var(--text-primary);
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .tutorial-desc {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .tutorial-arrow {
+      color: var(--accent-primary);
+      font-size: 1.5rem;
+      margin: 8px 0;
+      opacity: 0.7;
+    }
+
+    .tutorial-content {
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      line-height: 1.5;
+      margin: 16px 0 20px;
+      max-width: 300px;
+      opacity: 0.8;
+    }
+
+    .tutorial-symbols {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-bottom: 12px;
+    }
+
+    .tutorial-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .tutorial-direction {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    .tutorial-icons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .got-it-btn {
+      background: var(--btn-gradient);
+      border: none;
+      border-radius: 12px;
+      padding: 14px 40px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: white;
+      cursor: pointer;
+    }
+
+    /* ==========================================
+       SETTINGS SCREEN
+       ========================================== */
+    #settings-screen {
+      display: none;
+      flex-direction: column;
+      height: 100vh;
+      padding: 20px;
+    }
+
+    .settings-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 2rem;
+    }
+
+    .back-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-primary);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 8px;
+    }
+
+    .settings-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .settings-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .settings-group-title {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .settings-option {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .settings-label {
+      color: var(--text-primary);
+      font-size: 1rem;
+    }
+
+    .toggle-btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      border-radius: 20px;
+      padding: 6px 16px;
+      color: var(--text-primary);
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .toggle-btn.active {
+      background: var(--accent-primary);
+    }
+
+    .theme-options {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .theme-option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid transparent;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    .theme-option.selected {
+      border-color: var(--accent-primary);
+    }
+
+    .theme-swatch {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+    }
+
+    .theme-name {
+      color: var(--text-primary);
+      font-size: 1rem;
+    }
+
+    .language-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .language-option {
+      padding: 10px 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 2px solid transparent;
+      border-radius: 8px;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .language-option:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .language-option.selected {
+      border-color: var(--accent-primary);
+      color: var(--text-primary);
+    }
+
+    /* ==========================================
+       SCREEN FLASH EFFECTS
+       ========================================== */
+    .screen-flash {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1000;
+      animation: flashFade 0.2s ease-out forwards;
+    }
+
+    .screen-flash.correct {
+      background: var(--correct-flash);
+    }
+
+    .screen-flash.wrong {
+      background: var(--wrong-flash);
+    }
+
+    @keyframes flashFade {
+      0% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    /* Screen shake */
+    @keyframes screenShake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-5px); }
+      40% { transform: translateX(5px); }
+      60% { transform: translateX(-3px); }
+      80% { transform: translateX(3px); }
+    }
+
+    .screen-shake {
+      animation: screenShake 0.3s ease-out;
+    }
+
+    /* ==========================================
+       PARTICLE EFFECTS
+       ========================================== */
+    .shatter-particle {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      pointer-events: none;
+      animation: particleBurst 0.6s ease-out forwards;
+    }
+
+    @keyframes particleBurst {
+      0% {
+        transform: translate(0, 0) scale(1.5);
+        opacity: 1;
+      }
+      100% {
+        transform: translate(var(--tx), var(--ty)) scale(0);
+        opacity: 0;
+      }
+    }
+
+    /* Combo milestone */
+    #combo-milestone {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: #fbbf24;
+      text-shadow: 0 0 30px #fbbf24, 0 0 60px #f59e0b;
+      pointer-events: none;
+      z-index: 500;
+      opacity: 0;
+    }
+
+    #combo-milestone.show {
+      animation: milestonePopup 0.8s ease-out forwards;
+    }
+
+    @keyframes milestonePopup {
+      0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+      30% { transform: translate(-50%, -50%) scale(1.3); opacity: 1; }
+      70% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+    }
+
+    @keyframes pointsPopup {
+      0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+      20% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+      50% { transform: translate(-50%, -60%) scale(1); opacity: 1; }
+      100% { transform: translate(-50%, -80%) scale(0.8); opacity: 0; }
+    }
+  </style>
+</head>
+<body data-theme="spell-caster">
+
+  <!-- MENU SCREEN -->
+  <div id="menu-screen">
+    <h1>CRYSTAL SURGE</h1>
+    <p class="subtitle">Swipe to charge. Place to clear.</p>
+    <div id="high-score-display">Best: 0</div>
+    <button class="play-btn" onclick="startGame()">TAP TO PLAY</button>
+    <button class="settings-btn" onclick="showSettings()">Settings</button>
+  </div>
+
+  <!-- GAME SCREEN (CHARGE PHASE) -->
+  <div id="game-screen">
+    <div id="game-header">
+      <div class="header-section">
+        <span class="header-label">Timer</span>
+        <span class="header-value" id="timer-display">0:30</span>
+      </div>
+      <button id="game-settings-btn" onclick="togglePause()">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+          <path d="M12 15.5A3.5 3.5 0 0 1 8.5 12 3.5 3.5 0 0 1 12 8.5a3.5 3.5 0 0 1 3.5 3.5 3.5 3.5 0 0 1-3.5 3.5m7.43-2.53c.04-.32.07-.64.07-.97 0-.33-.03-.66-.07-1l2.11-1.63c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.31-.61-.22l-2.49 1c-.52-.39-1.06-.73-1.69-.98l-.37-2.65A.506.506 0 0 0 14 2h-4c-.25 0-.46.18-.5.42l-.37 2.65c-.63.25-1.17.59-1.69.98l-2.49-1c-.22-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64L4.57 11c-.04.34-.07.67-.07 1 0 .33.03.65.07.97l-2.11 1.66c-.19.15-.25.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1.01c.52.4 1.06.74 1.69.99l.37 2.65c.04.24.25.42.5.42h4c.25 0 .46-.18.5-.42l.37-2.65c.63-.26 1.17-.59 1.69-.99l2.49 1.01c.22.08.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.66z"/>
+        </svg>
+      </button>
+    </div>
+
+    <div id="play-area">
+      <!-- Left Rail (Charge Meter) -->
+      <div class="charge-rail left" id="left-rail">
+        <div class="rail-symbols" id="left-rail-symbols">
+          <!-- Circle & Triangle icons -->
+        </div>
+        <div class="rail-meter">
+          <div class="rail-meter-bg"></div>
+          <div class="rail-meter-fill" id="left-rail-fill"></div>
+        </div>
+      </div>
+
+      <!-- Symbol spawn area -->
+      <div id="symbol-area">
+        <div id="decision-zone"></div>
+      </div>
+
+      <!-- Right Rail (Charge Meter) -->
+      <div class="charge-rail right" id="right-rail">
+        <div class="rail-symbols" id="right-rail-symbols">
+          <!-- Square & Star icons -->
+        </div>
+        <div class="rail-meter">
+          <div class="rail-meter-bg"></div>
+          <div class="rail-meter-fill" id="right-rail-fill"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BUILD SCREEN -->
+  <div id="build-screen">
+    <div id="build-header">
+      <div class="header-section">
+        <span class="header-label">Score</span>
+        <span class="header-value" id="score-display">0</span>
+      </div>
+      <div class="header-section">
+        <span class="header-label">Best</span>
+        <span class="header-value" id="best-display">0</span>
+      </div>
+      <button id="build-settings-btn" onclick="showSettingsFromBuild()">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+          <path d="M12 15.5A3.5 3.5 0 0 1 8.5 12 3.5 3.5 0 0 1 12 8.5a3.5 3.5 0 0 1 3.5 3.5 3.5 3.5 0 0 1-3.5 3.5m7.43-2.53c.04-.32.07-.64.07-.97 0-.33-.03-.66-.07-1l2.11-1.63c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.31-.61-.22l-2.49 1c-.52-.39-1.06-.73-1.69-.98l-.37-2.65A.506.506 0 0 0 14 2h-4c-.25 0-.46.18-.5.42l-.37 2.65c-.63.25-1.17.59-1.69.98l-2.49-1c-.22-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64L4.57 11c-.04.34-.07.67-.07 1 0 .33.03.65.07.97l-2.11 1.66c-.19.15-.25.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1.01c.52.4 1.06.74 1.69.99l.37 2.65c.04.24.25.42.5.42h4c.25 0 .46-.18.5-.42l.37-2.65c.63-.26 1.17-.59 1.69-.99l2.49 1.01c.22.08.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.66z"/>
+        </svg>
+      </button>
+    </div>
+
+    <div id="grid-container">
+      <div id="build-grid">
+        <!-- 64 cells generated by JS -->
+      </div>
+    </div>
+
+    <div id="crystal-area">
+      <div id="crystal-preview">
+        <!-- Crystal shape generated by JS -->
+      </div>
+      <button id="charge-btn" onclick="startChargeFromBuild()">GET NEXT CRYSTAL</button>
+    </div>
+  </div>
+
+  <!-- CRYSTAL CHOICE OVERLAY (91%+ gauge) -->
+  <div id="choice-overlay">
+    <h2>CHOOSE YOUR CRYSTAL</h2>
+    <div id="choice-options">
+      <!-- 3 crystal options generated by JS -->
+    </div>
+  </div>
+
+  <!-- PAUSE OVERLAY -->
+  <div id="pause-overlay">
+    <h2>PAUSED</h2>
+    <button class="resume-btn" onclick="togglePause()">RESUME</button>
+    <div class="pause-options">
+      <button class="pause-option-btn" onclick="showSettingsFromPause()">Settings</button>
+      <button class="pause-option-btn exit-btn" onclick="exitToMenu()">Exit to Menu</button>
+    </div>
+  </div>
+
+  <!-- GAME OVER SCREEN -->
+  <div id="gameover-screen">
+    <h2 id="gameover-title">GAME OVER</h2>
+    <div id="final-score-display">0</div>
+    <div class="stats-grid">
+      <div class="stat-item">
+        <div class="stat-label">Best Combo</div>
+        <div class="stat-value" id="final-combo">0</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">Lines Cleared</div>
+        <div class="stat-value" id="final-lines">0</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">Rounds Played</div>
+        <div class="stat-value" id="final-rounds">0</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">Best Charge</div>
+        <div class="stat-value" id="final-charge">0%</div>
+      </div>
+    </div>
+    <div class="gameover-buttons">
+      <button class="play-btn" onclick="startGame()">PLAY AGAIN</button>
+      <button class="settings-btn" onclick="showMenu()">Menu</button>
+    </div>
+  </div>
+
+  <!-- TUTORIAL OVERLAY -->
+  <div id="tutorial-overlay">
+    <h2>HOW TO PLAY</h2>
+
+    <div class="tutorial-phase">
+      <div class="tutorial-phase-title">⚡ CHARGE PHASE</div>
+      <div class="tutorial-symbols">
+        <div class="tutorial-group">
+          <div class="tutorial-direction">Swipe LEFT</div>
+          <div class="tutorial-icons" id="tutorial-left-icons">
+            <!-- Circle & Triangle -->
+          </div>
+        </div>
+        <div class="tutorial-group">
+          <div class="tutorial-direction">Swipe RIGHT</div>
+          <div class="tutorial-icons" id="tutorial-right-icons">
+            <!-- Square & Star -->
+          </div>
+        </div>
+      </div>
+      <div class="tutorial-desc">Swipe symbols correctly to fill the gauge</div>
+    </div>
+
+    <div class="tutorial-arrow">↓</div>
+
+    <div class="tutorial-phase">
+      <div class="tutorial-phase-title">🔷 BUILD PHASE</div>
+      <div class="tutorial-desc">Drag earned crystals onto the grid.<br>Clear full rows or columns for points!</div>
+    </div>
+
+    <div class="tutorial-content">
+      Repeat to build your score. Game ends when<br>a crystal can't fit on the grid.
+    </div>
+    <button class="got-it-btn" onclick="dismissTutorial()">GOT IT!</button>
+  </div>
+
+  <!-- SETTINGS SCREEN -->
+  <div id="settings-screen">
+    <div class="settings-header">
+      <button class="back-btn" onclick="hideSettings()">&larr;</button>
+      <span class="settings-title">Settings</span>
+    </div>
+
+    <div class="settings-group">
+      <div class="settings-group-title">Sound & Haptics</div>
+      <div class="settings-option">
+        <span class="settings-label">Sound Effects</span>
+        <button class="toggle-btn active" id="sound-toggle" onclick="toggleSound()">ON</button>
+      </div>
+      <div class="settings-option">
+        <span class="settings-label">Vibration</span>
+        <button class="toggle-btn active" id="haptics-toggle" onclick="toggleHaptics()">ON</button>
+      </div>
+      <div class="settings-option">
+        <span class="settings-label">Low Flash Mode</span>
+        <button class="toggle-btn" id="flash-toggle" onclick="toggleLowFlash()">OFF</button>
+      </div>
+    </div>
+
+    <div class="settings-group">
+      <div class="settings-group-title">Theme</div>
+      <div class="theme-options">
+        <div class="theme-option selected" data-theme="spell-caster" onclick="selectTheme('spell-caster')">
+          <div class="theme-swatch" style="background: linear-gradient(135deg, #a855f7, #3b82f6);"></div>
+          <span class="theme-name">Spell Caster</span>
+        </div>
+        <div class="theme-option" data-theme="data-stream" onclick="selectTheme('data-stream')">
+          <div class="theme-swatch" style="background: linear-gradient(135deg, #22c55e, #06b6d4);"></div>
+          <span class="theme-name">Data Stream</span>
+        </div>
+        <div class="theme-option" data-theme="cosmic-gatekeeper" onclick="selectTheme('cosmic-gatekeeper')">
+          <div class="theme-swatch" style="background: linear-gradient(135deg, #e11d48, #a855f7);"></div>
+          <span class="theme-name">Cosmic Gatekeeper</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-group">
+      <div class="settings-group-title" id="language-title">Language</div>
+      <div class="language-options">
+        <div class="language-option selected" data-lang="en" onclick="setLanguage('en')">English</div>
+        <div class="language-option" data-lang="es" onclick="setLanguage('es')">Español</div>
+        <div class="language-option" data-lang="fr" onclick="setLanguage('fr')">Français</div>
+        <div class="language-option" data-lang="de" onclick="setLanguage('de')">Deutsch</div>
+        <div class="language-option" data-lang="ja" onclick="setLanguage('ja')">日本語</div>
+      </div>
+    </div>
+
+    <div class="settings-group">
+      <div class="settings-option">
+        <span class="settings-label">Reset Progress</span>
+        <button class="toggle-btn" onclick="resetProgress()">RESET</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMBO MILESTONE DISPLAY -->
+  <div id="combo-milestone"></div>
+
+  <script>
+    // ==========================================
+    // GAME STATE
+    // ==========================================
+    let gameState = 'menu'; // 'menu' | 'charge' | 'build' | 'choice' | 'gameover'
+    let isPaused = false;
+    let score = 0;
+    let highScore = 0;
+    let combo = 0;
+    let bestCombo = 0;
+    let round = 1;
+    let linesCleared = 0;
+    let bestChargePercent = 0;
+
+    // Charge phase state
+    let chargePercent = 0;
+    let timer = 30;
+    let timerInterval = null;
+    let activeSymbols = [];
+    let spawnInterval = null;
+    let gameLoopId = null;
+    let lastUpdate = 0;
+
+    // Speed system (ported from SORTEX - earned speed never lost)
+    let maxSpeedMultiplier = 1.0;
+    let warmupMultiplier = 1.3; // Start 30% slower
+
+    // Build phase state
+    let grid = []; // 8x8 array
+    let currentCrystal = null;
+    let crystalChoices = [];
+
+    // Settings
+    let currentTheme = 'spell-caster';
+    let audioEnabled = true;
+    let hapticsEnabled = true;
+    let lowFlashEnabled = false;
+    let tutorialShown = false;
+
+    // Touch tracking
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let activeSymbolEl = null;
+    let isSwiping = false;
+
+    // Audio context
+    let audioCtx = null;
+
+    // DOM element cache
+    let symbolAreaEl = null;
+
+    // ==========================================
+    // SYMBOL DEFINITIONS (4 symbols: 2L + 2R)
+    // ==========================================
+    const SYMBOLS = [
+      { id: 'circle', direction: 'left', color: '#a855f7' },
+      { id: 'triangle', direction: 'left', color: '#f472b6' },
+      { id: 'square', direction: 'right', color: '#3b82f6' },
+      { id: 'star', direction: 'right', color: '#fbbf24' }
+    ];
+
+    const RULES = {
+      left: ['circle', 'triangle'],
+      right: ['square', 'star']
+    };
+
+    // ==========================================
+    // CRYSTAL SHAPES (1-4 cells)
+    // ==========================================
+    const CRYSTAL_SHAPES = {
+      // 1-cell (Fragment)
+      single: [[1]],
+
+      // 2-cell (Shard)
+      horizontal2: [[1, 1]],
+      vertical2: [[1], [1]],
+
+      // 3-cell (Gem)
+      line3: [[1, 1, 1]],
+      lShape: [[1, 0], [1, 0], [1, 1]],
+      tShape: [[1, 1, 1], [0, 1, 0]],
+
+      // 4-cell (Prism - Tetrominos)
+      line4: [[1, 1, 1, 1]],
+      square4: [[1, 1], [1, 1]],
+      tTetro: [[1, 1, 1], [0, 1, 0]],
+      lTetro: [[1, 0], [1, 0], [1, 1]],
+      jTetro: [[0, 1], [0, 1], [1, 1]],
+      sTetro: [[0, 1, 1], [1, 1, 0]],
+      zTetro: [[1, 1, 0], [0, 1, 1]]
+    };
+
+    // ==========================================
+    // TRANSLATIONS (5 languages: EN, ES, FR, DE, JA)
+    // ==========================================
+    const TRANSLATIONS = {
+      en: {
+        // Menu
+        tapToPlay: 'TAP TO PLAY',
+        best: 'Best',
+        settings: 'Settings',
+        // Settings
+        soundEffects: 'Sound Effects',
+        vibration: 'Vibration',
+        lowFlashMode: 'Low Flash Mode',
+        theme: 'Theme',
+        language: 'Language',
+        resetProgress: 'Reset Progress',
+        reset: 'RESET',
+        on: 'ON',
+        off: 'OFF',
+        backToMenu: 'Back to Menu',
+        // Theme names
+        spellCaster: 'Spell Caster',
+        dataStream: 'Data Stream',
+        cosmicGatekeeper: 'Cosmic Gatekeeper',
+        // Game UI
+        gauge: 'Gauge',
+        timer: 'Timer',
+        combo: 'Combo',
+        score: 'Score',
+        chargeNext: 'GET NEXT CRYSTAL',
+        // Tutorial
+        howToPlay: 'HOW TO PLAY',
+        swipeLeft: 'Swipe LEFT',
+        swipeRight: 'Swipe RIGHT',
+        gotIt: 'GOT IT!',
+        // Crystal choice
+        chooseYourCrystal: 'CHOOSE YOUR CRYSTAL',
+        // Game Over
+        gameOver: 'GAME OVER',
+        newBest: 'NEW BEST!',
+        bestCombo: 'Best Combo',
+        linesCleared: 'Lines Cleared',
+        roundsPlayed: 'Rounds Played',
+        bestCharge: 'Best Charge',
+        playAgain: 'PLAY AGAIN',
+        menu: 'Menu',
+        // Symbols
+        circle: 'Circle',
+        square: 'Square',
+        triangle: 'Triangle',
+        star: 'Star'
+      },
+      es: {
+        tapToPlay: 'TOCA PARA JUGAR',
+        best: 'Mejor',
+        settings: 'Ajustes',
+        soundEffects: 'Efectos de Sonido',
+        vibration: 'Vibración',
+        lowFlashMode: 'Bajo Parpadeo',
+        theme: 'Tema',
+        language: 'Idioma',
+        resetProgress: 'Restablecer Progreso',
+        reset: 'RESET',
+        on: 'ON',
+        off: 'OFF',
+        backToMenu: 'Volver al Menú',
+        spellCaster: 'Hechicero',
+        dataStream: 'Flujo de Datos',
+        cosmicGatekeeper: 'Guardián Cósmico',
+        gauge: 'Carga',
+        timer: 'Tiempo',
+        combo: 'Combo',
+        score: 'Puntos',
+        chargeNext: 'OBTENER CRISTAL',
+        howToPlay: 'CÓMO JUGAR',
+        swipeLeft: 'Desliza IZQUIERDA',
+        swipeRight: 'Desliza DERECHA',
+        gotIt: '¡ENTENDIDO!',
+        chooseYourCrystal: 'ELIGE TU CRISTAL',
+        gameOver: 'FIN DEL JUEGO',
+        newBest: '¡NUEVO RÉCORD!',
+        bestCombo: 'Mejor Combo',
+        linesCleared: 'Líneas Borradas',
+        roundsPlayed: 'Rondas Jugadas',
+        bestCharge: 'Mejor Carga',
+        playAgain: 'JUGAR DE NUEVO',
+        menu: 'Menú',
+        circle: 'Círculo',
+        square: 'Cuadrado',
+        triangle: 'Triángulo',
+        star: 'Estrella'
+      },
+      fr: {
+        tapToPlay: 'APPUYEZ POUR JOUER',
+        best: 'Meilleur',
+        settings: 'Paramètres',
+        soundEffects: 'Effets Sonores',
+        vibration: 'Vibration',
+        lowFlashMode: 'Faibles Flashs',
+        theme: 'Thème',
+        language: 'Langue',
+        resetProgress: 'Réinitialiser',
+        reset: 'RESET',
+        on: 'ON',
+        off: 'OFF',
+        backToMenu: 'Retour au Menu',
+        spellCaster: 'Lanceur de Sorts',
+        dataStream: 'Flux de Données',
+        cosmicGatekeeper: 'Gardien Cosmique',
+        gauge: 'Jauge',
+        timer: 'Temps',
+        combo: 'Combo',
+        score: 'Score',
+        chargeNext: 'OBTENIR CRISTAL',
+        howToPlay: 'COMMENT JOUER',
+        swipeLeft: 'Glissez GAUCHE',
+        swipeRight: 'Glissez DROITE',
+        gotIt: 'COMPRIS!',
+        chooseYourCrystal: 'CHOISISSEZ VOTRE CRISTAL',
+        gameOver: 'FIN DE PARTIE',
+        newBest: 'NOUVEAU RECORD!',
+        bestCombo: 'Meilleur Combo',
+        linesCleared: 'Lignes Effacées',
+        roundsPlayed: 'Manches Jouées',
+        bestCharge: 'Meilleure Charge',
+        playAgain: 'REJOUER',
+        menu: 'Menu',
+        circle: 'Cercle',
+        square: 'Carré',
+        triangle: 'Triangle',
+        star: 'Étoile'
+      },
+      de: {
+        tapToPlay: 'ZUM SPIELEN TIPPEN',
+        best: 'Beste',
+        settings: 'Einstellungen',
+        soundEffects: 'Soundeffekte',
+        vibration: 'Vibration',
+        lowFlashMode: 'Weniger Blitze',
+        theme: 'Thema',
+        language: 'Sprache',
+        resetProgress: 'Fortschritt zurücksetzen',
+        reset: 'RESET',
+        on: 'AN',
+        off: 'AUS',
+        backToMenu: 'Zurück zum Menü',
+        spellCaster: 'Zauberwirker',
+        dataStream: 'Datenstrom',
+        cosmicGatekeeper: 'Kosmischer Wächter',
+        gauge: 'Ladung',
+        timer: 'Zeit',
+        combo: 'Combo',
+        score: 'Punkte',
+        chargeNext: 'KRISTALL HOLEN',
+        howToPlay: 'SPIELANLEITUNG',
+        swipeLeft: 'Wische LINKS',
+        swipeRight: 'Wische RECHTS',
+        gotIt: 'VERSTANDEN!',
+        chooseYourCrystal: 'WÄHLE DEINEN KRISTALL',
+        gameOver: 'SPIEL VORBEI',
+        newBest: 'NEUER REKORD!',
+        bestCombo: 'Bestes Combo',
+        linesCleared: 'Linien Gelöscht',
+        roundsPlayed: 'Runden Gespielt',
+        bestCharge: 'Beste Ladung',
+        playAgain: 'NOCHMAL SPIELEN',
+        menu: 'Menü',
+        circle: 'Kreis',
+        square: 'Quadrat',
+        triangle: 'Dreieck',
+        star: 'Stern'
+      },
+      ja: {
+        tapToPlay: 'タップしてプレイ',
+        best: 'ベスト',
+        settings: '設定',
+        soundEffects: '効果音',
+        vibration: '振動',
+        lowFlashMode: 'フラッシュ軽減',
+        theme: 'テーマ',
+        language: '言語',
+        resetProgress: 'リセット',
+        reset: 'RESET',
+        on: 'ON',
+        off: 'OFF',
+        backToMenu: 'メニューに戻る',
+        spellCaster: 'スペルキャスター',
+        dataStream: 'データストリーム',
+        cosmicGatekeeper: 'コズミックゲートキーパー',
+        gauge: 'ゲージ',
+        timer: 'タイマー',
+        combo: 'コンボ',
+        score: 'スコア',
+        chargeNext: 'クリスタル獲得',
+        howToPlay: '遊び方',
+        swipeLeft: '左にスワイプ',
+        swipeRight: '右にスワイプ',
+        gotIt: 'わかった！',
+        chooseYourCrystal: 'クリスタルを選ぶ',
+        gameOver: 'ゲームオーバー',
+        newBest: '新記録！',
+        bestCombo: '最高コンボ',
+        linesCleared: '消したライン',
+        roundsPlayed: 'プレイ回数',
+        bestCharge: '最高チャージ',
+        playAgain: 'もう一度プレイ',
+        menu: 'メニュー',
+        circle: '円',
+        square: '四角',
+        triangle: '三角',
+        star: '星'
+      }
+    };
+
+    const LANGUAGE_NAMES = {
+      en: 'English',
+      es: 'Español',
+      fr: 'Français',
+      de: 'Deutsch',
+      ja: '日本語'
+    };
+
+    // Detect language from browser, fallback to English
+    function detectLanguage() {
+      const browserLang = (navigator.language || navigator.userLanguage || 'en').split('-')[0].toLowerCase();
+      return TRANSLATIONS[browserLang] ? browserLang : 'en';
+    }
+
+    let currentLanguage = 'en'; // Will be set in init()
+
+    // Translation function
+    function t(key) {
+      return TRANSLATIONS[currentLanguage]?.[key] || TRANSLATIONS.en[key] || key;
+    }
+
+    function setLanguage(lang) {
+      if (TRANSLATIONS[lang]) {
+        currentLanguage = lang;
+        try { localStorage.setItem('crystalsurge_language', lang); } catch(e) {}
+        updateAllText();
+      }
+    }
+
+    // ==========================================
+    // SPEED SYSTEM (From SORTEX)
+    // ==========================================
+    const BASE_FALL_TIME = 1400;
+    const BASE_SPAWN_RATE = 1100;
+
+    // Combo-based speed multiplier - speed is EARNED and NEVER lost
+    function getComboSpeedMultiplier() {
+      // Cap at 0.75x (1.33x speed) - reached at combo 21
+      const currentMultiplier = Math.max(0.75, 1 - (combo * 0.012));
+
+      // Update max achieved speed (lower = faster) - speed is EARNED, never lost
+      if (currentMultiplier < maxSpeedMultiplier) {
+        maxSpeedMultiplier = currentMultiplier;
+      }
+
+      return maxSpeedMultiplier;
+    }
+
+    function getEffectiveFallTime() {
+      return Math.round(BASE_FALL_TIME * getComboSpeedMultiplier() * warmupMultiplier);
+    }
+
+    function getEffectiveSpawnRate() {
+      return Math.round(BASE_SPAWN_RATE * getComboSpeedMultiplier() * warmupMultiplier);
+    }
+
+    // ==========================================
+    // SVG SYMBOL PATHS
+    // ==========================================
+    function getSymbolSVG(type, color, size = 60) {
+      const paths = {
+        circle: `<circle cx="30" cy="30" r="22" fill="none" stroke="${color}" stroke-width="4"/>`,
+        square: `<rect x="10" y="10" width="40" height="40" fill="none" stroke="${color}" stroke-width="4"/>`,
+        triangle: `<polygon points="30,8 54,52 6,52" fill="none" stroke="${color}" stroke-width="4" stroke-linejoin="round"/>`,
+        star: `<polygon points="30,6 36,24 54,24 40,36 46,54 30,44 14,54 20,36 6,24 24,24" fill="none" stroke="${color}" stroke-width="3" stroke-linejoin="round"/>`
+      };
+
+      return `<svg width="${size}" height="${size}" viewBox="0 0 60 60" style="overflow:visible;filter:drop-shadow(0 0 6px ${color});">
+        ${paths[type]}
+      </svg>`;
+    }
+
+    // ==========================================
+    // AUDIO SYSTEM (Web Audio API)
+    // ==========================================
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function playSound(type, comboCount = 1) {
+      if (!audioEnabled || !audioCtx) return;
+      try {
+        const now = audioCtx.currentTime;
+
+        if (type === 'correct') {
+          // Pitch rises with combo (caps at 1.5x at combo 25+)
+          const pitchMult = 1 + Math.min(comboCount, 25) * 0.02;
+
+          const osc1 = audioCtx.createOscillator();
+          const gain1 = audioCtx.createGain();
+          osc1.connect(gain1);
+          gain1.connect(audioCtx.destination);
+          osc1.type = 'sine';
+          osc1.frequency.setValueAtTime(400 * pitchMult, now);
+          osc1.frequency.exponentialRampToValueAtTime(800 * pitchMult, now + 0.08);
+          gain1.gain.setValueAtTime(0.12, now);
+          gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+          osc1.start(now);
+          osc1.stop(now + 0.15);
+
+          const osc2 = audioCtx.createOscillator();
+          const gain2 = audioCtx.createGain();
+          osc2.connect(gain2);
+          gain2.connect(audioCtx.destination);
+          osc2.type = 'sine';
+          osc2.frequency.setValueAtTime(1047 * pitchMult, now + 0.05);
+          gain2.gain.setValueAtTime(0.08, now + 0.05);
+          gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+          osc2.start(now + 0.05);
+          osc2.stop(now + 0.2);
+
+        } else if (type === 'wrong') {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(120, now);
+          osc.frequency.exponentialRampToValueAtTime(60, now + 0.15);
+          gain.gain.setValueAtTime(0.15, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+          osc.start(now);
+          osc.stop(now + 0.2);
+
+        } else if (type === 'combo') {
+          const notes = [523, 659, 784, 1047];
+          notes.forEach((freq, i) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, now + i * 0.08);
+            gain.gain.setValueAtTime(0.1, now + i * 0.08);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.08 + 0.15);
+            osc.start(now + i * 0.08);
+            osc.stop(now + i * 0.08 + 0.15);
+          });
+
+        } else if (type === 'lineclear') {
+          // Satisfying shatter sound
+          const notes = [523, 784, 1047];
+          notes.forEach((freq, i) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, now + i * 0.05);
+            gain.gain.setValueAtTime(0.15, now + i * 0.05);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.05 + 0.2);
+            osc.start(now + i * 0.05);
+            osc.stop(now + i * 0.05 + 0.2);
+          });
+
+        } else if (type === 'place') {
+          // Soft thunk
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(200, now);
+          osc.frequency.exponentialRampToValueAtTime(100, now + 0.1);
+          gain.gain.setValueAtTime(0.1, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+          osc.start(now);
+          osc.stop(now + 0.15);
+
+        } else if (type === 'choose') {
+          // Sparkle arpeggio
+          const notes = [784, 988, 1175, 1568];
+          notes.forEach((freq, i) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, now + i * 0.06);
+            gain.gain.setValueAtTime(0.08, now + i * 0.06);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.06 + 0.2);
+            osc.start(now + i * 0.06);
+            osc.stop(now + i * 0.06 + 0.2);
+          });
+
+        } else if (type === 'gameover') {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(440, now);
+          osc.frequency.exponentialRampToValueAtTime(220, now + 0.8);
+          gain.gain.setValueAtTime(0.1, now);
+          gain.gain.setValueAtTime(0.1, now + 0.5);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 1.0);
+          osc.start(now);
+          osc.stop(now + 1.0);
+
+        } else if (type === 'highscore') {
+          const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+          notes.forEach((freq, i) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, now + i * 0.09);
+            gain.gain.setValueAtTime(0.13, now + i * 0.09);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.09 + 0.25);
+            osc.start(now + i * 0.09);
+            osc.stop(now + i * 0.09 + 0.25);
+          });
+        }
+      } catch (e) {
+        // Audio not available
+      }
+    }
+
+    // ==========================================
+    // INITIALIZATION
+    // ==========================================
+    function init() {
+      // Load saved state
+      try {
+        highScore = parseInt(localStorage.getItem('crystalsurge_highscore')) || 0;
+        currentTheme = localStorage.getItem('crystalsurge_theme') || 'spell-caster';
+        audioEnabled = localStorage.getItem('crystalsurge_sound') !== 'off';
+        hapticsEnabled = localStorage.getItem('crystalsurge_haptics') !== 'false';
+        lowFlashEnabled = localStorage.getItem('crystalsurge_low_flash') === 'true';
+        tutorialShown = localStorage.getItem('crystalsurge_tutorial') === 'done';
+        currentLanguage = localStorage.getItem('crystalsurge_language') || detectLanguage();
+      } catch (e) {}
+
+      // Apply theme
+      document.body.setAttribute('data-theme', currentTheme);
+
+      // Update all text with translations
+      updateAllText();
+      updateSettingsUI();
+
+      // Initialize grid
+      initGrid();
+
+      // Setup rail symbols
+      updateRailSymbols();
+
+      // Setup tutorial symbols
+      updateTutorialSymbols();
+    }
+
+    // Update all translatable text in the UI
+    function updateAllText() {
+      // Menu screen
+      document.getElementById('high-score-display').textContent = t('best') + ': ' + highScore;
+      document.querySelector('.play-btn').textContent = t('tapToPlay');
+      document.querySelector('.settings-btn').textContent = t('settings');
+
+      // Game header labels
+      const headerLabels = document.querySelectorAll('#game-header .header-label');
+      if (headerLabels.length >= 1) {
+        headerLabels[0].textContent = t('timer');
+      }
+
+      // Build header labels
+      const buildLabels = document.querySelectorAll('#build-header .header-label');
+      if (buildLabels.length >= 2) {
+        buildLabels[0].textContent = t('score');
+        buildLabels[1].textContent = t('best');
+      }
+
+      // Charge button
+      document.getElementById('charge-btn').textContent = t('chargeNext');
+
+      // Crystal choice
+      document.querySelector('#choice-overlay h2').textContent = t('chooseYourCrystal');
+
+      // Game over
+      const gameoverPlayBtn = document.querySelector('#gameover-screen .play-btn');
+      const gameoverMenuBtn = document.querySelector('#gameover-screen .settings-btn');
+      if (gameoverPlayBtn) gameoverPlayBtn.textContent = t('playAgain');
+      if (gameoverMenuBtn) gameoverMenuBtn.textContent = t('menu');
+
+      // Game over stats
+      const statLabels = document.querySelectorAll('#gameover-screen .stat-label');
+      if (statLabels.length >= 4) {
+        statLabels[0].textContent = t('bestCombo');
+        statLabels[1].textContent = t('linesCleared');
+        statLabels[2].textContent = t('roundsPlayed');
+        statLabels[3].textContent = t('bestCharge');
+      }
+
+      // Tutorial
+      const tutorialH2 = document.querySelector('#tutorial-overlay h2');
+      if (tutorialH2) tutorialH2.textContent = t('howToPlay');
+      const tutorialDirections = document.querySelectorAll('.tutorial-direction');
+      if (tutorialDirections.length >= 2) {
+        tutorialDirections[0].textContent = t('swipeLeft');
+        tutorialDirections[1].textContent = t('swipeRight');
+      }
+      const gotItBtn = document.querySelector('#tutorial-overlay .got-it-btn');
+      if (gotItBtn) gotItBtn.textContent = t('gotIt');
+
+      // Settings
+      updateSettingsText();
+    }
+
+    function updateSettingsText() {
+      document.querySelector('.settings-title').textContent = t('settings');
+      document.querySelector('#settings-screen .back-btn').textContent = '← ' + t('backToMenu');
+
+      // Settings labels
+      const settingsLabels = document.querySelectorAll('.settings-label');
+      settingsLabels.forEach(label => {
+        const text = label.textContent.trim();
+        if (text.includes('Sound') || text.includes('Sonido') || text.includes('Effets') || text.includes('Sound') || text.includes('効果音')) {
+          label.textContent = t('soundEffects');
+        } else if (text.includes('Vibration') || text.includes('Vibración') || text.includes('振動')) {
+          label.textContent = t('vibration');
+        } else if (text.includes('Low Flash') || text.includes('Bajo') || text.includes('Faibles') || text.includes('Weniger') || text.includes('フラッシュ')) {
+          label.textContent = t('lowFlashMode');
+        } else if (text.includes('Reset') || text.includes('Restablecer') || text.includes('Réinitialiser') || text.includes('zurücksetzen') || text.includes('リセット')) {
+          label.textContent = t('resetProgress');
+        }
+      });
+
+      // Theme title and Language title
+      const groupTitles = document.querySelectorAll('.settings-group-title');
+      groupTitles.forEach(title => {
+        const text = title.textContent.trim();
+        if (text.includes('Theme') || text.includes('Tema') || text.includes('Thème') || text.includes('Thema') || text.includes('テーマ')) {
+          title.textContent = t('theme');
+        } else if (text.includes('Language') || text.includes('Idioma') || text.includes('Langue') || text.includes('Sprache') || text.includes('言語') || title.id === 'language-title') {
+          title.textContent = t('language');
+        }
+      });
+
+      // Theme names
+      const themeNames = document.querySelectorAll('.theme-name');
+      themeNames.forEach(name => {
+        const text = name.textContent.trim();
+        if (text.includes('Spell') || text.includes('Hechicero') || text.includes('Lanceur') || text.includes('Zauberwirker') || text.includes('スペル')) {
+          name.textContent = t('spellCaster');
+        } else if (text.includes('Data') || text.includes('Flujo') || text.includes('Flux') || text.includes('Datenstrom') || text.includes('データ')) {
+          name.textContent = t('dataStream');
+        } else if (text.includes('Cosmic') || text.includes('Guardián') || text.includes('Gardien') || text.includes('Kosmischer') || text.includes('コズミック')) {
+          name.textContent = t('cosmicGatekeeper');
+        }
+      });
+
+      // Update toggle buttons
+      updateSettingsUI();
+    }
+
+    function initGrid(withStarterShapes = false) {
+      grid = [];
+      for (let y = 0; y < 8; y++) {
+        grid[y] = [];
+        for (let x = 0; x < 8; x++) {
+          grid[y][x] = 0;
+        }
+      }
+
+      // Add starter shapes for first-time players so grid isn't confusingly empty
+      // Creates an "almost complete" row to show what clearing looks like
+      if (withStarterShapes) {
+        // Bottom row: 6 filled cells, leaving 2 gaps
+        // Player's 2-cell piece will complete it!
+        grid[7][0] = 1;
+        grid[7][1] = 1;
+        grid[7][2] = 1;
+        // Gap at [7][3] and [7][4] - where player places their 2-cell piece
+        grid[7][5] = 1;
+        grid[7][6] = 1;
+        grid[7][7] = 1;
+
+        // Add a few more pieces to show the game isn't empty
+        // Second-to-bottom row: scattered pieces
+        grid[6][0] = 1;
+        grid[6][1] = 1;
+        grid[6][6] = 1;
+        grid[6][7] = 1;
+
+        // A small cluster in the corner
+        grid[5][0] = 1;
+        grid[5][7] = 1;
+      }
+
+      renderGrid();
+    }
+
+    function renderGrid() {
+      const gridEl = document.getElementById('build-grid');
+      gridEl.innerHTML = '';
+      for (let y = 0; y < 8; y++) {
+        for (let x = 0; x < 8; x++) {
+          const cell = document.createElement('div');
+          cell.className = 'grid-cell' + (grid[y][x] ? ' filled' : '');
+          cell.dataset.x = x;
+          cell.dataset.y = y;
+          gridEl.appendChild(cell);
+        }
+      }
+    }
+
+    function updateRailSymbols() {
+      const leftSymbols = document.getElementById('left-rail-symbols');
+      const rightSymbols = document.getElementById('right-rail-symbols');
+
+      leftSymbols.innerHTML = RULES.left.map(id => {
+        const sym = SYMBOLS.find(s => s.id === id);
+        return `<div class="rail-symbol">${getSymbolSVG(id, 'rgba(255,255,255,0.9)', 28)}</div>`;
+      }).join('');
+
+      rightSymbols.innerHTML = RULES.right.map(id => {
+        const sym = SYMBOLS.find(s => s.id === id);
+        return `<div class="rail-symbol">${getSymbolSVG(id, 'rgba(255,255,255,0.9)', 28)}</div>`;
+      }).join('');
+    }
+
+    function updateTutorialSymbols() {
+      const leftIcons = document.getElementById('tutorial-left-icons');
+      const rightIcons = document.getElementById('tutorial-right-icons');
+
+      leftIcons.innerHTML = RULES.left.map(id => {
+        const sym = SYMBOLS.find(s => s.id === id);
+        return getSymbolSVG(id, sym.color, 40);
+      }).join('');
+
+      rightIcons.innerHTML = RULES.right.map(id => {
+        const sym = SYMBOLS.find(s => s.id === id);
+        return getSymbolSVG(id, sym.color, 40);
+      }).join('');
+    }
+
+    // ==========================================
+    // MENU & NAVIGATION
+    // ==========================================
+    function showMenu() {
+      gameState = 'menu';
+      isPaused = false;
+      stopGameLoop();
+      document.getElementById('menu-screen').style.display = 'flex';
+      document.getElementById('game-screen').style.display = 'none';
+      document.getElementById('build-screen').style.display = 'none';
+      document.getElementById('gameover-screen').style.display = 'none';
+      document.getElementById('settings-screen').style.display = 'none';
+      document.getElementById('pause-overlay').style.display = 'none';
+      document.body.classList.remove('paused');
+
+      if (highScore > 0) {
+        document.getElementById('high-score-display').textContent = 'Best: ' + highScore;
+      }
+    }
+
+    function togglePause() {
+      if (gameState !== 'charge') return; // Only pause during charge phase
+
+      isPaused = !isPaused;
+
+      if (isPaused) {
+        // Pause the game
+        stopGameLoop();
+        document.getElementById('pause-overlay').style.display = 'flex';
+        document.body.classList.add('paused');
+      } else {
+        // Resume the game
+        document.getElementById('pause-overlay').style.display = 'none';
+        document.body.classList.remove('paused');
+
+        // Restart all intervals
+        timerInterval = setInterval(() => {
+          timer--;
+          updateTimerDisplay();
+          if (timer <= 0) {
+            endChargePhase();
+          }
+        }, 1000);
+
+        spawnInterval = setInterval(spawnSymbol, getEffectiveSpawnRate());
+        startGameLoop();
+      }
+    }
+
+    function exitToMenu() {
+      isPaused = false;
+      document.getElementById('pause-overlay').style.display = 'none';
+      document.body.classList.remove('paused');
+      showMenu();
+    }
+
+    // Auto-pause when page visibility changes (phone call, tab switch, etc.)
+    document.addEventListener('visibilitychange', function() {
+      if (document.hidden && gameState === 'charge' && !isPaused) {
+        togglePause();
+      }
+    });
+
+    let settingsOpenedFrom = 'menu'; // 'menu' | 'pause' | 'build'
+
+    function showSettings() {
+      settingsOpenedFrom = 'menu';
+      document.getElementById('menu-screen').style.display = 'none';
+      document.getElementById('settings-screen').style.display = 'flex';
+    }
+
+    function showSettingsFromPause() {
+      settingsOpenedFrom = 'pause';
+      document.getElementById('pause-overlay').style.display = 'none';
+      document.getElementById('settings-screen').style.display = 'flex';
+    }
+
+    function showSettingsFromBuild() {
+      settingsOpenedFrom = 'build';
+      document.getElementById('build-screen').style.display = 'none';
+      document.getElementById('settings-screen').style.display = 'flex';
+    }
+
+    function hideSettings() {
+      document.getElementById('settings-screen').style.display = 'none';
+
+      if (settingsOpenedFrom === 'pause') {
+        document.getElementById('pause-overlay').style.display = 'flex';
+      } else if (settingsOpenedFrom === 'build') {
+        document.getElementById('build-screen').style.display = 'flex';
+      } else {
+        document.getElementById('menu-screen').style.display = 'flex';
+      }
+    }
+
+    function updateSettingsUI() {
+      document.getElementById('sound-toggle').textContent = audioEnabled ? t('on') : t('off');
+      document.getElementById('sound-toggle').classList.toggle('active', audioEnabled);
+      document.getElementById('haptics-toggle').textContent = hapticsEnabled ? t('on') : t('off');
+      document.getElementById('haptics-toggle').classList.toggle('active', hapticsEnabled);
+      document.getElementById('flash-toggle').textContent = lowFlashEnabled ? t('on') : t('off');
+      document.getElementById('flash-toggle').classList.toggle('active', lowFlashEnabled);
+
+      // Update theme selection
+      document.querySelectorAll('.theme-option').forEach(opt => {
+        const themeName = opt.getAttribute('data-theme');
+        opt.classList.toggle('selected', themeName === currentTheme);
+      });
+
+      // Update language selection
+      document.querySelectorAll('.language-option').forEach(opt => {
+        const lang = opt.getAttribute('data-lang');
+        opt.classList.toggle('selected', lang === currentLanguage);
+      });
+    }
+
+    function toggleSound() {
+      audioEnabled = !audioEnabled;
+      try { localStorage.setItem('crystalsurge_sound', audioEnabled ? 'on' : 'off'); } catch(e) {}
+      updateSettingsUI();
+    }
+
+    function toggleHaptics() {
+      hapticsEnabled = !hapticsEnabled;
+      try { localStorage.setItem('crystalsurge_haptics', hapticsEnabled ? 'true' : 'false'); } catch(e) {}
+      updateSettingsUI();
+    }
+
+    function toggleLowFlash() {
+      lowFlashEnabled = !lowFlashEnabled;
+      try { localStorage.setItem('crystalsurge_low_flash', lowFlashEnabled ? 'true' : 'false'); } catch(e) {}
+      updateSettingsUI();
+    }
+
+    function selectTheme(theme) {
+      currentTheme = theme;
+      try { localStorage.setItem('crystalsurge_theme', theme); } catch(e) {}
+      document.body.setAttribute('data-theme', theme);
+      updateSettingsUI();
+    }
+
+    function resetProgress() {
+      if (confirm('DELETE all progress?\n\nThis cannot be undone.')) {
+        try {
+          localStorage.removeItem('crystalsurge_highscore');
+        } catch(e) {}
+        highScore = 0;
+        document.getElementById('high-score-display').textContent = 'Best: 0';
+      }
+    }
+
+    // Track if this is the very first game (for intro BUILD phase)
+    let isFirstGameEver = false;
+
+    // ==========================================
+    // START GAME
+    // ==========================================
+    function startGame() {
+      initAudio();
+
+      // Check if this is the very first game ever
+      isFirstGameEver = !localStorage.getItem('crystalsurge_played_before');
+      if (isFirstGameEver) {
+        try { localStorage.setItem('crystalsurge_played_before', 'true'); } catch(e) {}
+      }
+
+      // Reset all state
+      score = 0;
+      combo = 0;
+      bestCombo = 0;
+      round = 1;
+      linesCleared = 0;
+      bestChargePercent = 0;
+      maxSpeedMultiplier = 1.0;
+      warmupMultiplier = 1.3;
+
+      // Reset grid (with starter shapes for first game)
+      initGrid(isFirstGameEver || !tutorialShown);
+
+      // Hide all screens first
+      document.getElementById('menu-screen').style.display = 'none';
+      document.getElementById('gameover-screen').style.display = 'none';
+      document.getElementById('game-screen').style.display = 'none';
+      document.getElementById('build-screen').style.display = 'none';
+
+      // Show tutorial on first play - show BUILD screen behind it so player sees the grid
+      if (!tutorialShown) {
+        // Give them a simple 2-cell crystal to place after tutorial
+        currentCrystal = { shape: CRYSTAL_SHAPES.horizontal2, key: 'horizontal2' };
+
+        // Show BUILD screen with grid (NOT charge screen)
+        document.getElementById('build-screen').style.display = 'flex';
+        renderGrid();
+        renderCurrentCrystal();
+        setupGridInteraction();
+
+        // Hide charge button, show crystal preview
+        document.getElementById('charge-btn').style.display = 'none';
+        document.getElementById('crystal-preview').style.display = 'grid';
+
+        setTimeout(showTutorial, 600);
+      } else {
+        // Returning player: start with CHARGE phase
+        document.getElementById('game-screen').style.display = 'flex';
+        startChargePhase();
+      }
+    }
+
+    function showTutorial() {
+      document.getElementById('tutorial-overlay').style.display = 'flex';
+    }
+
+    function dismissTutorial() {
+      tutorialShown = true;
+      try { localStorage.setItem('crystalsurge_tutorial', 'done'); } catch(e) {}
+      document.getElementById('tutorial-overlay').style.display = 'none';
+
+      // BUILD screen is already showing with crystal preview
+      // Just set the game state to 'build' so placement works
+      gameState = 'build';
+
+      // Update UI displays
+      document.getElementById('score-display').textContent = score;
+      document.getElementById('best-display').textContent = highScore;
+    }
+
+    // ==========================================
+    // CHARGE PHASE
+    // ==========================================
+    function startChargePhase() {
+      gameState = 'charge';
+      chargePercent = 0;
+      timer = 30;
+      combo = 0;
+      activeSymbols = [];
+      warmupMultiplier = 1.3; // Reset warmup
+
+      // Clear symbol area
+      symbolAreaEl = document.getElementById('symbol-area');
+      symbolAreaEl.querySelectorAll('.symbol').forEach(el => el.remove());
+
+      // Show charge screen
+      document.getElementById('game-screen').style.display = 'flex';
+      document.getElementById('build-screen').style.display = 'none';
+      document.getElementById('choice-overlay').style.display = 'none';
+
+      // Update UI
+      updateChargeUI();
+
+      // Start timer
+      timerInterval = setInterval(() => {
+        timer--;
+        updateTimerDisplay();
+        if (timer <= 0) {
+          endChargePhase();
+        }
+      }, 1000);
+
+      // Start spawn loop
+      spawnInterval = setInterval(spawnSymbol, getEffectiveSpawnRate());
+
+      // Initial spawn
+      setTimeout(spawnSymbol, 300);
+
+      // Start game loop
+      startGameLoop();
+    }
+
+    function updateChargeUI() {
+      // Gauge is shown via rail fill, combo via milestone popups
+      updateTimerDisplay();
+      updateRailFill();
+    }
+
+    function updateTimerDisplay() {
+      const mins = Math.floor(timer / 60);
+      const secs = timer % 60;
+      document.getElementById('timer-display').textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    function updateRailFill() {
+      const fillPercent = Math.min(100, chargePercent);
+      document.getElementById('left-rail-fill').style.height = fillPercent + '%';
+      document.getElementById('right-rail-fill').style.height = fillPercent + '%';
+    }
+
+    // ==========================================
+    // SYMBOL SPAWNING
+    // ==========================================
+    let symbolIdCounter = 0;
+
+    function spawnSymbol() {
+      if (gameState !== 'charge') return;
+
+      const sym = SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
+      const id = ++symbolIdCounter;
+
+      const el = document.createElement('div');
+      el.className = 'symbol above-zone';
+      el.dataset.id = id;
+      el.dataset.type = sym.id;
+      el.innerHTML = getSymbolSVG(sym.id, sym.color, 60);
+
+      // Random X position
+      const areaWidth = symbolAreaEl.offsetWidth;
+      const x = 30 + Math.random() * (areaWidth - 60);
+      el.style.left = x + 'px';
+      el.style.top = '0px';
+
+      // Touch handlers
+      el.addEventListener('touchstart', handleTouchStart, { passive: false });
+      el.addEventListener('touchmove', handleTouchMove, { passive: false });
+      el.addEventListener('touchend', handleTouchEnd, { passive: false });
+      el.addEventListener('mousedown', handleMouseDown);
+
+      symbolAreaEl.appendChild(el);
+
+      activeSymbols.push({
+        id: id,
+        type: sym.id,
+        direction: sym.direction,
+        color: sym.color,
+        el: el,
+        x: x,
+        y: 0,
+        spawnTime: performance.now()
+      });
+    }
+
+    // ==========================================
+    // GAME LOOP
+    // ==========================================
+    function startGameLoop() {
+      lastUpdate = performance.now();
+      gameLoopId = setInterval(gameLoop, 16);
+    }
+
+    function stopGameLoop() {
+      if (gameLoopId) {
+        clearInterval(gameLoopId);
+        gameLoopId = null;
+      }
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+      if (spawnInterval) {
+        clearInterval(spawnInterval);
+        spawnInterval = null;
+      }
+    }
+
+    function gameLoop() {
+      if (gameState !== 'charge') return;
+
+      const now = performance.now();
+      const delta = Math.min(now - lastUpdate, 50);
+      lastUpdate = now;
+
+      updateSymbols(delta);
+    }
+
+    function updateSymbols(delta) {
+      const areaHeight = symbolAreaEl.offsetHeight;
+      const fallTime = getEffectiveFallTime();
+      const decisionZoneY = areaHeight * 0.55; // Decision zone is bottom 45%
+
+      for (let i = activeSymbols.length - 1; i >= 0; i--) {
+        const sym = activeSymbols[i];
+        const elapsed = performance.now() - sym.spawnTime;
+        const progress = elapsed / fallTime;
+        const y = progress * areaHeight;
+
+        sym.y = y;
+        sym.el.style.top = y + 'px';
+
+        // Update zone state
+        if (y >= decisionZoneY) {
+          sym.el.classList.remove('above-zone');
+        }
+
+        // Symbol exits bottom - MISSED! Drain gauge + visual feedback
+        if (y >= areaHeight) {
+          // Visual: symbol fades out with red tint
+          sym.el.classList.add('missed');
+          setTimeout(() => sym.el.remove(), 200);
+          activeSymbols.splice(i, 1);
+
+          // Penalty: drain gauge (same as wrong swipe)
+          chargePercent = Math.max(0, chargePercent - 10);
+          combo = 0;
+
+          // Rail shake animation
+          const leftRail = document.getElementById('left-rail');
+          const rightRail = document.getElementById('right-rail');
+          leftRail.classList.add('shake');
+          rightRail.classList.add('shake');
+          setTimeout(() => {
+            leftRail.classList.remove('shake');
+            rightRail.classList.remove('shake');
+          }, 200);
+
+          // Sound + haptic
+          playSound('wrong');
+          if (hapticsEnabled && navigator.vibrate) {
+            navigator.vibrate([30, 20, 30]);
+          }
+
+          // Update UI
+          updateChargeUI();
+        }
+      }
+    }
+
+    // ==========================================
+    // TOUCH HANDLING
+    // ==========================================
+    function handleTouchStart(e) {
+      if (gameState !== 'charge') return;
+      e.preventDefault();
+      e.stopPropagation();
+
+      const touch = e.touches[0];
+      touchStartX = touch.clientX;
+      touchStartY = touch.clientY;
+      activeSymbolEl = e.currentTarget;
+      isSwiping = true;
+    }
+
+    function handleTouchMove(e) {
+      if (!isSwiping || !activeSymbolEl) return;
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    function handleTouchEnd(e) {
+      if (gameState !== 'charge') {
+        cancelSwipe();
+        return;
+      }
+      if (!activeSymbolEl || !isSwiping) {
+        return;
+      }
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      let endX = touchStartX;
+      let endY = touchStartY;
+
+      if (e.changedTouches && e.changedTouches.length > 0) {
+        endX = e.changedTouches[0].clientX;
+        endY = e.changedTouches[0].clientY;
+      }
+
+      const deltaX = endX - touchStartX;
+      const deltaY = endY - touchStartY;
+
+      if (Math.abs(deltaX) > 30 && Math.abs(deltaX) > Math.abs(deltaY)) {
+        const direction = deltaX > 0 ? 'right' : 'left';
+        handleSwipe(activeSymbolEl.dataset.id, direction);
+      }
+
+      cancelSwipe();
+    }
+
+    function handleMouseDown(e) {
+      if (gameState !== 'charge') return;
+      touchStartX = e.clientX;
+      touchStartY = e.clientY;
+      activeSymbolEl = e.currentTarget;
+      isSwiping = true;
+
+      document.addEventListener('mouseup', handleMouseUp);
+    }
+
+    function handleMouseUp(e) {
+      document.removeEventListener('mouseup', handleMouseUp);
+
+      if (gameState !== 'charge' || !activeSymbolEl || !isSwiping) {
+        cancelSwipe();
+        return;
+      }
+
+      const deltaX = e.clientX - touchStartX;
+      const deltaY = e.clientY - touchStartY;
+
+      if (Math.abs(deltaX) > 30 && Math.abs(deltaX) > Math.abs(deltaY)) {
+        const direction = deltaX > 0 ? 'right' : 'left';
+        handleSwipe(activeSymbolEl.dataset.id, direction);
+      }
+
+      cancelSwipe();
+    }
+
+    function cancelSwipe() {
+      activeSymbolEl = null;
+      isSwiping = false;
+    }
+
+    // ==========================================
+    // SWIPE HANDLING
+    // ==========================================
+    function handleSwipe(symbolId, direction) {
+      const symbolIndex = activeSymbols.findIndex(s => String(s.id) === String(symbolId));
+      if (symbolIndex === -1) return;
+
+      const symbol = activeSymbols[symbolIndex];
+      const el = symbol.el;
+
+      // Check if correct
+      const isCorrect = RULES[direction].includes(symbol.type);
+
+      // Visual feedback
+      showFeedback(isCorrect);
+
+      // Haptic feedback
+      if (hapticsEnabled && navigator.vibrate) {
+        navigator.vibrate(isCorrect ? 10 : [30, 20, 30]);
+      }
+
+      // Animate symbol
+      if (el) {
+        if (isCorrect) {
+          el.classList.add(direction === 'left' ? 'swiped-left' : 'swiped-right');
+        } else {
+          el.classList.add('swiped-wrong');
+        }
+        setTimeout(() => {
+          if (el.parentNode) el.parentNode.removeChild(el);
+        }, 400);
+      }
+
+      // Update state
+      if (isCorrect) {
+        combo++;
+        bestCombo = Math.max(bestCombo, combo);
+
+        // Fill charge (+7% base, combo bonus) - tuned for 30s timer with room for mistakes
+        const comboBonus = Math.floor(combo / 10);
+        const fillAmount = 7 + comboBonus;
+        chargePercent = Math.min(100, chargePercent + fillAmount);
+
+        // Update best charge
+        bestChargePercent = Math.max(bestChargePercent, chargePercent);
+
+        // Play sound
+        playSound('correct', combo);
+
+        // Rail pulse animation
+        const rail = document.getElementById(direction + '-rail');
+        rail.classList.add('pulse');
+        setTimeout(() => rail.classList.remove('pulse'), 150);
+
+        // Warmup decay
+        if (warmupMultiplier > 1.0) {
+          warmupMultiplier = Math.max(1.0, warmupMultiplier - 0.1);
+        }
+
+        // Combo milestones
+        if (combo === 10 || combo === 25 || combo === 50 || combo === 100) {
+          showComboMilestone(combo);
+          playSound('combo');
+        }
+
+        // Check for 100% early exit
+        if (chargePercent >= 100) {
+          setTimeout(endChargePhase, 300);
+        }
+      } else {
+        combo = 0;
+
+        // Drain charge (-10%)
+        chargePercent = Math.max(0, chargePercent - 10);
+
+        // Play sound
+        playSound('wrong');
+
+        // Rail shake animation
+        const leftRail = document.getElementById('left-rail');
+        const rightRail = document.getElementById('right-rail');
+        leftRail.classList.add('shake');
+        rightRail.classList.add('shake');
+        setTimeout(() => {
+          leftRail.classList.remove('shake');
+          rightRail.classList.remove('shake');
+        }, 200);
+      }
+
+      // Remove from active
+      activeSymbols.splice(symbolIndex, 1);
+
+      // Update UI
+      updateChargeUI();
+
+      // Update spawn rate if needed
+      if (spawnInterval) {
+        clearInterval(spawnInterval);
+        spawnInterval = setInterval(spawnSymbol, getEffectiveSpawnRate());
+      }
+    }
+
+    function showFeedback(isCorrect) {
+      if (isCorrect || lowFlashEnabled) return;
+
+      const flash = document.createElement('div');
+      flash.className = 'screen-flash wrong';
+      document.body.appendChild(flash);
+      setTimeout(() => flash.remove(), 200);
+    }
+
+    function showComboMilestone(comboValue) {
+      const milestone = document.getElementById('combo-milestone');
+      milestone.textContent = comboValue + 'x COMBO!';
+      milestone.classList.remove('show');
+      void milestone.offsetWidth;
+      milestone.classList.add('show');
+      setTimeout(() => milestone.classList.remove('show'), 800);
+    }
+
+    // ==========================================
+    // END CHARGE PHASE
+    // ==========================================
+    function endChargePhase() {
+      stopGameLoop();
+
+      // Clear remaining symbols
+      activeSymbols.forEach(s => {
+        if (s.el && s.el.parentNode) s.el.parentNode.removeChild(s.el);
+      });
+      activeSymbols = [];
+
+      // Determine crystal reward based on charge percentage
+      if (chargePercent >= 91) {
+        // CHOICE: Pick from 3 crystals (bonus given in selectCrystal)
+        showCrystalChoice();
+      } else {
+        // Random crystal + small bonus based on gauge
+        currentCrystal = generateRandomCrystal();
+
+        // REBALANCED: Award small bonus points based on gauge
+        // Main scoring comes from line clears, not gauge bonuses
+        if (chargePercent >= 61) {
+          score += 25; // 61-90%: +25 pts (reduced from 100)
+        } else if (chargePercent >= 31) {
+          score += 10; // 31-60%: +10 pts (reduced from 50)
+        }
+        // 0-30%: no bonus
+
+        startBuildPhase();
+      }
+    }
+
+    // ==========================================
+    // CRYSTAL CHOICE (91%+ gauge)
+    // ==========================================
+    function showCrystalChoice() {
+      gameState = 'choice';
+      playSound('choose');
+
+      // FIRST: Show the build screen with grid so player can see it
+      document.getElementById('game-screen').style.display = 'none';
+      document.getElementById('build-screen').style.display = 'flex';
+
+      // Re-render grid to show current state
+      renderGrid();
+
+      // Hide crystal preview area (will show choice overlay instead)
+      document.getElementById('crystal-area').style.display = 'none';
+
+      // Generate 3 random crystals
+      crystalChoices = [
+        generateRandomCrystal(),
+        generateRandomCrystal(),
+        generateRandomCrystal()
+      ];
+
+      // Render choices
+      const optionsEl = document.getElementById('choice-options');
+      optionsEl.innerHTML = crystalChoices.map((crystal, i) => {
+        return `
+          <div class="choice-option" onclick="selectCrystal(${i})">
+            ${renderCrystalPreview(crystal)}
+          </div>
+        `;
+      }).join('');
+
+      // Show overlay (at bottom, so grid is visible above)
+      document.getElementById('choice-overlay').style.display = 'flex';
+    }
+
+    function selectCrystal(index) {
+      currentCrystal = crystalChoices[index];
+      document.getElementById('choice-overlay').style.display = 'none';
+
+      // Show crystal area again
+      document.getElementById('crystal-area').style.display = 'flex';
+
+      // REBALANCED: Bonus points for 91%+ charge (reduced from 200)
+      score += 50;
+
+      startBuildPhase();
+    }
+
+    function generateRandomCrystal() {
+      const shapeKeys = Object.keys(CRYSTAL_SHAPES);
+      const key = shapeKeys[Math.floor(Math.random() * shapeKeys.length)];
+      return {
+        shape: CRYSTAL_SHAPES[key],
+        key: key
+      };
+    }
+
+    function renderCrystalPreview(crystal) {
+      const shape = crystal.shape;
+      const rows = shape.length;
+      const cols = shape[0].length;
+
+      let html = `<div class="choice-preview" style="grid-template-columns: repeat(${cols}, 24px); grid-template-rows: repeat(${rows}, 24px);">`;
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          html += `<div class="crystal-cell${shape[y][x] ? '' : ' empty'}"></div>`;
+        }
+      }
+      html += '</div>';
+      return html;
+    }
+
+    // ==========================================
+    // BUILD PHASE
+    // ==========================================
+    function startBuildPhase() {
+      gameState = 'build';
+
+      // Clear any leftover symbols from charge phase
+      const symbolArea = document.getElementById('symbol-area');
+      if (symbolArea) {
+        symbolArea.querySelectorAll('.symbol').forEach(el => el.remove());
+      }
+      activeSymbols = [];
+
+      // Update UI
+      document.getElementById('score-display').textContent = score;
+      document.getElementById('best-display').textContent = highScore;
+
+      // Hide ALL other screens first, then show build screen
+      document.getElementById('menu-screen').style.display = 'none';
+      document.getElementById('game-screen').style.display = 'none';
+      document.getElementById('gameover-screen').style.display = 'none';
+      document.getElementById('settings-screen').style.display = 'none';
+      document.getElementById('choice-overlay').style.display = 'none';
+      document.getElementById('tutorial-overlay').style.display = 'none';
+
+      // Now show build screen
+      document.getElementById('build-screen').style.display = 'flex';
+
+      // Show crystal preview, hide charge button
+      document.getElementById('crystal-preview').style.display = 'grid';
+      document.getElementById('charge-btn').style.display = 'none';
+
+      // Re-render the grid to ensure it's visible
+      renderGrid();
+
+      // Render current crystal preview
+      renderCurrentCrystal();
+
+      // Check for game over (crystal can't fit anywhere)
+      if (isGameOver()) {
+        // Small delay to show the crystal that couldn't fit
+        setTimeout(endGame, 500);
+        return;
+      }
+
+      // Setup grid interaction
+      setupGridInteraction();
+    }
+
+    function renderCurrentCrystal() {
+      const previewEl = document.getElementById('crystal-preview');
+      const shape = currentCrystal.shape;
+      const rows = shape.length;
+      const cols = shape[0].length;
+
+      previewEl.style.gridTemplateColumns = `repeat(${cols}, 24px)`;
+      previewEl.style.gridTemplateRows = `repeat(${rows}, 24px)`;
+
+      let html = '';
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          html += `<div class="crystal-cell${shape[y][x] ? '' : ' empty'}"></div>`;
+        }
+      }
+      previewEl.innerHTML = html;
+    }
+
+    const CRYSTAL_DRAG_OFFSET_Y = -80; // pixels above finger for placement preview (Block Blast style)
+    let gridListenersAdded = false;
+    let isDraggingCrystal = false;
+    let lastPreviewX = -1;
+    let lastPreviewY = -1;
+
+    function setupGridInteraction() {
+      if (gridListenersAdded) return;
+
+      const gridEl = document.getElementById('build-grid');
+      const previewEl = document.getElementById('crystal-preview');
+
+      // Drag from crystal preview
+      previewEl.addEventListener('touchstart', startCrystalDrag, { passive: false });
+      previewEl.addEventListener('mousedown', startCrystalDrag);
+
+      // Track drag over grid
+      gridEl.addEventListener('touchmove', handleCrystalDrag, { passive: false });
+      gridEl.addEventListener('mousemove', handleCrystalDrag);
+      document.addEventListener('touchmove', handleCrystalDrag, { passive: false });
+      document.addEventListener('mousemove', handleCrystalDrag);
+
+      // Release to place
+      document.addEventListener('touchend', endCrystalDrag);
+      document.addEventListener('mouseup', endCrystalDrag);
+
+      // Also allow tap on grid to place
+      gridEl.addEventListener('click', handleGridTap);
+
+      gridListenersAdded = true;
+    }
+
+    function startCrystalDrag(e) {
+      if (gameState !== 'build' || !currentCrystal) return;
+      e.preventDefault();
+      isDraggingCrystal = true;
+      document.getElementById('crystal-preview').style.opacity = '0.5';
+    }
+
+    function handleCrystalDrag(e) {
+      if (!isDraggingCrystal || gameState !== 'build' || !currentCrystal) return;
+      e.preventDefault();
+
+      const touch = e.touches ? e.touches[0] : e;
+      const cell = document.elementFromPoint(touch.clientX, touch.clientY + CRYSTAL_DRAG_OFFSET_Y);
+
+      if (cell && cell.classList.contains('grid-cell')) {
+        const x = parseInt(cell.dataset.x);
+        const y = parseInt(cell.dataset.y);
+        showPlacementPreview(x, y);
+      } else {
+        clearPlacementPreview();
+      }
+    }
+
+    function endCrystalDrag(e) {
+      if (!isDraggingCrystal) return;
+      isDraggingCrystal = false;
+      document.getElementById('crystal-preview').style.opacity = '1';
+
+      if (gameState !== 'build' || !currentCrystal) {
+        clearPlacementPreview();
+        return;
+      }
+
+      const touch = e.changedTouches ? e.changedTouches[0] : e;
+      const cell = document.elementFromPoint(touch.clientX, touch.clientY + CRYSTAL_DRAG_OFFSET_Y);
+
+      if (cell && cell.classList.contains('grid-cell')) {
+        const x = parseInt(cell.dataset.x);
+        const y = parseInt(cell.dataset.y);
+        tryPlaceCrystal(x, y);
+      }
+
+      clearPlacementPreview();
+    }
+
+    function handleGridTap(e) {
+      if (gameState !== 'build' || !currentCrystal || isDraggingCrystal) return;
+
+      const cell = e.target.closest('.grid-cell');
+      if (!cell) return;
+
+      const x = parseInt(cell.dataset.x);
+      const y = parseInt(cell.dataset.y);
+      tryPlaceCrystal(x, y);
+    }
+
+    function showPlacementPreview(startX, startY) {
+      if (lastPreviewX === startX && lastPreviewY === startY) return;
+
+      clearPlacementPreview();
+      lastPreviewX = startX;
+      lastPreviewY = startY;
+
+      const shape = currentCrystal.shape;
+      const canPlace = canPlaceCrystal(startX, startY);
+
+      for (let y = 0; y < shape.length; y++) {
+        for (let x = 0; x < shape[0].length; x++) {
+          if (shape[y][x]) {
+            const gridX = startX + x;
+            const gridY = startY + y;
+            if (gridX >= 0 && gridX < 8 && gridY >= 0 && gridY < 8) {
+              const cellEl = document.querySelector(`.grid-cell[data-x="${gridX}"][data-y="${gridY}"]`);
+              if (cellEl) {
+                cellEl.classList.add(canPlace ? 'preview' : 'invalid-preview');
+              }
+            }
+          }
+        }
+      }
+    }
+
+    function clearPlacementPreview() {
+      lastPreviewX = -1;
+      lastPreviewY = -1;
+      document.querySelectorAll('.grid-cell.preview, .grid-cell.invalid-preview').forEach(el => {
+        el.classList.remove('preview', 'invalid-preview');
+      });
+    }
+
+    function tryPlaceCrystal(x, y) {
+      if (!canPlaceCrystal(x, y)) {
+        // Invalid placement - flash red
+        if (hapticsEnabled && navigator.vibrate) {
+          navigator.vibrate([30, 20, 30]);
+        }
+        return;
+      }
+
+      // Place crystal
+      placeCrystal(x, y);
+      renderGrid();  // Immediately show the placed crystal on the grid
+      playSound('place');
+
+      if (hapticsEnabled && navigator.vibrate) {
+        navigator.vibrate(15);
+      }
+
+      // Clear crystal (before checking line clears)
+      currentCrystal = null;
+      clearPlacementPreview();
+
+      // Check for line clears with delay for animation
+      setTimeout(() => {
+        const cleared = checkLineClears();
+        if (cleared.length > 0) {
+          animateLineClear(cleared);
+        } else {
+          // No clears - show CHARGE button immediately
+          finishPlacement();
+        }
+      }, 100);
+    }
+
+    function finishPlacement() {
+      // Update UI
+      document.getElementById('score-display').textContent = score;
+
+      // Show CHARGE button (crystal has been placed, ready for next round)
+      document.getElementById('charge-btn').style.display = 'block';
+      document.getElementById('crystal-preview').style.display = 'none';
+    }
+
+    function canPlaceCrystal(startX, startY) {
+      const shape = currentCrystal.shape;
+      for (let y = 0; y < shape.length; y++) {
+        for (let x = 0; x < shape[0].length; x++) {
+          if (shape[y][x]) {
+            const gridX = startX + x;
+            const gridY = startY + y;
+            if (gridX < 0 || gridX >= 8 || gridY < 0 || gridY >= 8) return false;
+            if (grid[gridY][gridX]) return false;
+          }
+        }
+      }
+      return true;
+    }
+
+    function placeCrystal(startX, startY) {
+      const shape = currentCrystal.shape;
+      for (let y = 0; y < shape.length; y++) {
+        for (let x = 0; x < shape[0].length; x++) {
+          if (shape[y][x]) {
+            grid[startY + y][startX + x] = 1;
+          }
+        }
+      }
+    }
+
+    function checkLineClears() {
+      const cleared = [];
+
+      // Check rows
+      for (let y = 0; y < 8; y++) {
+        if (grid[y].every(cell => cell === 1)) {
+          cleared.push({ type: 'row', index: y });
+        }
+      }
+
+      // Check columns
+      for (let x = 0; x < 8; x++) {
+        let full = true;
+        for (let y = 0; y < 8; y++) {
+          if (!grid[y][x]) {
+            full = false;
+            break;
+          }
+        }
+        if (full) {
+          cleared.push({ type: 'col', index: x });
+        }
+      }
+
+      return cleared;
+    }
+
+    let chainMultiplier = 1;
+
+    function animateLineClear(cleared, isChain = false) {
+      playSound('lineclear');
+
+      // Haptic feedback
+      if (hapticsEnabled && navigator.vibrate) {
+        navigator.vibrate(isChain ? [50, 30, 50] : 40);
+      }
+
+      // REBALANCED SCORING:
+      // Base: 10 points per cell cleared (8 cells per line = 80 pts per line)
+      // Multi-line bonus: 1.5x for 2 lines, 2x for 3+
+      // Chain bonus: each chain level adds 50% more
+      const cellsCleared = cleared.length * 8;
+      let lineMultiplier = cleared.length === 1 ? 1 : (cleared.length === 2 ? 1.5 : 2);
+      let points = Math.floor(cellsCleared * 10 * lineMultiplier * chainMultiplier);
+      score += points;
+      linesCleared += cleared.length;
+
+      // Update score display immediately
+      document.getElementById('score-display').textContent = score;
+
+      // Collect all cells to clear
+      const cellsToClear = [];
+      cleared.forEach(line => {
+        if (line.type === 'row') {
+          for (let x = 0; x < 8; x++) {
+            cellsToClear.push({ x, y: line.index });
+          }
+        } else {
+          for (let y = 0; y < 8; y++) {
+            cellsToClear.push({ x: line.index, y });
+          }
+        }
+      });
+
+      // Animate clearing with stagger
+      cellsToClear.forEach((cell, i) => {
+        const cellEl = document.querySelector(`.grid-cell[data-x="${cell.x}"][data-y="${cell.y}"]`);
+        if (cellEl) {
+          // Stagger the animation
+          setTimeout(() => {
+            cellEl.classList.add('clearing');
+            // Create particle burst
+            createClearParticles(cellEl);
+          }, i * 15);
+        }
+      });
+
+      // Show points popup
+      showPointsPopup(points, cleared.length > 1 || isChain);
+
+      // Screen flash for big clears
+      if (cleared.length >= 2) {
+        const flash = document.createElement('div');
+        flash.className = 'screen-flash correct';
+        document.body.appendChild(flash);
+        setTimeout(() => flash.remove(), 200);
+      }
+
+      // After animation, actually clear the grid and check for chains
+      setTimeout(() => {
+        // Clear from grid data
+        cleared.forEach(line => {
+          if (line.type === 'row') {
+            for (let x = 0; x < 8; x++) {
+              grid[line.index][x] = 0;
+            }
+          } else {
+            for (let y = 0; y < 8; y++) {
+              grid[y][line.index] = 0;
+            }
+          }
+        });
+
+        // Re-render grid
+        renderGrid();
+
+        // Check for chain reactions
+        const chainCleared = checkLineClears();
+        if (chainCleared.length > 0) {
+          chainMultiplier += 0.5;
+          playSound('combo');
+          setTimeout(() => animateLineClear(chainCleared, true), 200);
+        } else {
+          // Done clearing - reset chain and finish
+          chainMultiplier = 1;
+          setTimeout(finishPlacement, 100);
+        }
+      }, 500);
+    }
+
+    function createClearParticles(cellEl) {
+      const rect = cellEl.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+
+      for (let i = 0; i < 6; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'shatter-particle';
+        particle.style.left = centerX + 'px';
+        particle.style.top = centerY + 'px';
+        particle.style.background = 'var(--accent-primary)';
+
+        const angle = (i / 6) * Math.PI * 2;
+        const distance = 30 + Math.random() * 40;
+        particle.style.setProperty('--tx', Math.cos(angle) * distance + 'px');
+        particle.style.setProperty('--ty', Math.sin(angle) * distance + 'px');
+
+        document.body.appendChild(particle);
+        setTimeout(() => particle.remove(), 600);
+      }
+    }
+
+    function showPointsPopup(points, isBig) {
+      const popup = document.createElement('div');
+      popup.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0);
+        font-size: ${isBig ? '2.5rem' : '2rem'};
+        font-weight: 800;
+        color: ${isBig ? '#fbbf24' : 'var(--text-primary)'};
+        text-shadow: 0 0 20px ${isBig ? '#fbbf24' : 'var(--accent-primary)'};
+        pointer-events: none;
+        z-index: 1000;
+        animation: pointsPopup 0.8s ease-out forwards;
+      `;
+      popup.textContent = '+' + points;
+      document.body.appendChild(popup);
+      setTimeout(() => popup.remove(), 800);
+    }
+
+    function isGameOver() {
+      // Game over if no crystal or crystal can't fit anywhere
+      if (!currentCrystal) return false;
+
+      for (let y = 0; y < 8; y++) {
+        for (let x = 0; x < 8; x++) {
+          if (canPlaceCrystal(x, y)) {
+            return false;
+          }
+        }
+      }
+      return true;
+    }
+
+    // ==========================================
+    // END GAME
+    // ==========================================
+    function endGame() {
+      gameState = 'gameover';
+      stopGameLoop();
+
+      playSound('gameover');
+
+      // Update high score
+      if (score > highScore) {
+        highScore = score;
+        try { localStorage.setItem('crystalsurge_highscore', highScore.toString()); } catch(e) {}
+        document.getElementById('gameover-title').textContent = t('newBest');
+        playSound('highscore');
+      } else {
+        document.getElementById('gameover-title').textContent = t('gameOver');
+      }
+
+      // Update stats
+      document.getElementById('final-score-display').textContent = score;
+      document.getElementById('final-combo').textContent = bestCombo;
+      document.getElementById('final-lines').textContent = linesCleared;
+      document.getElementById('final-rounds').textContent = round;
+      document.getElementById('final-charge').textContent = bestChargePercent + '%';
+
+      // Show game over screen
+      document.getElementById('build-screen').style.display = 'none';
+      document.getElementById('game-screen').style.display = 'none';
+      document.getElementById('gameover-screen').style.display = 'flex';
+    }
+
+    // ==========================================
+    // NEXT ROUND (After placing crystal)
+    // ==========================================
+    function startChargeFromBuild() {
+      round++;
+      document.getElementById('build-screen').style.display = 'none';
+      startChargePhase();
+    }
+
+    // ==========================================
+    // INIT ON LOAD
+    // ==========================================
+    window.onload = init;
+  </script>
+</body>
+</html>

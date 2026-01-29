@@ -1,0 +1,6 @@
+{
+  "appId": "com.sortex.game",
+  "appName": "SORTEX",
+  "webDir": "src",
+  "bundledWebRuntime": false
+}

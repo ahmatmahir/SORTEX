@@ -1,9 +1,9 @@
-// SORTEX Service Worker v1.0
-const CACHE_NAME = 'sortex-v1.5';
+// SORTEX Service Worker v1.1
+const CACHE_NAME = 'sortex-v1.7';
 const ASSETS_TO_CACHE = [
-  '/',
-  '/index.html',
-  '/manifest.json'
+  './',
+  './index.html',
+  './manifest.json'
 ];
 
 // Install event - cache assets
@@ -87,9 +87,8 @@ self.addEventListener('fetch', (event) => {
             return response;
           })
           .catch(() => {
-            if (event.request.mode === 'navigate') {
-              return caches.match('/index.html');
-            }
+            // Don't fallback to index.html for other HTML files
+            return null;
           });
       })
   );

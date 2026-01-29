@@ -26,3 +26,8 @@ build/
 
 # Screenshots from testing
 screenshot*.png
+
+# Temp review frames
+.tmp_review_frames*/
+artifact_tier_snaps/
+*.textClipping

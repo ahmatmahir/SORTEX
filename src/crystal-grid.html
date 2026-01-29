@@ -1,0 +1,3121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0f0a1e">
+  <title>Crystal Grid</title>
+  <style>
+    /* ===== RESET & BASE ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: #0f0a1e;
+      color: #e0d6f2;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      /* Crystalline background texture */
+      background-image:
+        linear-gradient(60deg, rgba(168,85,247,0.03) 25%, transparent 25%),
+        linear-gradient(-60deg, rgba(168,85,247,0.03) 25%, transparent 25%),
+        linear-gradient(120deg, rgba(100,181,246,0.02) 25%, transparent 25%);
+      background-size: 40px 70px, 40px 70px, 60px 90px;
+    }
+
+    /* ===== THEME COLORS ===== */
+    :root {
+      --bg-primary: #0f0a1e;
+      --bg-secondary: #1a1230;
+      --bg-tertiary: #241b3d;
+      --accent: #a855f7;
+      --accent-glow: rgba(168, 85, 247, 0.4);
+      --text-primary: #e0d6f2;
+      --text-secondary: #9a8cb8;
+      --grid-border: #2d2252;
+      --grid-cell-empty: rgba(255,255,255,0.04);
+
+      /* Crystal colors */
+      --ruby: #e91e63;
+      --ruby-light: #ff6b8a;
+      --ruby-glow: rgba(233, 30, 99, 0.5);
+      --sapphire: #1565c0;
+      --sapphire-light: #64b5f6;
+      --sapphire-glow: rgba(21, 101, 192, 0.5);
+      --emerald: #2e7d32;
+      --emerald-light: #81c784;
+      --emerald-glow: rgba(46, 125, 50, 0.5);
+      --amethyst: #7b1fa2;
+      --amethyst-light: #ce93d8;
+      --amethyst-glow: rgba(123, 31, 162, 0.5);
+
+      /* pressure colors removed */
+    }
+
+    /* ===== GAME CONTAINER ===== */
+    #game-container {
+      width: 100%;
+      max-width: 420px;
+      height: 100vh;
+      height: 100dvh;
+      position: relative;
+      overflow: hidden;
+      background: var(--bg-primary);
+    }
+
+    /* ===== SCREENS ===== */
+    .screen {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.3s ease;
+      z-index: 1;
+    }
+    .screen.hidden { display: none; }
+
+    /* ===== MENU SCREEN ===== */
+    #menu-screen {
+      background: var(--bg-primary);
+      gap: 24px;
+    }
+    .menu-title {
+      font-size: 42px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      background: linear-gradient(135deg, var(--ruby-light), var(--sapphire-light), var(--emerald-light), var(--amethyst-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .menu-subtitle {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-top: -12px;
+    }
+    .menu-best {
+      font-size: 18px;
+      color: var(--text-secondary);
+    }
+    .menu-best span {
+      color: var(--accent);
+      font-weight: 700;
+    }
+    .btn {
+      background: linear-gradient(135deg, var(--accent), #7c3aed);
+      border: none;
+      color: white;
+      font-size: 18px;
+      font-weight: 700;
+      padding: 16px 48px;
+      border-radius: 12px;
+      cursor: pointer;
+      letter-spacing: 1px;
+      transition: transform 0.1s;
+    }
+    .btn:active { transform: scale(0.95); }
+    .btn-small {
+      font-size: 14px;
+      padding: 10px 24px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--grid-border);
+    }
+
+    /* ===== GAME SCREEN ===== */
+    #game-screen {
+      justify-content: flex-start;
+      padding-top: env(safe-area-inset-top, 8px);
+      z-index: 1;
+    }
+
+    /* Header */
+    .game-header {
+      width: 100%;
+      padding: 4px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .score-display {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--text-primary);
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), text-shadow 0.3s, color 0.3s;
+    }
+    .score-display.score-bump {
+      transform: scale(1.3);
+      text-shadow: 0 0 12px var(--accent-glow);
+    }
+    .score-display.score-crystal-glow {
+      color: #d0b0ff;
+      text-shadow: 0 0 12px var(--accent-glow), 0 0 30px rgba(168,85,247,0.5);
+    }
+    .best-display {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .combo-badge {
+      font-size: 22px;
+      font-weight: 900;
+      color: #ffd700;
+      text-shadow: 0 0 10px #ffd700, 0 0 20px #ff8c00;
+      opacity: 0;
+      transition: opacity 0.2s, transform 0.2s;
+      transform: scale(0.8);
+    }
+    .combo-badge.active {
+      opacity: 1;
+      transform: scale(1);
+      animation: comboPulse 0.5s ease-in-out infinite;
+    }
+    .combo-badge.bump {
+      animation: comboBump 0.3s ease;
+    }
+    @keyframes comboBump {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.5); }
+      100% { transform: scale(1); }
+    }
+    @keyframes comboPulse {
+      0%, 100% { transform: scale(1); text-shadow: 0 0 10px #ffd700, 0 0 20px #ff8c00; }
+      50% { transform: scale(1.15); text-shadow: 0 0 16px #ffd700, 0 0 32px #ff8c00; }
+    }
+
+    /* Large centered combo overlay on grid */
+    .combo-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      pointer-events: none;
+      z-index: 20;
+    }
+    .combo-overlay-label {
+      font-size: 18px;
+      font-weight: 700;
+      color: rgba(224,214,242,0.9);
+      text-transform: uppercase;
+      letter-spacing: 6px;
+      animation: comboLabelIn 0.6s ease-out forwards;
+    }
+    @keyframes comboLabelIn {
+      0% { transform: translateY(10px) scale(0.5); opacity: 0; }
+      30% { transform: translateY(-2px) scale(1.1); opacity: 1; }
+      100% { transform: translateY(0) scale(1); opacity: 0; }
+    }
+    .combo-overlay-number {
+      font-size: 80px;
+      font-weight: 900;
+      color: #fff;
+      text-shadow:
+        0 0 20px var(--accent-glow),
+        0 0 50px var(--accent-glow),
+        0 0 80px rgba(168,85,247,0.3),
+        0 2px 4px rgba(0,0,0,0.8);
+      -webkit-text-stroke: 1.5px rgba(168,85,247,0.6);
+      animation: comboNumberPop 1s ease-out forwards;
+      line-height: 1;
+    }
+    @keyframes comboNumberPop {
+      0% { transform: scale(0); opacity: 0; filter: brightness(3); }
+      15% { transform: scale(1.4); opacity: 1; filter: brightness(2); }
+      30% { transform: scale(0.9); opacity: 1; filter: brightness(1.2); }
+      45% { transform: scale(1.05); opacity: 1; filter: brightness(1); }
+      70% { transform: scale(1); opacity: 0.8; }
+      100% { transform: scale(0.95); opacity: 0; }
+    }
+
+    /* Grid crystalline glow on combo */
+    #game-grid.crystal-pulse {
+      border-color: rgba(168,85,247,0.7) !important;
+      box-shadow:
+        0 0 0 1px rgba(168,85,247,0.3),
+        0 0 12px rgba(168,85,247,0.4),
+        0 0 30px rgba(168,85,247,0.2),
+        0 0 60px rgba(168,85,247,0.1),
+        inset 0 0 20px rgba(168,85,247,0.1);
+      transition: box-shadow 0.2s ease-out, border-color 0.2s ease-out;
+    }
+    #game-grid.crystal-pulse-intense {
+      border-color: rgba(233,30,99,0.6) !important;
+      box-shadow:
+        0 0 0 2px rgba(233,30,99,0.3),
+        0 0 15px rgba(233,30,99,0.5),
+        0 0 40px rgba(168,85,247,0.4),
+        0 0 80px rgba(168,85,247,0.2),
+        inset 0 0 25px rgba(233,30,99,0.1);
+    }
+
+    /* Crystalline vignette during combos */
+    .grid-wrapper.crystal-vignette::before {
+      content: '';
+      position: absolute;
+      inset: -15px;
+      border-radius: 16px;
+      background: radial-gradient(ellipse at center, transparent 35%, rgba(168,85,247,0.2) 70%, rgba(100,20,180,0.35) 100%);
+      pointer-events: none;
+      z-index: 5;
+      animation: vignetteFlash 1.2s ease-out forwards;
+    }
+    @keyframes vignetteFlash {
+      0% { opacity: 0; }
+      15% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    /* Crystal shard edge particles */
+    .crystal-shard {
+      position: absolute;
+      pointer-events: none;
+      z-index: 25;
+      background: white;
+      clip-path: polygon(50% 0%, 80% 40%, 100% 100%, 0% 100%, 20% 40%);
+      animation: shardDrift var(--shard-dur, 700ms) ease-out forwards;
+    }
+    @keyframes shardDrift {
+      0% { transform: translate(0,0) rotate(0deg) scale(1); opacity: 0.9; }
+      100% { transform: translate(var(--shard-dx,0px), var(--shard-dy,0px)) rotate(var(--shard-rot,90deg)) scale(0); opacity: 0; }
+    }
+    .settings-btn {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 22px;
+      cursor: pointer;
+      padding: 6px;
+    }
+
+    /* Pressure meter removed — grid fullness is visually obvious */
+
+    /* Grid wrapper */
+    .grid-wrapper {
+      padding: 4px 8px;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      position: relative;
+    }
+    #game-grid {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      grid-template-rows: repeat(8, 1fr);
+      gap: 2px;
+      width: min(calc(100vw - 24px), 370px);
+      height: min(calc(100vw - 24px), 370px);
+      background: var(--bg-secondary);
+      border: 2px solid var(--grid-border);
+      border-radius: 8px;
+      padding: 4px;
+      position: relative;
+      /* Gem-cut border effect */
+      box-shadow:
+        0 0 0 1px rgba(168,85,247,0.15),
+        0 0 20px rgba(168,85,247,0.08),
+        inset 0 0 15px rgba(0,0,0,0.3);
+    }
+
+    /* Particle container */
+    #particle-container {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 20;
+      overflow: hidden;
+    }
+
+    /* Grid cells */
+    .grid-cell {
+      border-radius: 3px;
+      background: var(--grid-cell-empty);
+      position: relative;
+      transition: background 0.15s ease;
+    }
+    .grid-cell.preview-ruby {
+      background: linear-gradient(135deg, var(--ruby-light), var(--ruby));
+      opacity: 0.55;
+      box-shadow: inset 0 1px 3px rgba(255,255,255,0.3);
+    }
+    .grid-cell.preview-sapphire {
+      background: linear-gradient(135deg, var(--sapphire-light), var(--sapphire));
+      opacity: 0.55;
+      box-shadow: inset 0 1px 3px rgba(255,255,255,0.3);
+    }
+    .grid-cell.preview-emerald {
+      background: linear-gradient(135deg, var(--emerald-light), var(--emerald));
+      opacity: 0.55;
+      box-shadow: inset 0 1px 3px rgba(255,255,255,0.3);
+    }
+    .grid-cell.preview-amethyst {
+      background: linear-gradient(135deg, var(--amethyst-light), var(--amethyst));
+      opacity: 0.55;
+      box-shadow: inset 0 1px 3px rgba(255,255,255,0.3);
+    }
+
+    /* Crystal cell colors — vibrant gem style */
+    .grid-cell.cell-ruby {
+      background: linear-gradient(135deg, var(--ruby-light) 0%, var(--ruby) 100%);
+      box-shadow:
+        inset 0 2px 4px rgba(255,255,255,0.5),
+        inset 0 -2px 4px rgba(0,0,0,0.4),
+        0 0 12px var(--ruby-glow),
+        0 2px 6px rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+    .grid-cell.cell-sapphire {
+      background: linear-gradient(135deg, var(--sapphire-light) 0%, var(--sapphire) 100%);
+      box-shadow:
+        inset 0 2px 4px rgba(255,255,255,0.5),
+        inset 0 -2px 4px rgba(0,0,0,0.4),
+        0 0 12px var(--sapphire-glow),
+        0 2px 6px rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+    .grid-cell.cell-emerald {
+      background: linear-gradient(135deg, var(--emerald-light) 0%, var(--emerald) 100%);
+      box-shadow:
+        inset 0 2px 4px rgba(255,255,255,0.5),
+        inset 0 -2px 4px rgba(0,0,0,0.4),
+        0 0 12px var(--emerald-glow),
+        0 2px 6px rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+    .grid-cell.cell-amethyst {
+      background: linear-gradient(135deg, var(--amethyst-light) 0%, var(--amethyst) 100%);
+      box-shadow:
+        inset 0 2px 4px rgba(255,255,255,0.5),
+        inset 0 -2px 4px rgba(0,0,0,0.4),
+        0 0 12px var(--amethyst-glow),
+        0 2px 6px rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+
+    /* Clearing animation — staggered via JS animationDelay */
+    .grid-cell.clearing {
+      animation: cellClear 0.4s ease-out forwards;
+      will-change: transform, opacity;
+    }
+    @keyframes cellClear {
+      0%   { transform: scale(1); opacity: 1; }
+      15%  { transform: scale(1.12); opacity: 1; }
+      35%  { transform: scale(0.85) rotate(6deg); opacity: 0.9; }
+      55%  { transform: scale(0.4) rotate(-12deg) translateY(-8px); opacity: 0.5; }
+      100% { transform: scale(0) rotate(-25deg) translateY(-18px); opacity: 0; }
+    }
+
+    /* Temporary white flash overlay per clearing cell */
+    .cell-flash {
+      position: absolute;
+      border-radius: 3px;
+      background: white;
+      pointer-events: none;
+      will-change: opacity;
+      animation: cellFlashAnim 0.3s ease-out forwards;
+    }
+    @keyframes cellFlashAnim {
+      0%   { opacity: 0.85; }
+      100% { opacity: 0; }
+    }
+
+    /* Shimmer wave — overlaid on cleared rows/cols */
+    .clear-shimmer {
+      position: absolute;
+      pointer-events: none;
+      z-index: 15;
+      border-radius: 4px;
+    }
+    .clear-shimmer.row-shimmer {
+      height: var(--cell-size, 40px);
+      left: 0;
+      right: 0;
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.15) 30%, rgba(255,255,255,0.85) 48%, rgba(168,85,247,0.6) 55%, transparent 100%);
+      background-size: 200% 100%;
+      animation: shimmerSweepH 0.35s ease-out forwards;
+    }
+    .clear-shimmer.col-shimmer {
+      width: var(--cell-size, 40px);
+      top: 0;
+      bottom: 0;
+      background: linear-gradient(180deg, transparent 0%, rgba(255,255,255,0.15) 30%, rgba(255,255,255,0.85) 48%, rgba(168,85,247,0.6) 55%, transparent 100%);
+      background-size: 100% 200%;
+      animation: shimmerSweepV 0.35s ease-out forwards;
+    }
+    @keyframes shimmerSweepH {
+      0% { background-position: -100% 0; opacity: 1; }
+      70% { opacity: 0.8; }
+      100% { background-position: 200% 0; opacity: 0; }
+    }
+    @keyframes shimmerSweepV {
+      0% { background-position: 0 -100%; opacity: 1; }
+      70% { opacity: 0.8; }
+      100% { background-position: 0 200%; opacity: 0; }
+    }
+
+    /* Resonance dim overlay — single element instead of per-cell filter */
+    .resonance-dim-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      pointer-events: none;
+      z-index: 4;
+      border-radius: 6px;
+      will-change: opacity;
+      animation: resDimIn 0.4s ease-out forwards;
+    }
+    @keyframes resDimIn {
+      0%   { opacity: 0; }
+      100% { opacity: 1; }
+    }
+
+    /* Resonance target highlight — static box-shadow, animate only transform+opacity */
+    .grid-cell.res-target {
+      z-index: 5;
+      box-shadow: 0 0 18px currentColor;
+      will-change: transform, opacity;
+      animation: resTargetLight 0.35s ease-in-out forwards;
+    }
+    @keyframes resTargetLight {
+      0%   { transform: scale(1); opacity: 0.3; }
+      50%  { transform: scale(1.18); opacity: 1; }
+      100% { transform: scale(1.12); opacity: 1; }
+    }
+
+    /* Resonance shatter — violent rotation, no filter */
+    .grid-cell.res-shatter {
+      z-index: 6;
+      will-change: transform, opacity;
+      animation: resShatter 0.5s ease-out forwards;
+    }
+    @keyframes resShatter {
+      0%   { transform: scale(1.3); opacity: 1; }
+      20%  { transform: scale(0.7) rotate(45deg); opacity: 0.8; }
+      50%  { transform: scale(0.3) rotate(120deg) translateY(-10px); opacity: 0.4; }
+      100% { transform: scale(0) rotate(200deg) translateY(-20px); opacity: 0; }
+    }
+
+    /* Colored flash overlay for resonance shatter */
+    .res-cell-flash {
+      position: absolute;
+      border-radius: 3px;
+      pointer-events: none;
+      will-change: opacity;
+      animation: resCellFlashAnim 0.4s ease-out forwards;
+    }
+    @keyframes resCellFlashAnim {
+      0%   { opacity: 0.95; }
+      30%  { opacity: 0.7; }
+      100% { opacity: 0; }
+    }
+
+    /* Grid flash overlay */
+    .grid-flash {
+      position: absolute;
+      inset: -4px;
+      border-radius: 12px;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 10;
+      animation: gridFlash 0.35s ease-out forwards;
+    }
+    @keyframes gridFlash {
+      0% { opacity: 0.5; }
+      40% { opacity: 0.25; }
+      100% { opacity: 0; }
+    }
+
+    /* Particles */
+    .particle {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+      will-change: transform, opacity;
+      animation: particleFly var(--duration, 400ms) ease-out forwards;
+    }
+    .particle.diamond {
+      border-radius: 1px;
+    }
+    @keyframes particleFly {
+      0%   { transform: rotate(var(--rot, 0deg)) translate(0, 0) scale(1); opacity: 1; }
+      60%  { transform: rotate(var(--rot, 0deg)) translate(calc(var(--dx, 0px) * 0.7), calc(var(--dy, 0px) * 0.6)) scale(0.6); opacity: 0.8; }
+      100% { transform: rotate(var(--rot, 0deg)) translate(var(--dx, 0px), calc(var(--dy, 0px) + 15px)) scale(0); opacity: 0; }
+    }
+
+    /* Fast micro-sparks for resonance */
+    .spark {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+      will-change: transform, opacity;
+      background: white;
+      animation: sparkFly var(--duration, 300ms) ease-out forwards;
+    }
+    @keyframes sparkFly {
+      0%   { transform: translate(0, 0) scale(1); opacity: 1; }
+      100% { transform: translate(var(--dx, 0px), var(--dy, 0px)) scale(0); opacity: 0; }
+    }
+
+    /* Placement settle bounce */
+    .grid-cell.cell-settle {
+      will-change: transform;
+      animation: cellSettle 0.06s ease-out forwards;
+    }
+    @keyframes cellSettle {
+      0% { transform: scale(1.08); }
+      100% { transform: scale(1); }
+    }
+
+    /* Neighbor micro-response */
+    .grid-cell.cell-neighbor-pulse {
+      will-change: transform;
+      animation: neighborPulse 0.08s ease-out forwards;
+    }
+    @keyframes neighborPulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.03); }
+      100% { transform: scale(1); }
+    }
+
+    /* Anticipation glow before clear */
+    .anticipation-glow {
+      position: absolute;
+      border-radius: 3px;
+      background: white;
+      pointer-events: none;
+      will-change: opacity;
+      animation: anticipationPulse var(--dur, 160ms) ease-in forwards;
+    }
+    @keyframes anticipationPulse {
+      0% { opacity: 0; }
+      100% { opacity: 0.2; }
+    }
+
+    /* Combo background response */
+    #combo-bg {
+      position: absolute;
+      inset: 0;
+      border-radius: 8px;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0;
+      transition: opacity 0.4s ease, background 0.4s ease;
+    }
+
+    /* ===== PIECE TRAY ===== */
+    .tray-wrapper {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 6px 8px 4px;
+    }
+    #piece-tray {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      width: 100%;
+      max-width: 370px;
+      gap: 8px;
+    }
+    .tray-piece {
+      display: grid;
+      gap: 2px;
+      padding: 8px;
+      min-width: 105px;
+      min-height: 84px;
+      place-content: center;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--grid-border);
+      border-radius: 8px;
+      cursor: grab;
+      transition: transform 0.15s, opacity 0.15s;
+      touch-action: none;
+    }
+    .tray-piece:active { cursor: grabbing; }
+    .tray-piece.placed {
+      opacity: 0.12;
+      pointer-events: none;
+      transform: scale(0.8);
+    }
+    .tray-piece.dragging {
+      opacity: 0.4;
+      transform: scale(0.9);
+    }
+    .tray-cell {
+      width: 18px;
+      height: 18px;
+      border-radius: 2px;
+      position: relative;
+    }
+    .tray-cell.empty { background: transparent; }
+    .tray-cell.cell-ruby {
+      background: linear-gradient(135deg, var(--ruby-light), var(--ruby));
+      box-shadow: 0 0 6px var(--ruby-glow);
+    }
+    .tray-cell.cell-sapphire {
+      background: linear-gradient(135deg, var(--sapphire-light), var(--sapphire));
+      box-shadow: 0 0 6px var(--sapphire-glow);
+    }
+    .tray-cell.cell-emerald {
+      background: linear-gradient(135deg, var(--emerald-light), var(--emerald));
+      box-shadow: 0 0 6px var(--emerald-glow);
+    }
+    .tray-cell.cell-amethyst {
+      background: linear-gradient(135deg, var(--amethyst-light), var(--amethyst));
+      box-shadow: 0 0 6px var(--amethyst-glow);
+    }
+
+
+    /* Floating drag piece */
+    #drag-ghost {
+      position: fixed;
+      pointer-events: none;
+      z-index: 100;
+      display: none;
+      gap: 2px;
+      opacity: 0.9;
+    }
+    #drag-ghost .tray-cell {
+      border-radius: 2px;
+    }
+
+    /* ===== GAME OVER SCREEN ===== */
+    #gameover-screen {
+      background: rgba(15, 10, 30, 0.95);
+      gap: 16px;
+      z-index: 50;
+    }
+    .gameover-title {
+      font-size: 36px;
+      font-weight: 800;
+    }
+    .gameover-title.new-best {
+      background: linear-gradient(135deg, #ffd700, #ff8c00);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .gameover-score {
+      font-size: 48px;
+      font-weight: 800;
+      color: var(--accent);
+    }
+    .gameover-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 12px 0;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* ===== TUTORIAL OVERLAY ===== */
+    #tutorial-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 10, 30, 0.92);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 60;
+      gap: 16px;
+      padding: 24px;
+    }
+    #tutorial-overlay.hidden { display: none; }
+    .tutorial-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+    .tutorial-text {
+      font-size: 14px;
+      color: var(--text-secondary);
+      text-align: center;
+      line-height: 1.6;
+      max-width: 300px;
+    }
+    .tutorial-colors {
+      display: flex;
+      gap: 12px;
+      margin: 4px 0;
+    }
+    .tutorial-color-swatch {
+      width: 28px;
+      height: 28px;
+      border-radius: 5px;
+    }
+    .tutorial-highlight {
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    /* ===== SETTINGS OVERLAY ===== */
+    #settings-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 10, 30, 0.95);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 55;
+      gap: 16px;
+    }
+    #settings-overlay.hidden { display: none; }
+    .settings-title {
+      font-size: 24px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+    .setting-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 260px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--grid-border);
+    }
+    .setting-label {
+      font-size: 15px;
+      color: var(--text-primary);
+    }
+    .toggle {
+      width: 48px;
+      height: 28px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--grid-border);
+      border-radius: 14px;
+      cursor: pointer;
+      position: relative;
+      transition: background 0.2s;
+    }
+    .toggle.active {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+    .toggle::after {
+      content: '';
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      background: white;
+      border-radius: 50%;
+      top: 2px;
+      left: 2px;
+      transition: transform 0.2s;
+    }
+    .toggle.active::after { transform: translateX(20px); }
+
+    /* ===== SCORE POPUP ===== */
+    .score-popup {
+      position: absolute;
+      font-size: 26px;
+      font-weight: 900;
+      pointer-events: none;
+      z-index: 30;
+      animation: scoreFloat 1.1s ease-out forwards;
+      text-shadow: 0 0 10px currentColor, 0 0 25px currentColor;
+      -webkit-text-stroke: 0.5px rgba(255,255,255,0.3);
+    }
+    @keyframes scoreFloat {
+      0% { transform: translateY(0) scale(0.5); opacity: 0; }
+      12% { transform: translateY(-8px) scale(1.3); opacity: 1; }
+      30% { transform: translateY(-20px) scale(1.05); opacity: 1; }
+      100% { transform: translateY(-90px) scale(0.9); opacity: 0; }
+    }
+
+    /* Resonance label */
+    .resonance-label {
+      position: absolute;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      font-size: 42px;
+      font-weight: 900;
+      color: white;
+      text-shadow: 0 0 40px var(--accent), 0 0 80px var(--accent), 0 0 120px var(--accent);
+      z-index: 40;
+      pointer-events: none;
+      animation: resonancePop 1.5s ease-out forwards;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+    }
+    @keyframes resonancePop {
+      0% { transform: translate(-50%, -50%) scale(0) rotate(-5deg); opacity: 0; }
+      12% { transform: translate(-50%, -50%) scale(1.6) rotate(2deg); opacity: 1; }
+      30% { transform: translate(-50%, -50%) scale(1.1) rotate(0deg); opacity: 1; }
+      70% { transform: translate(-50%, -50%) scale(1.05); opacity: 0.9; }
+      100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+<!-- DIAGNOSTIC: Tap this switch on iPhone to verify iOS haptics work at all. Remove after testing. -->
+<div id="haptic-test" style="position:fixed;top:10px;left:10px;z-index:9999;background:#222;padding:8px 12px;border-radius:8px;display:flex;align-items:center;gap:8px;">
+  <label style="color:#fff;font-size:14px;display:flex;align-items:center;gap:8px;">
+    Haptic test: <input id="haptic-test-switch" type="checkbox" switch>
+  </label>
+</div>
+  <div id="game-container">
+    <!-- MENU SCREEN -->
+    <div id="menu-screen" class="screen">
+      <div class="menu-title">CRYSTAL GRID</div>
+      <div class="menu-subtitle">Match colors. Clear lines. Resonate.</div>
+      <div class="menu-best">Best: <span id="menu-best-score">0</span></div>
+      <button class="btn" id="play-btn">PLAY</button>
+      <button class="btn btn-small" id="menu-settings-btn">Settings</button>
+    </div>
+
+    <!-- GAME SCREEN -->
+    <div id="game-screen" class="screen hidden">
+      <div class="game-header">
+        <div>
+          <div class="score-display" id="score-display">0</div>
+          <div class="best-display">Best: <span id="game-best-score">0</span></div>
+        </div>
+        <div class="header-right">
+          <div class="combo-badge" id="combo-badge">x2</div>
+          <button class="settings-btn" id="game-settings-btn">&#9881;</button>
+        </div>
+      </div>
+      <!-- pressure gauge removed — grid fullness is visually obvious -->
+      <div class="grid-wrapper">
+        <div id="combo-bg"></div>
+        <div id="game-grid"></div>
+        <div id="particle-container"></div>
+      </div>
+      <div class="tray-wrapper">
+        <div id="piece-tray"></div>
+      </div>
+    </div>
+
+    <!-- GAME OVER SCREEN -->
+    <div id="gameover-screen" class="screen hidden">
+      <div class="gameover-title" id="gameover-title">GAME OVER</div>
+      <div class="gameover-score" id="gameover-score">0</div>
+      <div class="gameover-stats">
+        <div class="stat-item">
+          <div class="stat-value" id="stat-lines">0</div>
+          <div class="stat-label">Lines</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="stat-resonances">0</div>
+          <div class="stat-label">Resonances</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="stat-pieces">0</div>
+          <div class="stat-label">Pieces</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="stat-best-chain">0</div>
+          <div class="stat-label">Best Chain</div>
+        </div>
+      </div>
+      <button class="btn" id="play-again-btn">PLAY AGAIN</button>
+      <button class="btn btn-small" id="gameover-menu-btn">Menu</button>
+    </div>
+
+    <!-- TUTORIAL OVERLAY -->
+    <div id="tutorial-overlay" class="hidden">
+      <div class="tutorial-title">HOW TO PLAY</div>
+      <div class="tutorial-text">
+        Drag <span class="tutorial-highlight">crystal pieces</span> from the tray onto the grid.
+      </div>
+      <div class="tutorial-text">
+        Complete a full <span class="tutorial-highlight">row or column</span> to clear it.
+      </div>
+      <div class="tutorial-colors">
+        <div class="tutorial-color-swatch" style="background: linear-gradient(135deg, var(--ruby-light), var(--ruby))"></div>
+        <div class="tutorial-color-swatch" style="background: linear-gradient(135deg, var(--sapphire-light), var(--sapphire))"></div>
+        <div class="tutorial-color-swatch" style="background: linear-gradient(135deg, var(--emerald-light), var(--emerald))"></div>
+        <div class="tutorial-color-swatch" style="background: linear-gradient(135deg, var(--amethyst-light), var(--amethyst))"></div>
+      </div>
+      <div class="tutorial-text">
+        When a cleared line has <span class="tutorial-highlight">5+ same-color</span> crystals in a row,
+        <span class="tutorial-highlight">ALL</span> of that color on the board shatter!
+      </div>
+      <div class="tutorial-text" style="font-size: 12px;">
+        This is <span class="tutorial-highlight">RESONANCE</span> &mdash; the key to massive combos.
+      </div>
+      <button class="btn" id="tutorial-btn">GOT IT!</button>
+    </div>
+
+    <!-- SETTINGS OVERLAY -->
+    <div id="settings-overlay" class="hidden">
+      <div class="settings-title">Settings</div>
+      <div class="setting-row">
+        <span class="setting-label">Sound</span>
+        <div class="toggle active" id="toggle-sound"></div>
+      </div>
+      <div class="setting-row">
+        <span class="setting-label">Haptics</span>
+        <div class="toggle active" id="toggle-haptics"></div>
+      </div>
+      <div class="setting-row">
+        <span class="setting-label">Low Flash</span>
+        <div class="toggle" id="toggle-lowflash"></div>
+      </div>
+      <button class="btn btn-small" id="settings-close-btn" style="margin-top: 16px;">Close</button>
+    </div>
+
+    <!-- DRAG GHOST -->
+    <div id="drag-ghost"></div>
+  </div>
+
+  <script>
+    // ===== CONSTANTS =====
+    const GRID_SIZE = 8;
+    const COLORS = ['ruby', 'sapphire', 'emerald', 'amethyst'];
+    const COLOR_HEX = { ruby: '#e91e63', sapphire: '#1565c0', emerald: '#2e7d32', amethyst: '#7b1fa2' };
+    const COLOR_LIGHT_HEX = { ruby: '#ff6b8a', sapphire: '#64b5f6', emerald: '#81c784', amethyst: '#ce93d8' };
+    const DRAG_OFFSET_Y = -169;
+
+    // ===== PIECE DEFINITIONS =====
+    const PIECE_SHAPES = [
+      { name: 'dot', shape: [[1]] },
+      { name: 'h2', shape: [[1,1]] },
+      { name: 'v2', shape: [[1],[1]] },
+      { name: 'h3', shape: [[1,1,1]] },
+      { name: 'v3', shape: [[1],[1],[1]] },
+      { name: 'l3', shape: [[1,0],[1,1]] },
+      { name: 'j3', shape: [[0,1],[1,1]] },
+      { name: 's3', shape: [[0,1],[1,1]] },
+      { name: 'l3r', shape: [[1,1],[1,0]] },
+      { name: 'h4', shape: [[1,1,1,1]] },
+      { name: 'v4', shape: [[1],[1],[1],[1]] },
+      { name: 'o4', shape: [[1,1],[1,1]] },
+      { name: 't4', shape: [[1,1,1],[0,1,0]] },
+      { name: 's4', shape: [[0,1,1],[1,1,0]] },
+      { name: 'z4', shape: [[1,1,0],[0,1,1]] },
+      { name: 'l4', shape: [[1,0],[1,0],[1,1]] },
+      { name: 'j4', shape: [[0,1],[0,1],[1,1]] },
+      { name: 'h5', shape: [[1,1,1,1,1]] },
+      { name: 'v5', shape: [[1],[1],[1],[1],[1]] },
+      { name: 'plus', shape: [[0,1,0],[1,1,1],[0,1,0]] },
+    ];
+
+    const PIECE_WEIGHTS = {
+      'dot': 8, 'h2': 10, 'v2': 10,
+      'h3': 8, 'v3': 8, 'l3': 6, 'j3': 6, 's3': 6, 'l3r': 6,
+      'h4': 4, 'v4': 4, 'o4': 5, 't4': 4, 's4': 4, 'z4': 4, 'l4': 4, 'j4': 4,
+      'h5': 1, 'v5': 1, 'plus': 1,
+    };
+
+    // ===== DIFFICULTY SCALING =====
+    const DIFFICULTY_LEVELS = [
+      { score: 0, maxSize: 3, awkwardWeight: 0.10 },
+      { score: 500, maxSize: 4, awkwardWeight: 0.25 },
+      { score: 1500, maxSize: 4, awkwardWeight: 0.35 },
+      { score: 3000, maxSize: 5, awkwardWeight: 0.45 },
+      { score: 6000, maxSize: 5, awkwardWeight: 0.55 },
+      { score: 10000, maxSize: 5, awkwardWeight: 0.65 },
+    ];
+    const AWKWARD_NAMES = new Set(['l3', 'j3', 's3', 'l3r', 't4', 's4', 'z4', 'l4', 'j4']);
+
+    function getDifficulty() {
+      for (let i = DIFFICULTY_LEVELS.length - 1; i >= 0; i--) {
+        if (score >= DIFFICULTY_LEVELS[i].score) return DIFFICULTY_LEVELS[i];
+      }
+      return DIFFICULTY_LEVELS[0];
+    }
+
+    // ===== GAME STATE =====
+    let grid = [];
+    let score = 0;
+    let highScore = 0;
+    let trayPieces = [];
+    let nextTrayPieces = [];
+    let stats = { lines: 0, resonances: 0, pieces: 0, bestChain: 0 };
+    let comboCounter = 0;
+    let comboGrace = 0; // placements without clearing before combo resets (max 3)
+    let soundEnabled = true;
+    let hapticsEnabled = true;
+    let lowFlash = false;
+    let tutorialShown = false;
+    let gameActive = false;
+    let isAnimating = false;
+
+    // Drag state
+    let dragPieceIndex = -1;
+    let isDragging = false;
+    let lastPreviewX = -1;
+    let lastPreviewY = -1;
+    let stickyAnchor = null;      // {x, y} — last valid grid anchor
+    let stickyFingerPos = null;   // {cx, cy} — finger pos when anchor was set
+    const STICKY_RADIUS = 120;    // px — max drift before sticky clears
+
+    // Audio
+    let audioCtx = null;
+
+    // ===== INITIALIZATION =====
+    function init() {
+      loadSettings();
+      updateSettingsUI();
+      showScreen('menu');
+      initHapticSwitch();
+
+      document.getElementById('play-btn').addEventListener('click', startGame);
+      document.getElementById('play-again-btn').addEventListener('click', startGame);
+      document.getElementById('gameover-menu-btn').addEventListener('click', () => showScreen('menu'));
+      document.getElementById('tutorial-btn').addEventListener('click', dismissTutorial);
+      document.getElementById('menu-settings-btn').addEventListener('click', openSettings);
+      document.getElementById('game-settings-btn').addEventListener('click', openSettings);
+      document.getElementById('settings-close-btn').addEventListener('click', closeSettings);
+      document.getElementById('toggle-sound').addEventListener('click', () => toggleSetting('sound'));
+      document.getElementById('toggle-haptics').addEventListener('click', () => toggleSetting('haptics'));
+      document.getElementById('toggle-lowflash').addEventListener('click', () => toggleSetting('lowflash'));
+
+      document.addEventListener('touchmove', handleDrag, { passive: false });
+      document.addEventListener('mousemove', handleDrag);
+      document.addEventListener('touchend', endDrag);
+      document.addEventListener('mouseup', endDrag);
+
+      document.getElementById('menu-best-score').textContent = highScore.toLocaleString();
+    }
+
+    // ===== PERSISTENCE =====
+    function loadSettings() {
+      highScore = parseInt(localStorage.getItem('crystalgrid_highscore') || '0');
+      soundEnabled = localStorage.getItem('crystalgrid_sound') !== 'off';
+      hapticsEnabled = localStorage.getItem('crystalgrid_haptics') !== 'false';
+      lowFlash = localStorage.getItem('crystalgrid_lowflash') === 'true';
+      tutorialShown = localStorage.getItem('crystalgrid_tutorial') === 'done';
+    }
+
+    function saveSettings() {
+      localStorage.setItem('crystalgrid_sound', soundEnabled ? 'on' : 'off');
+      localStorage.setItem('crystalgrid_haptics', String(hapticsEnabled));
+      localStorage.setItem('crystalgrid_lowflash', String(lowFlash));
+    }
+
+    function saveHighScore() {
+      if (score > highScore) {
+        highScore = score;
+        localStorage.setItem('crystalgrid_highscore', String(highScore));
+      }
+    }
+
+    // ===== SCREEN MANAGEMENT =====
+    function showScreen(name) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+      const screen = document.getElementById(name + '-screen');
+      if (screen) screen.classList.remove('hidden');
+      if (name === 'menu') {
+        document.getElementById('menu-best-score').textContent = highScore.toLocaleString();
+      }
+    }
+
+    function openSettings() { document.getElementById('settings-overlay').classList.remove('hidden'); }
+    function closeSettings() { document.getElementById('settings-overlay').classList.add('hidden'); }
+
+    function toggleSetting(key) {
+      if (key === 'sound') soundEnabled = !soundEnabled;
+      else if (key === 'haptics') hapticsEnabled = !hapticsEnabled;
+      else if (key === 'lowflash') lowFlash = !lowFlash;
+      updateSettingsUI();
+      saveSettings();
+    }
+
+    function updateSettingsUI() {
+      document.getElementById('toggle-sound').classList.toggle('active', soundEnabled);
+      document.getElementById('toggle-haptics').classList.toggle('active', hapticsEnabled);
+      document.getElementById('toggle-lowflash').classList.toggle('active', lowFlash);
+    }
+
+    // ===== GRID PREFILL =====
+    function prefillGrid() {
+      // Scatter 12-21 random cells in the bottom 5 rows
+      const count = 12 + Math.floor(Math.random() * 10);
+      const candidates = [];
+      for (let y = GRID_SIZE - 5; y < GRID_SIZE; y++) {
+        for (let x = 0; x < GRID_SIZE; x++) {
+          candidates.push({ x, y });
+        }
+      }
+      // Shuffle and pick
+      for (let i = candidates.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+      }
+      for (let i = 0; i < count; i++) {
+        const { x, y } = candidates[i];
+        grid[y][x] = COLORS[Math.floor(Math.random() * COLORS.length)];
+      }
+    }
+
+    // ===== GAME START =====
+    function startGame() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+      grid = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(0));
+      prefillGrid();
+      score = 0;
+      scoreDisplayValue = 0;
+      comboCounter = 0;
+      comboGrace = 0;
+      stats = { lines: 0, resonances: 0, pieces: 0, bestChain: 0 };
+      gameActive = true;
+      isAnimating = false;
+
+      renderGrid();
+      updateScoreDisplay();
+      // pressure meter removed
+      updateComboDisplay();
+
+      // Generate current + next pieces
+      nextTrayPieces = generatePieceSet();
+      advanceTray();
+      renderTray();
+
+      showScreen('game');
+      if (!tutorialShown) document.getElementById('tutorial-overlay').classList.remove('hidden');
+    }
+
+    function dismissTutorial() {
+      document.getElementById('tutorial-overlay').classList.add('hidden');
+      tutorialShown = true;
+      localStorage.setItem('crystalgrid_tutorial', 'done');
+    }
+
+    // ===== GRID RENDERING =====
+    function renderGrid() {
+      const gridEl = document.getElementById('game-grid');
+      gridEl.innerHTML = '';
+      for (let y = 0; y < GRID_SIZE; y++) {
+        for (let x = 0; x < GRID_SIZE; x++) {
+          const cell = document.createElement('div');
+          cell.className = 'grid-cell';
+          cell.dataset.x = x;
+          cell.dataset.y = y;
+          if (grid[y][x]) cell.classList.add('cell-' + grid[y][x]);
+          gridEl.appendChild(cell);
+        }
+      }
+    }
+
+    function updateCell(x, y) {
+      const cell = document.querySelector(`.grid-cell[data-x="${x}"][data-y="${y}"]`);
+      if (!cell) return;
+      cell.classList.remove('cell-ruby', 'cell-sapphire', 'cell-emerald', 'cell-amethyst',
+        'clearing', 'res-target', 'res-shatter');
+      cell.style.animationDelay = '';
+      if (grid[y][x]) cell.classList.add('cell-' + grid[y][x]);
+    }
+
+    // ===== PIECE GENERATION =====
+    function pickRandomShape() {
+      const diff = getDifficulty();
+
+      // Filter pieces by max size for current difficulty
+      const maxCells = diff.maxSize;
+      const eligible = PIECE_SHAPES.filter(p => {
+        const cellCount = p.shape.flat().filter(c => c === 1).length;
+        return cellCount <= maxCells;
+      });
+
+      // Decide if we force an awkward piece
+      if (Math.random() < diff.awkwardWeight) {
+        const awkward = eligible.filter(p => AWKWARD_NAMES.has(p.name));
+        if (awkward.length > 0) {
+          return awkward[Math.floor(Math.random() * awkward.length)];
+        }
+      }
+
+      // Normal weighted pick from eligible pieces
+      let totalWeight = 0;
+      for (const piece of eligible) totalWeight += (PIECE_WEIGHTS[piece.name] || 1);
+      let r = Math.random() * totalWeight;
+      for (const piece of eligible) {
+        r -= (PIECE_WEIGHTS[piece.name] || 1);
+        if (r <= 0) return piece;
+      }
+      return eligible[0];
+    }
+
+    function pickColor(existing) {
+      if (existing.length === 2 && existing[0] === existing[1]) {
+        const others = COLORS.filter(c => c !== existing[0]);
+        return others[Math.floor(Math.random() * others.length)];
+      }
+      return COLORS[Math.floor(Math.random() * COLORS.length)];
+    }
+
+    function generatePieceSet() {
+      const pieces = [];
+      const colors = [];
+      for (let i = 0; i < 3; i++) {
+        const pieceData = pickRandomShape();
+        const color = pickColor(colors);
+        colors.push(color);
+        pieces.push({ shape: pieceData.shape, color, placed: false });
+      }
+      return pieces;
+    }
+
+    function advanceTray() {
+      trayPieces = nextTrayPieces;
+      nextTrayPieces = generatePieceSet();
+    }
+
+    // ===== TRAY RENDERING =====
+    function renderTray() {
+      const trayEl = document.getElementById('piece-tray');
+      trayEl.innerHTML = '';
+      trayPieces.forEach((piece, idx) => {
+        const pieceEl = document.createElement('div');
+        pieceEl.className = 'tray-piece' + (piece.placed ? ' placed' : '');
+        pieceEl.style.gridTemplateColumns = `repeat(${piece.shape[0].length}, 18px)`;
+        pieceEl.dataset.index = idx;
+
+        for (let y = 0; y < piece.shape.length; y++) {
+          for (let x = 0; x < piece.shape[0].length; x++) {
+            const cell = document.createElement('div');
+            cell.className = 'tray-cell';
+            cell.classList.add(piece.shape[y][x] ? 'cell-' + piece.color : 'empty');
+            pieceEl.appendChild(cell);
+          }
+        }
+
+        if (!piece.placed) {
+          pieceEl.addEventListener('touchstart', (e) => startDrag(e, idx), { passive: false });
+          pieceEl.addEventListener('mousedown', (e) => startDrag(e, idx));
+        }
+        trayEl.appendChild(pieceEl);
+      });
+    }
+
+    // ===== DRAG & DROP =====
+    function startDrag(e, pieceIndex) {
+      if (!gameActive || isAnimating || trayPieces[pieceIndex].placed) return;
+      e.preventDefault();
+      playSound('grab');
+      _hapticTap(); // Direct call in touchstart — stays in gesture call stack
+      dragPieceIndex = pieceIndex;
+      isDragging = true;
+      stickyAnchor = null;
+      stickyFingerPos = null;
+      const trayPieceEl = document.querySelector(`.tray-piece[data-index="${pieceIndex}"]`);
+      if (trayPieceEl) trayPieceEl.classList.add('dragging');
+
+      const ghost = document.getElementById('drag-ghost');
+      const piece = trayPieces[pieceIndex];
+      // Match ghost cell size to grid cell size
+      const gridEl = document.getElementById('game-grid');
+      const gridRect = gridEl.getBoundingClientRect();
+      const cellSize = Math.floor((gridRect.width - 8 - (GRID_SIZE - 1) * 2) / GRID_SIZE); // account for padding + gaps
+      ghost.style.display = 'grid';
+      ghost.style.gridTemplateColumns = `repeat(${piece.shape[0].length}, ${cellSize}px)`;
+      ghost.innerHTML = '';
+      for (let y = 0; y < piece.shape.length; y++) {
+        for (let x = 0; x < piece.shape[0].length; x++) {
+          const cell = document.createElement('div');
+          cell.className = 'tray-cell';
+          cell.style.width = cellSize + 'px';
+          cell.style.height = cellSize + 'px';
+          if (piece.shape[y][x]) {
+            cell.classList.add('cell-' + piece.color);
+          } else {
+            cell.classList.add('empty');
+          }
+          ghost.appendChild(cell);
+        }
+      }
+      const touch = e.touches ? e.touches[0] : e;
+      positionGhost(touch.clientX, touch.clientY);
+      // Use handleDrag for initial preview (reuses sticky logic)
+      handleDrag(e);
+    }
+
+    function handleDrag(e) {
+      if (!isDragging) return;
+      e.preventDefault();
+      const touch = e.touches ? e.touches[0] : e;
+      const cx = touch.clientX;
+      const cy = touch.clientY;
+
+      // Always try to find a new anchor at current position
+      const newAnchor = getAnchorFromPoint(cx, cy);
+      const piece = trayPieces[dragPieceIndex];
+
+      if (newAnchor && canPlacePiece(piece, newAnchor.x, newAnchor.y)) {
+        // Valid new position — update sticky anchor
+        if (!stickyAnchor || newAnchor.x !== stickyAnchor.x || newAnchor.y !== stickyAnchor.y) {
+          stickyAnchor = newAnchor;
+          stickyFingerPos = { cx, cy };
+          showColoredPreview(stickyAnchor.x, stickyAnchor.y, piece.color);
+        }
+      } else {
+        // No valid position at current finger location
+        if (stickyAnchor && stickyFingerPos) {
+          const dx = cx - stickyFingerPos.cx;
+          const dy = cy - stickyFingerPos.cy;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist > STICKY_RADIUS) {
+            // Finger drifted too far — clear sticky
+            stickyAnchor = null;
+            stickyFingerPos = null;
+            clearPlacementPreview();
+          }
+          // Otherwise keep showing sticky preview (don't clear)
+        }
+      }
+
+      // Always position the floating ghost (even if hidden, for smooth transition back)
+      positionGhost(cx, cy);
+    }
+
+    function positionGhost(cx, cy) {
+      const ghost = document.getElementById('drag-ghost');
+      const gw = ghost.offsetWidth;
+      const gh = ghost.offsetHeight;
+      // Position ghost centered on the offset point
+      ghost.style.left = (cx - gw / 2) + 'px';
+      ghost.style.top = (cy + DRAG_OFFSET_Y - gh / 2) + 'px';
+    }
+
+    function getAnchorFromPoint(cx, cy) {
+      // Math-based grid cell detection — more reliable than elementFromPoint
+      const gridEl = document.getElementById('game-grid');
+      const rect = gridEl.getBoundingClientRect();
+      const padding = 4; // grid padding
+      const gap = 2; // grid gap
+
+      // Point in grid-local coordinates (accounting for offset)
+      const localX = cx - rect.left - padding;
+      const localY = (cy + DRAG_OFFSET_Y) - rect.top - padding;
+
+      // Inner area (excluding padding)
+      const innerW = rect.width - padding * 2;
+      const innerH = rect.height - padding * 2;
+
+      // Check if point is within grid bounds (with generous margin)
+      if (localX < -10 || localX > innerW + 10 || localY < -10 || localY > innerH + 10) return null;
+
+      // Cell size including gap
+      const cellPlusGap = innerW / GRID_SIZE;
+      const gx = Math.floor(Math.max(0, Math.min(localX, innerW - 1)) / cellPlusGap);
+      const gy = Math.floor(Math.max(0, Math.min(localY, innerH - 1)) / cellPlusGap);
+
+      // Clamp to valid range
+      const clampedX = Math.max(0, Math.min(GRID_SIZE - 1, gx));
+      const clampedY = Math.max(0, Math.min(GRID_SIZE - 1, gy));
+
+      if (dragPieceIndex < 0) return { x: clampedX, y: clampedY };
+
+      // Offset so the detected cell is the CENTER of the piece, not top-left
+      const piece = trayPieces[dragPieceIndex];
+      const pw = piece.shape[0].length;
+      const ph = piece.shape.length;
+      const ax = clampedX - Math.floor((pw - 1) / 2);
+      const ay = clampedY - Math.floor((ph - 1) / 2);
+
+      // Clamp anchor to grid bounds
+      return {
+        x: Math.max(0, Math.min(GRID_SIZE - pw, ax)),
+        y: Math.max(0, Math.min(GRID_SIZE - ph, ay))
+      };
+    }
+
+    function endDrag(e) {
+      if (!isDragging) return;
+      isDragging = false;
+
+      // Fire haptic IMMEDIATELY at top of touchend — before any logic —
+      // to stay inside the user-gesture call stack for iOS.
+      // Check placement validity first (fast, synchronous).
+      let anchor = stickyAnchor;
+      if (!anchor && e) {
+        const touch = e.changedTouches ? e.changedTouches[0] : e;
+        anchor = getAnchorFromPoint(touch.clientX, touch.clientY);
+      }
+      const willPlace = anchor && gameActive && !isAnimating && dragPieceIndex >= 0
+        && canPlacePiece(trayPieces[dragPieceIndex], anchor.x, anchor.y);
+      if (willPlace) {
+        _hapticTap(); // Direct call — no wrapper, no userActivation gate
+      }
+
+      document.getElementById('drag-ghost').style.display = 'none';
+      document.getElementById('drag-ghost').style.opacity = '0.9';
+      const trayPieceEl = document.querySelector(`.tray-piece[data-index="${dragPieceIndex}"]`);
+      if (trayPieceEl) trayPieceEl.classList.remove('dragging');
+
+      if (!gameActive || isAnimating || dragPieceIndex < 0) {
+        clearPlacementPreview();
+        stickyAnchor = null;
+        stickyFingerPos = null;
+        dragPieceIndex = -1;
+        return;
+      }
+
+      if (anchor) {
+        tryPlacePiece(dragPieceIndex, anchor.x, anchor.y);
+      }
+
+      clearPlacementPreview();
+      stickyAnchor = null;
+      stickyFingerPos = null;
+      dragPieceIndex = -1;
+    }
+
+    // ===== PLACEMENT PREVIEW =====
+    function showColoredPreview(sx, sy, color) {
+      if (dragPieceIndex < 0) return;
+      if (lastPreviewX === sx && lastPreviewY === sy) return;
+      clearPlacementPreview();
+      lastPreviewX = sx;
+      lastPreviewY = sy;
+      const piece = trayPieces[dragPieceIndex];
+      for (let y = 0; y < piece.shape.length; y++) {
+        for (let x = 0; x < piece.shape[0].length; x++) {
+          if (piece.shape[y][x]) {
+            const gx = sx + x, gy = sy + y;
+            if (gx >= 0 && gx < GRID_SIZE && gy >= 0 && gy < GRID_SIZE) {
+              const c = document.querySelector(`.grid-cell[data-x="${gx}"][data-y="${gy}"]`);
+              if (c) c.classList.add('preview-' + color);
+            }
+          }
+        }
+      }
+    }
+
+    function clearPlacementPreview() {
+      lastPreviewX = -1;
+      lastPreviewY = -1;
+      document.querySelectorAll('.grid-cell[class*="preview-"]').forEach(el => {
+        el.classList.remove('preview-ruby', 'preview-sapphire', 'preview-emerald', 'preview-amethyst');
+      });
+    }
+
+    // ===== PLACEMENT LOGIC =====
+    function canPlacePiece(piece, sx, sy) {
+      for (let y = 0; y < piece.shape.length; y++)
+        for (let x = 0; x < piece.shape[0].length; x++)
+          if (piece.shape[y][x]) {
+            const gx = sx + x, gy = sy + y;
+            if (gx < 0 || gx >= GRID_SIZE || gy < 0 || gy >= GRID_SIZE) return false;
+            if (grid[gy][gx] !== 0) return false;
+          }
+      return true;
+    }
+
+    function canPlacePieceAnywhere(piece) {
+      for (let y = 0; y < GRID_SIZE; y++)
+        for (let x = 0; x < GRID_SIZE; x++)
+          if (canPlacePiece(piece, x, y)) return true;
+      return false;
+    }
+
+    function tryPlacePiece(idx, sx, sy) {
+      const piece = trayPieces[idx];
+      if (!canPlacePiece(piece, sx, sy)) {
+        return;
+      }
+
+      for (let y = 0; y < piece.shape.length; y++)
+        for (let x = 0; x < piece.shape[0].length; x++)
+          if (piece.shape[y][x]) {
+            grid[sy + y][sx + x] = piece.color;
+            updateCell(sx + x, sy + y);
+          }
+
+      // Placement satisfaction effects
+      const placedCells = [];
+      for (let y = 0; y < piece.shape.length; y++)
+        for (let x = 0; x < piece.shape[0].length; x++)
+          if (piece.shape[y][x]) placedCells.push({ x: sx + x, y: sy + y });
+
+      // Settle bounce on placed cells
+      placedCells.forEach(pc => {
+        const el = document.querySelector(`.grid-cell[data-x="${pc.x}"][data-y="${pc.y}"]`);
+        if (el) {
+          el.classList.add('cell-settle');
+          setTimeout(() => el.classList.remove('cell-settle'), 80);
+        }
+      });
+
+      // Neighbor pulse on adjacent occupied cells
+      const placedSet = new Set(placedCells.map(pc => `${pc.x},${pc.y}`));
+      const neighbors = new Set();
+      placedCells.forEach(pc => {
+        [{x:pc.x-1,y:pc.y},{x:pc.x+1,y:pc.y},{x:pc.x,y:pc.y-1},{x:pc.x,y:pc.y+1}].forEach(n => {
+          if (n.x >= 0 && n.x < GRID_SIZE && n.y >= 0 && n.y < GRID_SIZE && !placedSet.has(`${n.x},${n.y}`) && grid[n.y][n.x] !== 0) {
+            neighbors.add(`${n.x},${n.y}`);
+          }
+        });
+      });
+      neighbors.forEach(key => {
+        const [nx, ny] = key.split(',').map(Number);
+        const el = document.querySelector(`.grid-cell[data-x="${nx}"][data-y="${ny}"]`);
+        if (el) {
+          el.classList.add('cell-neighbor-pulse');
+          setTimeout(() => el.classList.remove('cell-neighbor-pulse'), 100);
+        }
+      });
+
+      // Lock flash after 60ms
+      setTimeout(() => {
+        const gridEl = document.getElementById('game-grid');
+        const gridRect = gridEl.getBoundingClientRect();
+        const padding = 4;
+        const cellPlusGap = (gridRect.width - padding * 2) / GRID_SIZE;
+        const cellSize = cellPlusGap - 2;
+        placedCells.forEach(pc => {
+          const flash = document.createElement('div');
+          flash.className = 'cell-flash';
+          flash.style.left = (padding + pc.x * cellPlusGap) + 'px';
+          flash.style.top = (padding + pc.y * cellPlusGap) + 'px';
+          flash.style.width = cellSize + 'px';
+          flash.style.height = cellSize + 'px';
+          flash.style.opacity = '0.3';
+          gridEl.appendChild(flash);
+          setTimeout(() => flash.remove(), 120);
+        });
+      }, 60);
+
+      piece.placed = true;
+      stats.pieces++;
+      renderTray();
+      playSound('place');
+      // pressure meter removed
+
+      // Check line clears
+      const cleared = checkAndClearLines();
+      if (!cleared) {
+        // No lines cleared — grace window (3 placements before combo resets)
+        comboGrace++;
+        if (comboGrace >= 3) {
+          comboCounter = 0;
+          comboGrace = 0;
+          updateComboDisplay();
+          updateComboBg();
+        }
+      } else {
+        comboGrace = 0; // reset grace on any clear
+      }
+
+      // After animations settle, check tray state
+      const checkDelay = cleared ? 800 : 300;
+      setTimeout(() => {
+        if (!gameActive) return;
+        if (trayPieces.every(p => p.placed)) {
+          advanceTray();
+          renderTray();
+          checkGameOver();
+        } else {
+          checkGameOver();
+        }
+      }, checkDelay);
+    }
+
+    // ===== LINE CLEARING (with full juice) =====
+    function checkAndClearLines() {
+      const completedRows = [];
+      const completedCols = [];
+
+      for (let y = 0; y < GRID_SIZE; y++)
+        if (grid[y].every(c => c !== 0)) completedRows.push(y);
+      for (let x = 0; x < GRID_SIZE; x++) {
+        let full = true;
+        for (let y = 0; y < GRID_SIZE; y++) if (grid[y][x] === 0) { full = false; break; }
+        if (full) completedCols.push(x);
+      }
+
+      if (completedRows.length === 0 && completedCols.length === 0) return false;
+
+      isAnimating = true;
+
+      const cellsToClear = new Set();
+      const resonanceColors = new Set();
+
+      for (const row of completedRows) {
+        for (let x = 0; x < GRID_SIZE; x++) cellsToClear.add(`${x},${row}`);
+        const rc = findResonanceInLine(grid[row]);
+        if (rc) resonanceColors.add(rc);
+      }
+      for (const col of completedCols) {
+        const colData = [];
+        for (let y = 0; y < GRID_SIZE; y++) {
+          cellsToClear.add(`${col},${y}`);
+          colData.push(grid[y][col]);
+        }
+        const rc = findResonanceInLine(colData);
+        if (rc) resonanceColors.add(rc);
+      }
+
+      const totalLines = completedRows.length + completedCols.length;
+      stats.lines += totalLines;
+
+      // Combo
+      comboCounter++;
+      const comboMult = 1 + (comboCounter - 1) * 0.5;
+      let lineScore;
+      if (totalLines === 1) lineScore = 100;
+      else if (totalLines === 2) lineScore = 300;
+      else lineScore = 500;
+      lineScore = Math.round(lineScore * comboMult);
+      score += lineScore;
+
+      updateComboDisplay();
+      updateScoreDisplay();
+
+      // Score popup
+      const firstCell = [...cellsToClear][Math.floor(cellsToClear.size / 2)];
+      const [px, py] = firstCell.split(',').map(Number);
+      showScorePopup(px, py, lineScore, totalLines > 1 ? (totalLines >= 3 ? 'TRIPLE!' : 'DOUBLE!') : null);
+
+      // Sound — pitch rises with combo
+      playLineClearSound(totalLines, comboCounter);
+
+      // Staggered clear animation
+      animateStaggeredClear(cellsToClear, completedRows, completedCols, () => {
+        for (const key of cellsToClear) {
+          const [x, y] = key.split(',').map(Number);
+          grid[y][x] = 0;
+        }
+
+        if (resonanceColors.size > 0) {
+          stats.resonances++;
+          setTimeout(() => processResonance(resonanceColors, 1), 250);
+        } else {
+          renderGrid();
+          updateScoreDisplay();
+          // pressure meter removed
+          checkPerfectClear();
+          isAnimating = false;
+        }
+      });
+
+      // Screen shake — intensity scales with lines + combo
+      screenShake(4 + totalLines * 3 + comboCounter * 2, 180 + totalLines * 100);
+
+      return true;
+    }
+
+    function findResonanceInLine(lineData) {
+      let runColor = null, runLength = 0;
+      for (let i = 0; i < lineData.length; i++) {
+        const c = lineData[i];
+        if (c && c === runColor) {
+          runLength++;
+          if (runLength >= 5) return runColor;
+        } else {
+          runColor = c;
+          runLength = 1;
+        }
+      }
+      return null;
+    }
+
+    // ===== RESONANCE (3-phase dramatic sequence) =====
+    function processResonance(resonanceColors, chainLevel) {
+      const cellsToClear = new Set();
+      for (let y = 0; y < GRID_SIZE; y++)
+        for (let x = 0; x < GRID_SIZE; x++)
+          if (resonanceColors.has(grid[y][x]))
+            cellsToClear.add(`${x},${y}`);
+
+      if (cellsToClear.size === 0) {
+        renderGrid();
+        updateScoreDisplay();
+        // pressure meter removed
+        checkPerfectClear();
+        isAnimating = false;
+        return;
+      }
+
+      const resScore = Math.round(cellsToClear.size * 50 * Math.pow(1.5, chainLevel - 1));
+      score += resScore;
+      if (chainLevel > stats.bestChain) stats.bestChain = chainLevel;
+
+      // PHASE 1: DETECT — single overlay dims entire grid
+      const gridEl = document.getElementById('game-grid');
+      const gridRect = gridEl.getBoundingClientRect();
+      const gridPadding = 4;
+      const gridCellPlusGap = (gridRect.width - gridPadding * 2) / GRID_SIZE;
+      const gridCellSize = gridCellPlusGap - 2;
+
+      const targetCells = [];
+      for (const key of cellsToClear) {
+        const [x, y] = key.split(',').map(Number);
+        const el = document.querySelector(`.grid-cell[data-x="${x}"][data-y="${y}"]`);
+        if (el) targetCells.push({ el, x, y });
+      }
+
+      // Single dim overlay instead of per-cell filter
+      const dimOverlay = document.createElement('div');
+      dimOverlay.className = 'resonance-dim-overlay';
+      gridEl.appendChild(dimOverlay);
+
+      // Lift targets above the overlay
+      targetCells.forEach(t => { t.el.style.zIndex = '5'; });
+
+      // Play low rumble — building tension
+      playResonanceDetectSound();
+      haptic([15, 10, 15, 10, 15, 10, 15, 10]);
+
+      setTimeout(() => {
+        // PHASE 2: PROPAGATE — light up targets sequentially
+        gridEl.style.transition = 'transform 0.3s ease-out';
+        gridEl.style.transform = 'scale(1.03)';
+
+        targetCells.forEach((t, i) => {
+          setTimeout(() => t.el.classList.add('res-target'), i * 20);
+        });
+
+        showResonanceLabel(chainLevel, [...resonanceColors][0]);
+        playResonanceChordSound([...resonanceColors][0], chainLevel);
+
+        setTimeout(() => {
+          // PHASE 3: DETONATE — explosive shatter
+          // Double flash for extra punch
+          if (!lowFlash) {
+            const flash = document.createElement('div');
+            flash.className = 'grid-flash';
+            flash.style.background = COLOR_HEX[[...resonanceColors][0]] || 'white';
+            document.querySelector('.grid-wrapper').appendChild(flash);
+            setTimeout(() => flash.remove(), 400);
+            // Second flash pulse
+            setTimeout(() => {
+              const flash2 = document.createElement('div');
+              flash2.className = 'grid-flash';
+              flash2.style.background = COLOR_LIGHT_HEX[[...resonanceColors][0]] || 'white';
+              flash2.style.opacity = '0.3';
+              document.querySelector('.grid-wrapper').appendChild(flash2);
+              setTimeout(() => flash2.remove(), 250);
+            }, 120);
+          }
+
+          screenShake(20 + chainLevel * 8, 700);
+          haptic([80, 30, 60, 30, 80, 30, 100]);
+
+          const resColor = [...resonanceColors][0];
+
+          // Spawn colored flash + particles + sparks for each target, staggered
+          targetCells.forEach((t, i) => {
+            setTimeout(() => {
+              t.el.classList.remove('res-target');
+              t.el.classList.add('res-shatter');
+
+              // Colored flash overlay per cell
+              const cFlash = document.createElement('div');
+              cFlash.className = 'res-cell-flash';
+              cFlash.style.left = (gridPadding + t.x * gridCellPlusGap) + 'px';
+              cFlash.style.top = (gridPadding + t.y * gridCellPlusGap) + 'px';
+              cFlash.style.width = gridCellSize + 'px';
+              cFlash.style.height = gridCellSize + 'px';
+              cFlash.style.background = COLOR_LIGHT_HEX[resColor] || 'white';
+              gridEl.appendChild(cFlash);
+              setTimeout(() => cFlash.remove(), 450);
+
+              const rect = t.el.getBoundingClientRect();
+              const gRect = gridEl.getBoundingClientRect();
+              const pcx = rect.left - gRect.left + rect.width / 2;
+              const pcy = rect.top - gRect.top + rect.height / 2;
+              spawnParticles(pcx, pcy, resColor, 10, 800);
+              spawnSparks(pcx, pcy, 6, 300);
+            }, i * 18);
+          });
+
+          // Score popup
+          showScorePopup(4, 4, resScore, chainLevel > 1 ? `CHAIN x${chainLevel}!` : 'RESONANCE!');
+          playResonanceDetonateSound(chainLevel, targetCells.length);
+
+          setTimeout(() => {
+            // Cleanup: remove overlay, z-index, animation classes
+            dimOverlay.remove();
+            targetCells.forEach(t => {
+              t.el.style.zIndex = '';
+              t.el.classList.remove('res-target', 'res-shatter');
+            });
+            gridEl.style.transform = '';
+
+            for (const key of cellsToClear) {
+              const [x, y] = key.split(',').map(Number);
+              grid[y][x] = 0;
+            }
+
+            // Check for chain clears
+            const newRows = [], newCols = [];
+            const newResColors = new Set();
+            for (let y = 0; y < GRID_SIZE; y++)
+              if (grid[y].every(c => c !== 0)) newRows.push(y);
+            for (let x = 0; x < GRID_SIZE; x++) {
+              let full = true;
+              for (let y = 0; y < GRID_SIZE; y++) if (grid[y][x] === 0) { full = false; break; }
+              if (full) newCols.push(x);
+            }
+
+            if (newRows.length > 0 || newCols.length > 0) {
+              const chainCells = new Set();
+              for (const row of newRows) {
+                for (let x = 0; x < GRID_SIZE; x++) chainCells.add(`${x},${row}`);
+                const rc = findResonanceInLine(grid[row]);
+                if (rc) newResColors.add(rc);
+              }
+              for (const col of newCols) {
+                const colData = [];
+                for (let y = 0; y < GRID_SIZE; y++) {
+                  chainCells.add(`${col},${y}`);
+                  colData.push(grid[y][col]);
+                }
+                const rc = findResonanceInLine(colData);
+                if (rc) newResColors.add(rc);
+              }
+
+              stats.lines += newRows.length + newCols.length;
+              const chainScore = Math.round((newRows.length + newCols.length >= 3 ? 500 : newRows.length + newCols.length === 2 ? 300 : 100) * Math.pow(1.5, chainLevel));
+              score += chainScore;
+
+              animateStaggeredClear(chainCells, newRows, newCols, () => {
+                for (const key of chainCells) {
+                  const [x, y] = key.split(',').map(Number);
+                  grid[y][x] = 0;
+                }
+                if (newResColors.size > 0) {
+                  stats.resonances++;
+                  setTimeout(() => processResonance(newResColors, chainLevel + 1), 250);
+                } else {
+                  renderGrid();
+                  updateScoreDisplay();
+                  // pressure meter removed
+                  checkPerfectClear();
+                  isAnimating = false;
+                }
+              });
+            } else {
+              renderGrid();
+              updateScoreDisplay();
+              // pressure meter removed
+              checkPerfectClear();
+              isAnimating = false;
+            }
+          }, 700);
+        }, 600);
+      }, 500);
+    }
+
+    // ===== ANIMATIONS =====
+    function animateStaggeredClear(cellKeys, rows, cols, callback) {
+      const cells = [];
+      for (const key of cellKeys) {
+        const [x, y] = key.split(',').map(Number);
+        const el = document.querySelector(`.grid-cell[data-x="${x}"][data-y="${y}"]`);
+        if (el) cells.push({ el, x, y });
+      }
+
+      const gridEl = document.getElementById('game-grid');
+      const gridRect = gridEl.getBoundingClientRect();
+      const padding = 4;
+      const cellPlusGap = (gridRect.width - padding * 2) / GRID_SIZE;
+      const cellSize = cellPlusGap - 2;
+
+      const anticipation = Math.max(80, 160 - comboCounter * 10);
+      cells.forEach(c => {
+        const glow = document.createElement('div');
+        glow.className = 'anticipation-glow';
+        glow.style.left = (padding + c.x * cellPlusGap) + 'px';
+        glow.style.top = (padding + c.y * cellPlusGap) + 'px';
+        glow.style.width = cellSize + 'px';
+        glow.style.height = cellSize + 'px';
+        glow.style.setProperty('--dur', anticipation + 'ms');
+        gridEl.appendChild(glow);
+        setTimeout(() => glow.remove(), anticipation + 50);
+      });
+
+      setTimeout(() => {
+        const lineGroups = [];
+        const assignedCells = new Set();
+
+        rows.forEach(row => {
+          const group = [];
+          for (let x = 0; x < GRID_SIZE; x++) {
+            const key = `${x},${row}`;
+            const cell = cells.find(c => c.x === x && c.y === row);
+            if (cell && !assignedCells.has(key)) {
+              group.push(cell);
+              assignedCells.add(key);
+            }
+          }
+          if (group.length > 0) lineGroups.push(group);
+        });
+
+        cols.forEach(col => {
+          const group = [];
+          for (let y = 0; y < GRID_SIZE; y++) {
+            const key = `${col},${y}`;
+            const cell = cells.find(c => c.x === col && c.y === y);
+            if (cell && !assignedCells.has(key)) {
+              group.push(cell);
+              assignedCells.add(key);
+            }
+          }
+          if (group.length > 0) lineGroups.push(group);
+        });
+
+        rows.forEach((row, ri) => {
+          const shimmer = document.createElement('div');
+          shimmer.className = 'clear-shimmer row-shimmer';
+          shimmer.style.setProperty('--cell-size', cellSize + 'px');
+          shimmer.style.top = (padding + row * cellPlusGap) + 'px';
+          shimmer.style.animationDelay = (ri * 80) + 'ms';
+          gridEl.appendChild(shimmer);
+          setTimeout(() => shimmer.remove(), 500 + ri * 80);
+        });
+        cols.forEach((col, ci) => {
+          const shimmer = document.createElement('div');
+          shimmer.className = 'clear-shimmer col-shimmer';
+          shimmer.style.setProperty('--cell-size', cellSize + 'px');
+          shimmer.style.left = (padding + col * cellPlusGap) + 'px';
+          shimmer.style.animationDelay = (ci * 80 + rows.length * 80) + 'ms';
+          gridEl.appendChild(shimmer);
+          setTimeout(() => shimmer.remove(), 500 + ci * 80 + rows.length * 80);
+        });
+
+        const staggerMs = Math.min(25, 200 / Math.max(1, cells.length));
+        let maxDelay = 0;
+
+        lineGroups.forEach((group, gi) => {
+          group.forEach((c, ci) => {
+            const delay = gi * 80 + ci * staggerMs;
+            if (delay > maxDelay) maxDelay = delay;
+
+            c.el.style.animationDelay = delay + 'ms';
+            c.el.classList.add('clearing');
+
+            setTimeout(() => {
+              const flash = document.createElement('div');
+              flash.className = 'cell-flash';
+              flash.style.left = (padding + c.x * cellPlusGap) + 'px';
+              flash.style.top = (padding + c.y * cellPlusGap) + 'px';
+              flash.style.width = cellSize + 'px';
+              flash.style.height = cellSize + 'px';
+              gridEl.appendChild(flash);
+              setTimeout(() => flash.remove(), 350);
+            }, delay);
+
+            const rect = c.el.getBoundingClientRect();
+            setTimeout(() => {
+              spawnParticles(
+                rect.left - gridRect.left + rect.width / 2,
+                rect.top - gridRect.top + rect.height / 2,
+                grid[c.y][c.x], 6, 450
+              );
+            }, delay);
+          });
+        });
+
+        gridEl.style.transition = 'transform 0.1s ease-out';
+        gridEl.style.transform = 'scale(1.015)';
+        setTimeout(() => {
+          gridEl.style.transform = '';
+          setTimeout(() => { gridEl.style.transition = ''; }, 150);
+        }, 100);
+
+        const totalTime = maxDelay + 400;
+        setTimeout(() => {
+          cells.forEach(c => {
+            c.el.classList.remove('clearing');
+            c.el.style.animationDelay = '';
+          });
+          if (callback) callback();
+        }, totalTime);
+      }, anticipation);
+    }
+
+    // ===== PARTICLE SYSTEM =====
+    function spawnParticles(cx, cy, color, count, duration) {
+      const container = document.getElementById('particle-container');
+      const hex = COLOR_LIGHT_HEX[color] || '#fff';
+
+      for (let i = 0; i < count; i++) {
+        const p = document.createElement('div');
+        const isDiamond = Math.random() > 0.5;
+        p.className = isDiamond ? 'particle diamond' : 'particle';
+        const size = 2 + Math.random() * 6;
+        const angle = Math.random() * Math.PI * 2;
+        const dist = 20 + Math.random() * 50;
+        const dx = Math.cos(angle) * dist;
+        const dy = Math.sin(angle) * dist - 15; // bias upward
+
+        p.style.width = size + 'px';
+        p.style.height = size + 'px';
+        p.style.background = hex;
+        p.style.boxShadow = size > 5 ? `0 0 ${size}px ${hex}, 0 0 ${size * 0.5}px white` : `0 0 ${size}px ${hex}`;
+        p.style.left = cx + 'px';
+        p.style.top = cy + 'px';
+        p.style.setProperty('--dx', dx + 'px');
+        p.style.setProperty('--dy', dy + 'px');
+        p.style.setProperty('--rot', isDiamond ? '45deg' : '0deg');
+        p.style.setProperty('--duration', duration + 'ms');
+        p.style.animationDelay = (Math.random() * 50) + 'ms';
+
+        container.appendChild(p);
+        setTimeout(() => p.remove(), duration + 100);
+      }
+    }
+
+    function spawnSparks(cx, cy, count, duration) {
+      const container = document.getElementById('particle-container');
+      for (let i = 0; i < count; i++) {
+        const s = document.createElement('div');
+        s.className = 'spark';
+        const size = 1.5 + Math.random() * 2;
+        const angle = Math.random() * Math.PI * 2;
+        const dist = 30 + Math.random() * 60;
+        const dx = Math.cos(angle) * dist;
+        const dy = Math.sin(angle) * dist - 10;
+
+        s.style.width = size + 'px';
+        s.style.height = size + 'px';
+        s.style.boxShadow = `0 0 ${size + 1}px white`;
+        s.style.left = cx + 'px';
+        s.style.top = cy + 'px';
+        s.style.setProperty('--dx', dx + 'px');
+        s.style.setProperty('--dy', dy + 'px');
+        s.style.setProperty('--duration', duration + 'ms');
+        s.style.animationDelay = (Math.random() * 40) + 'ms';
+
+        container.appendChild(s);
+        setTimeout(() => s.remove(), duration + 100);
+      }
+    }
+
+    // ===== JS-DRIVEN SCREEN SHAKE =====
+    function screenShake(intensity, duration) {
+      if (lowFlash) return;
+      const grid = document.getElementById('game-grid');
+      const start = performance.now();
+      function frame(now) {
+        const elapsed = now - start;
+        if (elapsed > duration) {
+          grid.style.transform = '';
+          return;
+        }
+        const decay = 1 - elapsed / duration;
+        const dx = (Math.random() - 0.5) * 2 * intensity * decay;
+        const dy = (Math.random() - 0.5) * 2 * intensity * decay;
+        grid.style.transform = `translate(${dx}px, ${dy}px)`;
+        requestAnimationFrame(frame);
+      }
+      requestAnimationFrame(frame);
+    }
+
+    function showResonanceLabel(chainLevel, color) {
+      const container = document.getElementById('game-container');
+      const label = document.createElement('div');
+      label.className = 'resonance-label';
+      label.textContent = chainLevel > 1 ? `CHAIN x${chainLevel}!` : 'RESONANCE!';
+      if (color) label.style.textShadow = `0 0 30px ${COLOR_HEX[color]}, 0 0 60px ${COLOR_HEX[color]}`;
+      container.appendChild(label);
+      setTimeout(() => label.remove(), 1200);
+    }
+
+    function showScorePopup(gx, gy, points, label) {
+      const gridEl = document.getElementById('game-grid');
+      const rect = gridEl.getBoundingClientRect();
+      const cellSize = rect.width / GRID_SIZE;
+      const popup = document.createElement('div');
+      popup.className = 'score-popup';
+      popup.innerHTML = label ? `+${points}<br><span style="font-size:14px">${label}</span>` : `+${points}`;
+      popup.style.color = '#d0b0ff';
+      popup.style.left = (rect.left + gx * cellSize + cellSize / 2 - 30) + 'px';
+      popup.style.top = (rect.top + gy * cellSize) + 'px';
+      document.getElementById('game-container').appendChild(popup);
+      setTimeout(() => popup.remove(), 900);
+    }
+
+    // Pressure meter removed — grid fullness is visually obvious
+    function updatePressureMeter() { /* no-op */ }
+
+    // ===== COMBO TIER SYSTEM =====
+    const COMBO_TIERS = [
+      { min: 0, color: 'transparent', opacity: 0, label: '' },
+      { min: 2, color: '#FFB74D', opacity: 0.04, label: 'COMBO' },
+      { min: 5, color: '#FF5722', opacity: 0.07, label: 'ON FIRE' },
+      { min: 8, color: '#D32F2F', opacity: 0.10, label: 'BLAZING' },
+      { min: 10, color: '#FFF176', opacity: 0.14, label: 'TRANSCENDENT' },
+    ];
+
+    function getComboTier(combo) {
+      for (let i = COMBO_TIERS.length - 1; i >= 0; i--)
+        if (combo >= COMBO_TIERS[i].min) return i;
+      return 0;
+    }
+
+    function updateComboBg() {
+      const bg = document.getElementById('combo-bg');
+      if (!bg) return;
+      const tier = getComboTier(comboCounter);
+      const t = COMBO_TIERS[tier];
+      if (tier === 0) {
+        bg.style.opacity = '0';
+      } else {
+        bg.style.background = `radial-gradient(circle at center, ${t.color} 0%, transparent 70%)`;
+        bg.style.opacity = String(t.opacity);
+      }
+    }
+
+    let lastComboTier = 0;
+
+    // ===== COMBO DISPLAY =====
+    function updateComboDisplay() {
+      const badge = document.getElementById('combo-badge');
+      if (comboCounter >= 2) {
+        badge.textContent = `x${comboCounter}`;
+        badge.classList.add('active');
+        badge.classList.remove('bump');
+        void badge.offsetWidth; // reflow
+        badge.classList.add('bump');
+        // Show large centered combo overlay only when entering a new tier
+        const currentTier = getComboTier(comboCounter);
+        if (currentTier > lastComboTier) {
+          showComboOverlay(comboCounter);
+        }
+        lastComboTier = currentTier;
+      } else {
+        badge.classList.remove('active');
+        lastComboTier = 0;
+      }
+      updateComboBg();
+    }
+
+    function showComboOverlay(combo) {
+      const gridEl = document.getElementById('game-grid');
+      const wrapper = document.querySelector('.grid-wrapper');
+      // Remove any existing overlay
+      const old = gridEl.querySelector('.combo-overlay');
+      if (old) old.remove();
+
+      // Build overlay with tier-specific label + number
+      const tier = getComboTier(combo);
+      const tierData = COMBO_TIERS[tier];
+      const overlay = document.createElement('div');
+      overlay.className = 'combo-overlay';
+      const label = document.createElement('div');
+      label.className = 'combo-overlay-label';
+      label.textContent = tierData.label || 'COMBO';
+      const num = document.createElement('div');
+      num.className = 'combo-overlay-number';
+      num.textContent = combo >= 4 ? `${combo}!!` : combo >= 3 ? `${combo}!` : `${combo}`;
+      overlay.appendChild(label);
+      overlay.appendChild(num);
+      gridEl.appendChild(overlay);
+      setTimeout(() => overlay.remove(), 1100);
+
+      // Crystalline grid border glow
+      gridEl.classList.remove('crystal-pulse', 'crystal-pulse-intense');
+      void gridEl.offsetWidth;
+      gridEl.classList.add(combo >= 4 ? 'crystal-pulse-intense' : 'crystal-pulse');
+      setTimeout(() => gridEl.classList.remove('crystal-pulse', 'crystal-pulse-intense'), 1200);
+
+      // Vignette
+      wrapper.classList.remove('crystal-vignette');
+      void wrapper.offsetWidth;
+      wrapper.classList.add('crystal-vignette');
+      setTimeout(() => wrapper.classList.remove('crystal-vignette'), 1300);
+
+      // Crystal shard edge particles
+      spawnEdgeShards(gridEl, 8 + combo * 4);
+    }
+
+    function spawnEdgeShards(gridEl, count) {
+      const w = gridEl.offsetWidth;
+      const h = gridEl.offsetHeight;
+      const colors = ['#d0b0ff', '#a855f7', '#e0d6f2', '#ff6b8a', '#64b5f6', '#81c784'];
+      for (let i = 0; i < count; i++) {
+        const shard = document.createElement('div');
+        shard.className = 'crystal-shard';
+        // Pick random edge position
+        const edge = Math.floor(Math.random() * 4); // 0=top, 1=right, 2=bottom, 3=left
+        let x, y, dx, dy;
+        if (edge === 0) { x = Math.random() * w; y = -2; dx = (Math.random()-0.5)*40; dy = -(15+Math.random()*30); }
+        else if (edge === 1) { x = w + 2; y = Math.random() * h; dx = 15+Math.random()*30; dy = (Math.random()-0.5)*40; }
+        else if (edge === 2) { x = Math.random() * w; y = h + 2; dx = (Math.random()-0.5)*40; dy = 15+Math.random()*30; }
+        else { x = -2; y = Math.random() * h; dx = -(15+Math.random()*30); dy = (Math.random()-0.5)*40; }
+        const size = 3 + Math.random() * 5;
+        shard.style.left = x + 'px';
+        shard.style.top = y + 'px';
+        shard.style.width = size + 'px';
+        shard.style.height = size * 1.4 + 'px';
+        shard.style.background = colors[Math.floor(Math.random() * colors.length)];
+        shard.style.boxShadow = `0 0 6px ${shard.style.background}`;
+        shard.style.setProperty('--shard-dx', dx + 'px');
+        shard.style.setProperty('--shard-dy', dy + 'px');
+        shard.style.setProperty('--shard-rot', (60 + Math.random() * 240) + 'deg');
+        shard.style.setProperty('--shard-dur', (500 + Math.random() * 400) + 'ms');
+        shard.style.animationDelay = (Math.random() * 200) + 'ms';
+        gridEl.appendChild(shard);
+        setTimeout(() => shard.remove(), 1000);
+      }
+    }
+
+    // ===== GAME OVER =====
+    function checkGameOver() {
+      const unplaced = trayPieces.filter(p => !p.placed);
+      if (unplaced.length === 0) return;
+      if (!unplaced.some(p => canPlacePieceAnywhere(p))) gameOver();
+    }
+
+    function checkPerfectClear() {
+      if (grid.every(row => row.every(c => c === 0))) {
+        score += 1000;
+        updateScoreDisplay();
+        playSound('perfect');
+        const label = document.createElement('div');
+        label.className = 'resonance-label';
+        label.textContent = 'PERFECT CLEAR!';
+        label.style.color = '#ffd700';
+        label.style.textShadow = '0 0 30px #ffd700, 0 0 60px #ffd700';
+        document.getElementById('game-container').appendChild(label);
+        setTimeout(() => label.remove(), 1200);
+      }
+    }
+
+    function gameOver() {
+      gameActive = false;
+      saveHighScore();
+      playSound('gameover');
+      haptic([100, 50, 100, 50, 100]);
+
+      setTimeout(() => {
+        const isNewBest = score >= highScore && score > 0;
+        const titleEl = document.getElementById('gameover-title');
+        titleEl.textContent = isNewBest ? 'NEW BEST!' : 'GAME OVER';
+        titleEl.className = 'gameover-title' + (isNewBest ? ' new-best' : '');
+        if (isNewBest) playSound('highscore');
+        document.getElementById('gameover-score').textContent = score.toLocaleString();
+        document.getElementById('stat-lines').textContent = stats.lines;
+        document.getElementById('stat-resonances').textContent = stats.resonances;
+        document.getElementById('stat-pieces').textContent = stats.pieces;
+        document.getElementById('stat-best-chain').textContent = stats.bestChain;
+        showScreen('gameover');
+      }, 500);
+    }
+
+    // ===== SCORE DISPLAY =====
+    let scoreDisplayValue = 0;
+    let scoreAnimFrame = null;
+    function updateScoreDisplay() {
+      const el = document.getElementById('score-display');
+      const target = score;
+      const start = scoreDisplayValue;
+      const diff = target - start;
+
+      // Cancel previous animation
+      if (scoreAnimFrame) cancelAnimationFrame(scoreAnimFrame);
+
+      if (diff <= 0) {
+        el.textContent = target.toLocaleString();
+        scoreDisplayValue = target;
+      } else {
+        // Animated count-up over 350ms
+        const duration = Math.min(350, diff * 2);
+        const startTime = performance.now();
+        function tick(now) {
+          const elapsed = now - startTime;
+          const t = Math.min(elapsed / duration, 1);
+          // Ease-out curve
+          const eased = 1 - Math.pow(1 - t, 3);
+          const current = Math.round(start + diff * eased);
+          el.textContent = current.toLocaleString();
+          scoreDisplayValue = current;
+          if (t < 1) {
+            scoreAnimFrame = requestAnimationFrame(tick);
+          } else {
+            scoreDisplayValue = target;
+            el.textContent = target.toLocaleString();
+          }
+        }
+        scoreAnimFrame = requestAnimationFrame(tick);
+      }
+
+      // Scale bump
+      el.classList.add('score-bump');
+      setTimeout(() => el.classList.remove('score-bump'), 250);
+
+      // Crystal glow
+      el.classList.add('score-crystal-glow');
+      setTimeout(() => el.classList.remove('score-crystal-glow'), 500);
+
+      document.getElementById('game-best-score').textContent = Math.max(score, highScore).toLocaleString();
+    }
+
+    // ===== SOUND SYSTEM (crystal cavern audio) =====
+    let reverbSend = null;
+    function getReverbSend() {
+      if (reverbSend && audioCtx) return reverbSend;
+      if (!audioCtx) return null;
+      // 4-tap Feedback Delay Network for "crystal cavern" reverb
+      const input = audioCtx.createGain();
+      const wet = audioCtx.createGain();
+      wet.gain.value = 0.50;
+
+      const tapConfigs = [
+        { time: 0.067, fb: 0.45 },
+        { time: 0.113, fb: 0.40 },
+        { time: 0.179, fb: 0.35 },
+        { time: 0.271, fb: 0.30 }
+      ];
+
+      for (const cfg of tapConfigs) {
+        const delay = audioCtx.createDelay(1.0);
+        delay.delayTime.value = cfg.time;
+        const hs = audioCtx.createBiquadFilter();
+        hs.type = 'highshelf';
+        hs.frequency.value = 3000;
+        hs.gain.value = -3;
+        const fbGain = audioCtx.createGain();
+        fbGain.gain.value = cfg.fb;
+
+        input.connect(delay);
+        delay.connect(hs);
+        hs.connect(fbGain);
+        fbGain.connect(delay);
+        delay.connect(wet);
+      }
+
+      wet.connect(audioCtx.destination);
+      reverbSend = input;
+      return input;
+    }
+
+    function makeNoise(duration) {
+      const buf = audioCtx.createBuffer(1, audioCtx.sampleRate * duration, audioCtx.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+      const src = audioCtx.createBufferSource();
+      src.buffer = buf;
+      return src;
+    }
+
+    function connectWithReverb(node, wetLevel) {
+      if (!audioCtx) return;
+      node.connect(audioCtx.destination);
+      const reverb = getReverbSend();
+      if (reverb) {
+        const wetGain = audioCtx.createGain();
+        wetGain.gain.value = wetLevel;
+        node.connect(wetGain);
+        wetGain.connect(reverb);
+      }
+    }
+
+    function playSound(type) {
+      if (!soundEnabled || !audioCtx) return;
+      try {
+        const now = audioCtx.currentTime;
+
+        switch (type) {
+          case 'grab': {
+            // G2: Wind Lift — Noise sweep 200->600Hz + faint sine 180Hz trail. 70ms.
+            const nBuf = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.070, audioCtx.sampleRate);
+            const nData = nBuf.getChannelData(0);
+            for (let i = 0; i < nData.length; i++) nData[i] = Math.random() * 2 - 1;
+            const nSrc = audioCtx.createBufferSource();
+            nSrc.buffer = nBuf;
+            const bp = audioCtx.createBiquadFilter();
+            bp.type = 'bandpass'; bp.Q.value = 3;
+            bp.frequency.setValueAtTime(200, now);
+            bp.frequency.exponentialRampToValueAtTime(600, now + 0.050);
+            const g1 = audioCtx.createGain();
+            g1.gain.setValueAtTime(0.09, now);
+            g1.gain.exponentialRampToValueAtTime(0.001, now + 0.070);
+            nSrc.connect(bp); bp.connect(g1);
+            connectWithReverb(g1, 0.18);
+            nSrc.start(now); nSrc.stop(now + 0.070);
+            // Faint sine trail
+            const trail = audioCtx.createOscillator();
+            trail.type = 'sine'; trail.frequency.value = 180;
+            const tg = audioCtx.createGain();
+            tg.gain.setValueAtTime(0.03, now + 0.020);
+            tg.gain.exponentialRampToValueAtTime(0.001, now + 0.070);
+            trail.connect(tg); connectWithReverb(tg, 0.18);
+            trail.start(now + 0.020); trail.stop(now + 0.070);
+            break;
+          }
+          case 'place': {
+            // P3: Resonant Pebble — 50% shorter
+            const fund = audioCtx.createOscillator();
+            fund.type = 'sine';
+            fund.frequency.setValueAtTime(330, now);
+            fund.frequency.linearRampToValueAtTime(260, now + 0.030);
+            const fg = audioCtx.createGain();
+            fg.gain.setValueAtTime(0.14, now);
+            fg.gain.exponentialRampToValueAtTime(0.001, now + 0.035);
+            fund.connect(fg);
+            connectWithReverb(fg, 0.25);
+            fund.start(now); fund.stop(now + 0.035);
+
+            const harmGains = [0.08, 0.07, 0.05, 0.04, 0.03];
+            for (let i = 0; i < 5; i++) {
+              const offset = 0.010 + i * 0.012;
+              const freq = 330 * (i + 1);
+              const wet = 0.30 + i * 0.06;
+              const osc = audioCtx.createOscillator();
+              osc.type = 'sine'; osc.frequency.value = freq;
+              const g = audioCtx.createGain();
+              g.gain.setValueAtTime(harmGains[i], now + offset);
+              g.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.030);
+              osc.connect(g);
+              connectWithReverb(g, wet);
+              osc.start(now + offset); osc.stop(now + offset + 0.030);
+            }
+            break;
+          }
+          case 'wrong': {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(200, now);
+            osc.frequency.exponentialRampToValueAtTime(100, now + 0.15);
+            gain.gain.setValueAtTime(0.12, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now); osc.stop(now + 0.2);
+            break;
+          }
+          case 'gameover': {
+            // Crystal Fade (1500ms, reverb wet 0.60)
+            const chordFreqs = [440, 523, 659, 880];
+            const decays = [1.500, 1.200, 0.900, 0.600];
+            for (let i = 0; i < chordFreqs.length; i++) {
+              const osc = audioCtx.createOscillator();
+              osc.type = 'sine';
+              osc.frequency.setValueAtTime(chordFreqs[i], now);
+              osc.frequency.linearRampToValueAtTime(chordFreqs[i] - 12, now + decays[i]);
+              const g = audioCtx.createGain();
+              g.gain.setValueAtTime(0.07, now);
+              g.gain.exponentialRampToValueAtTime(0.001, now + decays[i]);
+              osc.connect(g);
+              connectWithReverb(g, 0.60);
+              osc.start(now); osc.stop(now + decays[i]);
+            }
+            // Descending shimmer
+            const shimmerFreqs = [2637, 2349, 2093, 1760];
+            for (let i = 0; i < shimmerFreqs.length; i++) {
+              const t = now + i * 0.100;
+              const osc = audioCtx.createOscillator();
+              osc.type = 'sine';
+              osc.frequency.setValueAtTime(shimmerFreqs[i], t);
+              const g = audioCtx.createGain();
+              g.gain.setValueAtTime(0.025, t);
+              g.gain.exponentialRampToValueAtTime(0.001, t + 0.400);
+              osc.connect(g);
+              connectWithReverb(g, 0.60);
+              osc.start(t); osc.stop(t + 0.400);
+            }
+            break;
+          }
+          case 'highscore': {
+            // Crystal Crown (1000ms, reverb wet 0.70)
+            const arpFreqs = [880, 1109, 1319, 1760, 2637];
+            const arpTimes = [0, 0.100, 0.200, 0.300, 0.450];
+            const arpDecays = [0.300, 0.300, 0.300, 0.300, 0.500];
+            for (let i = 0; i < arpFreqs.length; i++) {
+              const t = now + arpTimes[i];
+              const osc = audioCtx.createOscillator();
+              osc.type = 'sine';
+              osc.frequency.setValueAtTime(arpFreqs[i], t);
+              const g = audioCtx.createGain();
+              g.gain.setValueAtTime(0.12, t);
+              g.gain.exponentialRampToValueAtTime(0.001, t + arpDecays[i]);
+              osc.connect(g);
+              connectWithReverb(g, 0.70);
+              osc.start(t); osc.stop(t + arpDecays[i]);
+              // Inharmonic partial at freq * 2.76
+              const osc2 = audioCtx.createOscillator();
+              osc2.type = 'sine';
+              osc2.frequency.setValueAtTime(arpFreqs[i] * 2.76, t);
+              const g2 = audioCtx.createGain();
+              g2.gain.setValueAtTime(0.02, t);
+              g2.gain.exponentialRampToValueAtTime(0.001, t + 0.150);
+              osc2.connect(g2);
+              connectWithReverb(g2, 0.70);
+              osc2.start(t); osc2.stop(t + 0.150);
+            }
+            // E major chord bloom at t=450ms
+            const bloomFreqs = [1319, 1661, 1976];
+            const bloomT = now + 0.450;
+            for (const f of bloomFreqs) {
+              const osc = audioCtx.createOscillator();
+              osc.type = 'sine';
+              osc.frequency.setValueAtTime(f, bloomT);
+              const g = audioCtx.createGain();
+              g.gain.setValueAtTime(0.001, bloomT);
+              g.gain.linearRampToValueAtTime(0.05, bloomT + 0.010);
+              g.gain.setValueAtTime(0.05, bloomT + 0.200);
+              g.gain.exponentialRampToValueAtTime(0.001, bloomT + 0.600);
+              osc.connect(g);
+              connectWithReverb(g, 0.70);
+              osc.start(bloomT); osc.stop(bloomT + 0.600);
+            }
+            // Crown shimmer at t=500ms: 10 random sines 3000-7000Hz
+            const shimmerT = now + 0.500;
+            for (let i = 0; i < 10; i++) {
+              const freq = 3000 + Math.random() * 4000;
+              const decay = 0.050 + Math.random() * 0.150;
+              const osc = audioCtx.createOscillator();
+              osc.type = 'sine';
+              osc.frequency.setValueAtTime(freq, shimmerT);
+              const g = audioCtx.createGain();
+              g.gain.setValueAtTime(0.015, shimmerT);
+              g.gain.exponentialRampToValueAtTime(0.001, shimmerT + decay);
+              osc.connect(g);
+              connectWithReverb(g, 0.70);
+              osc.start(shimmerT); osc.stop(shimmerT + decay);
+            }
+            break;
+          }
+          case 'perfect': {
+            // Crystal Transcendence (800ms, reverb wet 0.75)
+            const chordFreqs = [440, 554, 659, 880, 1109, 1319];
+            for (let i = 0; i < chordFreqs.length; i++) {
+              const t = now + i * 0.005;
+              const gainVal = 0.08 - i * 0.005;
+              const osc = audioCtx.createOscillator();
+              osc.type = 'sine';
+              osc.frequency.setValueAtTime(chordFreqs[i], t);
+              const g = audioCtx.createGain();
+              g.gain.setValueAtTime(0.001, t);
+              g.gain.linearRampToValueAtTime(gainVal, t + 0.010);
+              g.gain.setValueAtTime(gainVal, t + 0.300);
+              g.gain.exponentialRampToValueAtTime(0.001, t + 0.800);
+              osc.connect(g);
+              connectWithReverb(g, 0.75);
+              osc.start(t); osc.stop(t + 0.800);
+              // Detuned double at +2Hz
+              const osc2 = audioCtx.createOscillator();
+              osc2.type = 'sine';
+              osc2.frequency.setValueAtTime(chordFreqs[i] + 2, t);
+              const g2 = audioCtx.createGain();
+              g2.gain.setValueAtTime(0.001, t);
+              g2.gain.linearRampToValueAtTime(0.03, t + 0.010);
+              g2.gain.setValueAtTime(0.03, t + 0.300);
+              g2.gain.exponentialRampToValueAtTime(0.001, t + 0.800);
+              osc2.connect(g2);
+              connectWithReverb(g2, 0.75);
+              osc2.start(t); osc2.stop(t + 0.800);
+            }
+            // Celestial overtones at t=100ms
+            const celFreqs = [2637, 3520, 4435];
+            const celGains = [0.03, 0.02, 0.015];
+            const celDecays = [0.600, 0.500, 0.400];
+            const celT = now + 0.100;
+            for (let i = 0; i < celFreqs.length; i++) {
+              const osc = audioCtx.createOscillator();
+              osc.type = 'sine';
+              osc.frequency.setValueAtTime(celFreqs[i], celT);
+              const g = audioCtx.createGain();
+              g.gain.setValueAtTime(celGains[i], celT);
+              g.gain.exponentialRampToValueAtTime(0.001, celT + celDecays[i]);
+              osc.connect(g);
+              connectWithReverb(g, 0.75);
+              osc.start(celT); osc.stop(celT + celDecays[i]);
+            }
+            // Ascending sparkle: 8 pings every 50ms
+            const sparkleFreqs = [1760, 2093, 2349, 2637, 2960, 3322, 3729, 4186];
+            for (let i = 0; i < sparkleFreqs.length; i++) {
+              const t = now + i * 0.050;
+              const osc = audioCtx.createOscillator();
+              osc.type = 'sine';
+              osc.frequency.setValueAtTime(sparkleFreqs[i], t);
+              const g = audioCtx.createGain();
+              g.gain.setValueAtTime(0.025, t);
+              g.gain.exponentialRampToValueAtTime(0.001, t + 0.100);
+              osc.connect(g);
+              connectWithReverb(g, 0.75);
+              osc.start(t); osc.stop(t + 0.100);
+            }
+            break;
+          }
+          default:
+            break;
+        }
+      } catch (e) {}
+    }
+
+    function playLineClearSound(lineCount, combo) {
+      // Haptics always fire, even with sound off
+      if (lineCount >= 3) haptic([60, 20, 60, 20, 60, 20, 60]);
+      else if (lineCount >= 2) haptic([50, 20, 50, 20, 50]);
+      else haptic([40, 20, 40]);
+
+      if (!soundEnabled || !audioCtx) return;
+      try {
+        const now = audioCtx.currentTime;
+        // Chain reaction: each cleared cell "breaks" in sequence
+        // 8 cells per line on an 8x8 grid
+        const totalCells = lineCount * 8;
+        const intensityMult = 1 + (lineCount - 1) * 0.10 + combo * 0.02;
+        const wetLevel = Math.min(0.35 + lineCount * 0.06, 0.55);
+
+        // Phase 1: Initial impact crack (0-80ms)
+        const impactSub = audioCtx.createOscillator();
+        impactSub.type = 'sine';
+        impactSub.frequency.setValueAtTime(80, now);
+        impactSub.frequency.linearRampToValueAtTime(35, now + 0.080);
+        const impG = audioCtx.createGain();
+        impG.gain.setValueAtTime(Math.min(0.22 * intensityMult, 0.32), now);
+        impG.gain.exponentialRampToValueAtTime(0.001, now + 0.080);
+        impactSub.connect(impG); connectWithReverb(impG, wetLevel);
+        impactSub.start(now); impactSub.stop(now + 0.080);
+
+        const impN = makeNoise(0.050);
+        const impBP = audioCtx.createBiquadFilter();
+        impBP.type = 'bandpass'; impBP.frequency.value = 350; impBP.Q.value = 2;
+        const impNG = audioCtx.createGain();
+        impNG.gain.setValueAtTime(Math.min(0.18 * intensityMult, 0.26), now);
+        impNG.gain.exponentialRampToValueAtTime(0.001, now + 0.050);
+        impN.connect(impBP); impBP.connect(impNG); connectWithReverb(impNG, wetLevel);
+        impN.start(now); impN.stop(now + 0.050);
+
+        // Phase 2: Chain reaction — each cell breaks individually (80ms - ~700ms)
+        // Spread totalCells breaks across ~600ms
+        const chainStart = now + 0.080;
+        const cellGap = 0.600 / totalCells;
+        for (let i = 0; i < totalCells; i++) {
+          const cellT = chainStart + i * cellGap;
+          const decay = 0.030 + Math.random() * 0.020;
+          // Intensity peaks in the middle, fades at edges
+          const posRatio = i / totalCells;
+          const posIntensity = 1.0 - Math.abs(posRatio - 0.4) * 0.8;
+
+          // Each cell: sub thud (randomized pitch) + noise crack
+          const freq = 70 + Math.random() * 30;
+          const osc = audioCtx.createOscillator();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, cellT);
+          osc.frequency.linearRampToValueAtTime(freq * 0.45, cellT + decay);
+          const og = audioCtx.createGain();
+          og.gain.setValueAtTime(Math.min(0.14 * posIntensity * intensityMult, 0.24), cellT);
+          og.gain.exponentialRampToValueAtTime(0.001, cellT + decay);
+          osc.connect(og); connectWithReverb(og, wetLevel);
+          osc.start(cellT); osc.stop(cellT + decay);
+
+          const n = makeNoise(decay);
+          const bp = audioCtx.createBiquadFilter();
+          bp.type = 'bandpass';
+          bp.frequency.value = 200 + Math.random() * 250;
+          bp.Q.value = 2 + Math.random() * 2;
+          const ng = audioCtx.createGain();
+          ng.gain.setValueAtTime(Math.min(0.10 * posIntensity * intensityMult, 0.18), cellT);
+          ng.gain.exponentialRampToValueAtTime(0.001, cellT + decay);
+          n.connect(bp); bp.connect(ng); connectWithReverb(ng, wetLevel);
+          n.start(cellT); n.stop(cellT + decay);
+        }
+
+        // Phase 3: Continuous rumble bed (0 - 800ms)
+        const rumbleDur = 0.800;
+        const rumble = audioCtx.createOscillator();
+        rumble.type = 'sine'; rumble.frequency.value = 38;
+        const rg = audioCtx.createGain();
+        rg.gain.setValueAtTime(0.08 * intensityMult, now);
+        rg.gain.linearRampToValueAtTime(0.12 * intensityMult, now + 0.300);
+        rg.gain.exponentialRampToValueAtTime(0.001, now + rumbleDur);
+        rumble.connect(rg); connectWithReverb(rg, wetLevel);
+        rumble.start(now); rumble.stop(now + rumbleDur);
+
+        const rumbleN = makeNoise(rumbleDur);
+        const rumbleBP = audioCtx.createBiquadFilter();
+        rumbleBP.type = 'bandpass'; rumbleBP.frequency.value = 160; rumbleBP.Q.value = 1;
+        const rng = audioCtx.createGain();
+        rng.gain.setValueAtTime(0.05 * intensityMult, now);
+        rng.gain.exponentialRampToValueAtTime(0.001, now + rumbleDur);
+        rumbleN.connect(rumbleBP); rumbleBP.connect(rng); connectWithReverb(rng, wetLevel);
+        rumbleN.start(now); rumbleN.stop(now + rumbleDur);
+
+        // Phase 4: Settling debris (700ms - 1000ms+)
+        const debrisStart = now + 0.700;
+        const debrisCount = 4 + lineCount * 2;
+        for (let i = 0; i < debrisCount; i++) {
+          const dT = debrisStart + Math.random() * 0.250;
+          const dDur = 0.020 + Math.random() * 0.025;
+          const dn = makeNoise(dDur);
+          const dbp = audioCtx.createBiquadFilter();
+          dbp.type = 'bandpass';
+          dbp.frequency.value = 150 + Math.random() * 250;
+          dbp.Q.value = 3;
+          const dg = audioCtx.createGain();
+          dg.gain.setValueAtTime(0.04 * intensityMult, dT);
+          dg.gain.exponentialRampToValueAtTime(0.001, dT + dDur);
+          dn.connect(dbp); dbp.connect(dg); connectWithReverb(dg, wetLevel);
+          dn.start(dT); dn.stop(dT + dDur);
+        }
+
+        // Phase 5: Sub tail decay to 1000ms+
+        const tailT = now + 0.750;
+        const tailEnd = now + 1.000 + lineCount * 0.100;
+        const tailSub = audioCtx.createOscillator();
+        tailSub.type = 'sine'; tailSub.frequency.value = 30;
+        const tsg = audioCtx.createGain();
+        tsg.gain.setValueAtTime(0.06 * intensityMult, tailT);
+        tsg.gain.exponentialRampToValueAtTime(0.001, tailEnd);
+        tailSub.connect(tsg); connectWithReverb(tsg, wetLevel);
+        tailSub.start(tailT); tailSub.stop(tailEnd);
+
+        // Fading noise wash
+        const washN = makeNoise(tailEnd - tailT);
+        const washBP = audioCtx.createBiquadFilter();
+        washBP.type = 'bandpass'; washBP.frequency.value = 100; washBP.Q.value = 1;
+        const wg = audioCtx.createGain();
+        wg.gain.setValueAtTime(0.03 * intensityMult, tailT);
+        wg.gain.exponentialRampToValueAtTime(0.001, tailEnd);
+        washN.connect(washBP); washBP.connect(wg); connectWithReverb(wg, wetLevel);
+        washN.start(tailT); washN.stop(tailEnd);
+      } catch (e) {}
+    }
+
+    function playResonanceDetectSound() {
+      haptic([20, 10, 20, 10, 20]);
+      if (!soundEnabled || !audioCtx) return;
+      try {
+        const now = audioCtx.currentTime;
+
+        // R1: Low Beacon — Sine 60Hz + square 100Hz LP 200Hz + sine 300Hz
+        const s1 = audioCtx.createOscillator();
+        s1.type = 'sine'; s1.frequency.value = 60;
+        const g1 = audioCtx.createGain();
+        g1.gain.setValueAtTime(0.14, now);
+        g1.gain.exponentialRampToValueAtTime(0.001, now + 0.120);
+        s1.connect(g1); connectWithReverb(g1, 0.20);
+        s1.start(now); s1.stop(now + 0.120);
+
+        const s2 = audioCtx.createOscillator();
+        s2.type = 'square'; s2.frequency.value = 100;
+        const lp = audioCtx.createBiquadFilter();
+        lp.type = 'lowpass'; lp.frequency.value = 200;
+        const g2 = audioCtx.createGain();
+        g2.gain.setValueAtTime(0.08, now);
+        g2.gain.exponentialRampToValueAtTime(0.001, now + 0.080);
+        s2.connect(lp); lp.connect(g2); connectWithReverb(g2, 0.20);
+        s2.start(now); s2.stop(now + 0.080);
+
+        const s3 = audioCtx.createOscillator();
+        s3.type = 'sine'; s3.frequency.value = 300;
+        const g3 = audioCtx.createGain();
+        g3.gain.setValueAtTime(0.04, now);
+        g3.gain.exponentialRampToValueAtTime(0.001, now + 0.060);
+        s3.connect(g3); connectWithReverb(g3, 0.20);
+        s3.start(now); s3.stop(now + 0.060);
+      } catch (e) {}
+    }
+
+    function playResonanceChordSound(color, chain) {
+      haptic([40, 60, 40, 60]);
+      if (!soundEnabled || !audioCtx) return;
+      try {
+        const now = audioCtx.currentTime;
+        const transpose = Math.pow(1.189, chain - 1);
+
+        // Layer 1: 4-voice A major chord sines
+        const chordFreqs = [220, 277, 330, 440];
+        for (let i = 0; i < chordFreqs.length; i++) {
+          const freq = chordFreqs[i] * transpose;
+          const osc = audioCtx.createOscillator();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now);
+          const g = audioCtx.createGain();
+          g.gain.setValueAtTime(0.001, now);
+          g.gain.linearRampToValueAtTime(0.08, now + 0.015);
+          g.gain.setValueAtTime(0.08, now + 0.300);
+          g.gain.exponentialRampToValueAtTime(0.001, now + 0.600);
+          osc.connect(g);
+          connectWithReverb(g, 0.65);
+          osc.start(now); osc.stop(now + 0.600);
+        }
+
+        // Layer 2: 4 detuned doubles
+        const detunes = [1.5, 2.0, 1.8, 2.2];
+        for (let i = 0; i < chordFreqs.length; i++) {
+          const freq = chordFreqs[i] * transpose + detunes[i];
+          const osc = audioCtx.createOscillator();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now);
+          const g = audioCtx.createGain();
+          g.gain.setValueAtTime(0.001, now);
+          g.gain.linearRampToValueAtTime(0.04, now + 0.015);
+          g.gain.setValueAtTime(0.04, now + 0.300);
+          g.gain.exponentialRampToValueAtTime(0.001, now + 0.600);
+          osc.connect(g);
+          connectWithReverb(g, 0.65);
+          osc.start(now); osc.stop(now + 0.600);
+        }
+
+        // Layer 3: Glass overtones
+        const glassOsc1 = audioCtx.createOscillator();
+        glassOsc1.type = 'sine';
+        glassOsc1.frequency.setValueAtTime(1760 * transpose, now);
+        const glassG1 = audioCtx.createGain();
+        glassG1.gain.setValueAtTime(0.03, now);
+        glassG1.gain.exponentialRampToValueAtTime(0.001, now + 0.400);
+        glassOsc1.connect(glassG1);
+        connectWithReverb(glassG1, 0.65);
+        glassOsc1.start(now); glassOsc1.stop(now + 0.400);
+
+        const glassOsc2 = audioCtx.createOscillator();
+        glassOsc2.type = 'sine';
+        glassOsc2.frequency.setValueAtTime(2200 * transpose, now);
+        const glassG2 = audioCtx.createGain();
+        glassG2.gain.setValueAtTime(0.02, now);
+        glassG2.gain.exponentialRampToValueAtTime(0.001, now + 0.300);
+        glassOsc2.connect(glassG2);
+        connectWithReverb(glassG2, 0.65);
+        glassOsc2.start(now); glassOsc2.stop(now + 0.300);
+
+        // Layer 4: Onset transient: white noise -> bandpass 2500Hz Q=6
+        const nBuf = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.020, audioCtx.sampleRate);
+        const nData = nBuf.getChannelData(0);
+        for (let i = 0; i < nData.length; i++) nData[i] = (Math.random() * 2 - 1);
+        const nSrc = audioCtx.createBufferSource();
+        nSrc.buffer = nBuf;
+        const bp = audioCtx.createBiquadFilter();
+        bp.type = 'bandpass';
+        bp.frequency.value = 2500;
+        bp.Q.value = 6;
+        const nG = audioCtx.createGain();
+        nG.gain.setValueAtTime(0.08, now);
+        nG.gain.exponentialRampToValueAtTime(0.001, now + 0.020);
+        nSrc.connect(bp); bp.connect(nG);
+        connectWithReverb(nG, 0.65);
+        nSrc.start(now); nSrc.stop(now + 0.020);
+      } catch (e) {}
+    }
+
+    function playResonanceDetonateSound(chain, cellCount) {
+      // Haptics always fire — scale with cell count
+      const cells = cellCount || 3;
+      if (cells >= 8) haptic([100, 25, 100, 25, 100, 25, 100, 25, 100, 25, 100]);
+      else if (cells >= 4) haptic([80, 30, 80, 30, 100, 30, 80, 30, 100]);
+      else haptic([60, 30, 60, 30, 80]);
+
+      if (!soundEnabled || !audioCtx) return;
+      try {
+        const now = audioCtx.currentTime;
+        // Scalable bomb — number of explosion rounds depends on cells destroyed
+        // 0-3 cells: 3 bombs (triple), 4-7: 5 bombs, 8+: 7+ bombs
+        const bombCount = cells >= 8 ? 7 + Math.floor((cells - 8) / 2) : cells >= 4 ? 5 : 3;
+        const chainMult = 1 + (chain || 0) * 0.08;
+        const wetLevel = 0.60;
+        // Total duration: 2000ms. Spread bombs across first ~1200ms, leave rest for tail.
+        const bombWindow = 1.200;
+        const bombGap = bombWindow / bombCount;
+
+        // === Each bomb = sub impact + noise crack + square crunch ===
+        for (let b = 0; b < bombCount; b++) {
+          const bombT = now + b * bombGap;
+          // Each successive bomb gets deeper and louder (building intensity)
+          const intensity = 0.6 + (b / bombCount) * 0.4;
+          const subFreq = 80 - b * 4;
+          const decay = 0.060 + b * 0.008;
+
+          // Sub impact
+          const sub = audioCtx.createOscillator();
+          sub.type = 'sine';
+          sub.frequency.setValueAtTime(subFreq, bombT);
+          sub.frequency.linearRampToValueAtTime(subFreq * 0.4, bombT + decay);
+          const sg = audioCtx.createGain();
+          sg.gain.setValueAtTime(Math.min(0.24 * intensity * chainMult, 0.38), bombT);
+          sg.gain.exponentialRampToValueAtTime(0.001, bombT + decay);
+          sub.connect(sg); connectWithReverb(sg, wetLevel);
+          sub.start(bombT); sub.stop(bombT + decay);
+
+          // Noise crack
+          const n = makeNoise(decay);
+          const bp = audioCtx.createBiquadFilter();
+          bp.type = 'bandpass';
+          bp.frequency.value = 200 + Math.random() * 200;
+          bp.Q.value = 2 + Math.random();
+          const ng = audioCtx.createGain();
+          ng.gain.setValueAtTime(Math.min(0.20 * intensity * chainMult, 0.30), bombT);
+          ng.gain.exponentialRampToValueAtTime(0.001, bombT + decay);
+          n.connect(bp); bp.connect(ng); connectWithReverb(ng, wetLevel);
+          n.start(bombT); n.stop(bombT + decay);
+
+          // Square crunch (lowpassed)
+          const sq = audioCtx.createOscillator();
+          sq.type = 'square';
+          sq.frequency.value = 40 + Math.random() * 30;
+          const lp = audioCtx.createBiquadFilter();
+          lp.type = 'lowpass'; lp.frequency.value = 130;
+          const sqg = audioCtx.createGain();
+          sqg.gain.setValueAtTime(Math.min(0.14 * intensity * chainMult, 0.22), bombT);
+          sqg.gain.exponentialRampToValueAtTime(0.001, bombT + decay * 0.7);
+          sq.connect(lp); lp.connect(sqg); connectWithReverb(sqg, wetLevel);
+          sq.start(bombT); sq.stop(bombT + decay * 0.7);
+
+          // Scatter debris between bombs — small random noise pops
+          const debrisCount = 2 + Math.floor(Math.random() * 3);
+          for (let d = 0; d < debrisCount; d++) {
+            const debrisT = bombT + 0.020 + Math.random() * (bombGap * 0.6);
+            const debrisDur = 0.015 + Math.random() * 0.015;
+            const dn = makeNoise(debrisDur);
+            const dbp = audioCtx.createBiquadFilter();
+            dbp.type = 'bandpass';
+            dbp.frequency.value = 150 + Math.random() * 300;
+            dbp.Q.value = 3;
+            const dg = audioCtx.createGain();
+            dg.gain.setValueAtTime(0.04 * intensity, debrisT);
+            dg.gain.exponentialRampToValueAtTime(0.001, debrisT + debrisDur);
+            dn.connect(dbp); dbp.connect(dg); connectWithReverb(dg, wetLevel);
+            dn.start(debrisT); dn.stop(debrisT + debrisDur);
+          }
+        }
+
+        // Continuous rumble bed under all bombs
+        const rumbleDur = bombCount * bombGap + 0.300;
+        const rumble = audioCtx.createOscillator();
+        rumble.type = 'sine'; rumble.frequency.value = 32;
+        const rg = audioCtx.createGain();
+        rg.gain.setValueAtTime(0.08 * chainMult, now);
+        rg.gain.linearRampToValueAtTime(0.14 * chainMult, now + rumbleDur * 0.5);
+        rg.gain.exponentialRampToValueAtTime(0.001, now + rumbleDur);
+        rumble.connect(rg); connectWithReverb(rg, wetLevel);
+        rumble.start(now); rumble.stop(now + rumbleDur);
+
+        const rumbleN = makeNoise(rumbleDur);
+        const rumbleBP = audioCtx.createBiquadFilter();
+        rumbleBP.type = 'bandpass'; rumbleBP.frequency.value = 160; rumbleBP.Q.value = 1;
+        const rng = audioCtx.createGain();
+        rng.gain.setValueAtTime(0.06 * chainMult, now);
+        rng.gain.exponentialRampToValueAtTime(0.001, now + rumbleDur);
+        rumbleN.connect(rumbleBP); rumbleBP.connect(rng); connectWithReverb(rng, wetLevel);
+        rumbleN.start(now); rumbleN.stop(now + rumbleDur);
+
+        // === The twist: reverse whoosh rising from rubble ===
+        const twistT = now + bombCount * bombGap;
+        const twistN = makeNoise(0.400);
+        const twistBP = audioCtx.createBiquadFilter();
+        twistBP.type = 'bandpass'; twistBP.Q.value = 3;
+        twistBP.frequency.setValueAtTime(120, twistT);
+        twistBP.frequency.exponentialRampToValueAtTime(600, twistT + 0.400);
+        const twistG = audioCtx.createGain();
+        twistG.gain.setValueAtTime(0.001, twistT);
+        twistG.gain.linearRampToValueAtTime(0.08 * chainMult, twistT + 0.200);
+        twistG.gain.exponentialRampToValueAtTime(0.001, twistT + 0.400);
+        twistN.connect(twistBP); twistBP.connect(twistG); connectWithReverb(twistG, 0.50);
+        twistN.start(twistT); twistN.stop(twistT + 0.400);
+
+        // === Deep sub void tail to 2000ms ===
+        const voidT = now + bombCount * bombGap + 0.200;
+        const voidEnd = now + 2.000;
+        const voidSub = audioCtx.createOscillator();
+        voidSub.type = 'sine'; voidSub.frequency.value = 25;
+        const voidG = audioCtx.createGain();
+        voidG.gain.setValueAtTime(0.07 * chainMult, voidT);
+        voidG.gain.exponentialRampToValueAtTime(0.001, voidEnd);
+        voidSub.connect(voidG); connectWithReverb(voidG, 0.70);
+        voidSub.start(voidT); voidSub.stop(voidEnd);
+
+        // Fading noise wash to fill to 2000ms
+        const washDur = voidEnd - voidT;
+        const wash = makeNoise(washDur);
+        const washBP = audioCtx.createBiquadFilter();
+        washBP.type = 'bandpass'; washBP.frequency.value = 120; washBP.Q.value = 1;
+        const washG = audioCtx.createGain();
+        washG.gain.setValueAtTime(0.04 * chainMult, voidT);
+        washG.gain.exponentialRampToValueAtTime(0.001, voidEnd);
+        wash.connect(washBP); washBP.connect(washG); connectWithReverb(washG, 0.70);
+        wash.start(voidT); wash.stop(voidEnd);
+      } catch (e) {}
+    }
+
+    // ===== HAPTICS =====
+    // iOS Safari doesn't support navigator.vibrate().
+    // Workaround: iOS 18+ triggers Taptic Engine when toggling <input type="checkbox" switch>.
+    // CRITICAL: element must NOT use display:none — that removes it from render tree
+    // and suppresses the haptic. Use offscreen positioning instead.
+    const _isCoarsePointer = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches;
+
+    let _hapticSwitch = null;
+    function initHapticSwitch() {
+      if (_hapticSwitch) return;
+      const existing = document.getElementById('haptic-test-switch');
+      if (existing) {
+        _hapticSwitch = existing;
+        return;
+      }
+      const input = document.createElement('input');
+      input.type = 'checkbox';
+      input.setAttribute('switch', '');
+      input.setAttribute('aria-hidden', 'true');
+      input.style.position = 'fixed';
+      input.style.left = '0';
+      input.style.top = '0';
+      input.style.width = '1px';
+      input.style.height = '1px';
+      input.style.opacity = '0.01';
+      input.style.zIndex = '1';
+      document.body.appendChild(input);
+      _hapticSwitch = input;
+    }
+
+    function _hapticTap() {
+      try {
+        if (!_hapticSwitch) initHapticSwitch();
+        if (!_hapticSwitch) return;
+        _hapticSwitch.click();
+      } catch (e) {}
+    }
+
+    function haptic(pattern, options = {}) {
+      if (!hapticsEnabled) return;
+      const isGesture = !!options.gesture;
+      // Try Capacitor Haptics plugin (native builds)
+      if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Haptics) {
+        try {
+          const total = Array.isArray(pattern) ? pattern.reduce((a, b) => a + b, 0) : pattern;
+          if (total > 200) {
+            window.Capacitor.Plugins.Haptics.impact({ style: 'heavy' });
+          } else if (total > 80) {
+            window.Capacitor.Plugins.Haptics.impact({ style: 'medium' });
+          } else {
+            window.Capacitor.Plugins.Haptics.impact({ style: 'light' });
+          }
+          return;
+        } catch (e) {}
+      }
+      // Try standard Vibration API (Android Chrome)
+      if (navigator.vibrate) {
+        navigator.vibrate(pattern);
+        return;
+      }
+      // iOS 18+ checkbox switch workaround (touch devices only)
+      if (!_isCoarsePointer) return;
+      if (!isGesture && navigator.userActivation && !navigator.userActivation.isActive) return;
+      _hapticTap();
+    }
+
+    // ===== INIT =====
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
